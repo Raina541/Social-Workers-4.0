@@ -32,12 +32,16 @@ interface TabConfig {
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { ScrapbookThemeProvider } from './context/ScrapbookThemeContext';
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <MainLayout />
-      </SafeAreaProvider>
+      <ScrapbookThemeProvider>
+        <SafeAreaProvider>
+          <MainLayout />
+        </SafeAreaProvider>
+      </ScrapbookThemeProvider>
     </GestureHandlerRootView>
   );
 }

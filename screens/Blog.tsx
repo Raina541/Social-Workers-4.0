@@ -11,6 +11,7 @@ import {
   Platform,
   Image,
   SafeAreaView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { ScrollView as GestureScrollView } from 'react-native-gesture-handler';
 import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
@@ -35,6 +36,14 @@ interface Article {
   categoryIntent: BadgeIntent;
   contentBody?: string;
   bannerImage?: string;
+}
+
+interface Feedback {
+  id: string;
+  articleId: string;
+  author: string;
+  timestamp: string;
+  content: string;
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -228,13 +237,90 @@ const MY_PERSONAL_BLOGS: Article[] = [
   },
 ];
 
-const ALL_ARTICLES = [
-  ...INITIAL_FEATURED_ARTICLES,
-  ...VOLUNTEER_VOICES,
-  ...NGO_SCENES,
-  ...COMMUNITY_STORIES,
-  ...MY_PERSONAL_BLOGS
+interface EditorBlock {
+  id: string;
+  type: 'text' | 'image';
+  content: string;
+  caption?: string;
+}
+
+const CURATED_IMAGES = [
+  { id: 'img1', name: 'Nature Cleanup', uri: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600', description: 'Volunteers cleaning the Green Valley forest trailhead.' },
+  { id: 'img2', name: 'Youth Tutoring', uri: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600', description: 'A volunteer instructing coding basics to young students.' },
+  { id: 'img3', name: 'Clinic Intake', uri: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=600', description: 'Coordinating outpatient intake checklists at the NGO office.' },
+  { id: 'img4', name: 'Food Pantry Distribution', uri: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600', description: 'Packing fresh farm organic crates for delivery.' },
 ];
+
+const renderMarkdownContent = (text: string, themeColors: any) => {
+  if (!text) return null;
+  
+  // Split into paragraphs by double newlines
+  const paragraphs = text.split('\n\n');
+  
+  return paragraphs.map((paragraph, pIdx) => {
+    const trimmed = paragraph.trim();
+    if (trimmed.startsWith('[IMAGE:') && trimmed.endsWith(']')) {
+      const imgUrl = trimmed.slice(7, -1).trim();
+      return (
+        <View key={pIdx} style={styles.editorImageBlockContainerInline}>
+          <Image source={{ uri: imgUrl }} style={styles.inlineArticleImage} resizeMode="cover" />
+        </View>
+      );
+    }
+
+    const isBulletList = paragraph.trim().startsWith('- ');
+    let cleanText = paragraph;
+    if (isBulletList) {
+      cleanText = paragraph.replace(/^\s*-\s+/, '');
+    }
+
+    // Split text by bold (**), italic (*), and underline (<u>) tags
+    const regex = /(\*\*.*?\*\*|\*.*?\*|<u>.*?<\/u>)/g;
+    const parts = cleanText.split(regex);
+
+    const renderedParts = parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <Text key={idx} style={{ fontWeight: 'bold' }}>
+            {part.slice(2, -2)}
+          </Text>
+        );
+      } else if (part.startsWith('*') && part.endsWith('*')) {
+        return (
+          <Text key={idx} style={{ fontStyle: 'italic' }}>
+            {part.slice(1, -1)}
+          </Text>
+        );
+      } else if (part.startsWith('<u>') && part.endsWith('</u>')) {
+        return (
+          <Text key={idx} style={{ textDecorationLine: 'underline' }}>
+            {part.slice(3, -4)}
+          </Text>
+        );
+      } else {
+        return <Text key={idx}>{part}</Text>;
+      }
+    });
+
+    if (isBulletList) {
+      return (
+        <View key={pIdx} style={{ flexDirection: 'row', marginLeft: Spacing.s, marginBottom: Spacing.s, width: '90%' }}>
+          <Text style={{ color: themeColors.neutralForeground1, fontSize: 15, marginRight: 6 }}>•</Text>
+          <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontSize: 15, lineHeight: 22, flex: 1 }]}>
+            {renderedParts}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <Text key={pIdx} style={[Typography.body, styles.fullArticleParagraphs, { color: themeColors.neutralForeground1 }]}>
+        {renderedParts}
+      </Text>
+    );
+  });
+};
+
 
 export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollEnabled }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
@@ -248,8 +334,21 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchScope, setSearchScope] = useState<'title' | 'author'>('title');
 
-  // 3. Featured articles state
+  // 3. Feeds local states
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>(INITIAL_FEATURED_ARTICLES);
+  const [volunteerVoices, setVolunteerVoices] = useState<Article[]>(VOLUNTEER_VOICES);
+  const [ngoScenes, setNgoScenes] = useState<Article[]>(NGO_SCENES);
+  const [communityStories, setCommunityStories] = useState<Article[]>(COMMUNITY_STORIES);
+  const [myPersonalBlogs, setMyPersonalBlogs] = useState<Article[]>(MY_PERSONAL_BLOGS);
+
+  // Dynamic unified list of all articles
+  const allArticles = useMemo(() => [
+    ...featuredArticles,
+    ...volunteerVoices,
+    ...ngoScenes,
+    ...communityStories,
+    ...myPersonalBlogs
+  ], [featuredArticles, volunteerVoices, ngoScenes, communityStories, myPersonalBlogs]);
 
   // 4. Saved/Bookmarked articles state
   const [savedArticleIds, setSavedArticleIds] = useState<string[]>(['f1']);
@@ -262,6 +361,51 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
 
   // 7. Explore Similar Bottom Sheet Modal state
   const [exploreSheetVisible, setExploreSheetVisible] = useState(false);
+
+  // 8. Direct-to-Author Feedback states
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([
+    {
+      id: 'f1',
+      articleId: 'my1',
+      author: 'Elena Rostova',
+      timestamp: 'June 20, 2026, 2:15 PM',
+      content: 'This is a fantastic suggestion on pre-sorting partitions! It will save us hours at the food bank.',
+    },
+    {
+      id: 'f2',
+      articleId: 'my1',
+      author: 'Liam Chen',
+      timestamp: 'June 21, 2026, 9:30 AM',
+      content: 'We implemented this prep zone in our local kitchen and packing speed increased significantly.',
+    },
+    {
+      id: 'f3',
+      articleId: 'my2',
+      author: 'Sophia Martinez',
+      timestamp: 'June 14, 2026, 4:45 PM',
+      content: 'Great log! Thanks for volunteering to clear the trail paths at Green Valley.',
+    },
+  ]);
+  const [feedbackInput, setFeedbackInput] = useState('');
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
+
+  const handleSendFeedback = (articleId: string) => {
+    if (!feedbackInput.trim()) return;
+    const newFeedback: Feedback = {
+      id: Date.now().toString(),
+      articleId,
+      author: 'Anonymous Reader',
+      timestamp: new Date().toLocaleString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric', year: 'numeric' }),
+      content: feedbackInput.trim(),
+    };
+    setFeedbacks([newFeedback, ...feedbacks]);
+    setFeedbackInput('');
+    setFeedbackSuccess(true);
+    setTimeout(() => {
+      setFeedbackSuccess(false);
+    }, 3000);
+  };
 
   // Toggle saving bookmark
   const handleToggleSave = (articleId: string) => {
@@ -278,6 +422,263 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
     setFeaturedArticles(shuffled);
   };
 
+  // --- Blog Editor States ---
+  const [isEditorVisible, setIsEditorVisible] = useState(false);
+  const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
+  const [editorPostType, setEditorPostType] = useState<'thoughts' | 'short_blog' | 'article'>('thoughts');
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+
+  const [editorTitle, setEditorTitle] = useState('');
+  const [editorBlocks, setEditorBlocks] = useState<EditorBlock[]>([]);
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+
+  const [imageSheetVisible, setImageSheetVisible] = useState(false);
+  const [shortBlogCategory, setShortBlogCategory] = useState<'volunteer' | 'community'>('volunteer');
+
+  // --- Block Serialization / Parsing Helpers ---
+  const parseContentToBlocks = (content: string): EditorBlock[] => {
+    if (!content) return [{ id: 'b-init', type: 'text', content: '' }];
+    const blocks: EditorBlock[] = [];
+    const lines = content.split('\n');
+    let currentText = '';
+    let blockIdCounter = 1;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('[IMAGE:') && line.endsWith(']')) {
+        if (currentText.trim()) {
+          blocks.push({ id: `b-${blockIdCounter++}`, type: 'text', content: currentText.trim() });
+          currentText = '';
+        }
+        const imgUrl = line.slice(7, -1).trim();
+        let caption = '';
+        if (i + 1 < lines.length && lines[i + 1].trim().startsWith('*') && lines[i + 1].trim().endsWith('*')) {
+          caption = lines[i + 1].trim().slice(1, -1);
+          i++; // Skip the next line as it was consumed as a caption
+        }
+        blocks.push({ id: `b-${blockIdCounter++}`, type: 'image', content: imgUrl, caption });
+      } else {
+        currentText += (currentText ? '\n' : '') + lines[i];
+      }
+    }
+
+    if (currentText.trim() || blocks.length === 0) {
+      blocks.push({ id: `b-${blockIdCounter++}`, type: 'text', content: currentText });
+    }
+
+    return blocks;
+  };
+
+  const serializeBlocksToContent = (blocks: EditorBlock[]): string => {
+    return blocks.map(block => {
+      if (block.type === 'image') {
+        return `[IMAGE: ${block.content}]` + (block.caption ? `\n*${block.caption}*` : '');
+      }
+      return block.content;
+    }).join('\n\n');
+  };
+
+  // --- Editor Trigger Handlers ---
+  const handleOpenCreator = (postType: 'thoughts' | 'short_blog' | 'article') => {
+    setEditorMode('create');
+    setEditorPostType(postType);
+    setEditingArticle(null);
+    setEditorTitle('');
+    setEditorBlocks([{ id: 'b-init', type: 'text', content: '' }]);
+    setActiveBlockId('b-init');
+    setIsEditorVisible(true);
+  };
+
+  const handleOpenEditorForArticle = (article: Article) => {
+    setEditorMode('edit');
+    setEditingArticle(article);
+    setEditorTitle(article.title);
+    
+    if (article.id.startsWith('user')) {
+      if (article.category === 'Personal Notes') {
+        setEditorPostType('thoughts');
+      } else {
+        setEditorPostType('short_blog');
+        setShortBlogCategory(article.category === 'Environment' ? 'volunteer' : 'community');
+      }
+    } else if (article.id.startsWith('my')) {
+      setEditorPostType('thoughts');
+    } else if (article.id.startsWith('vv') || article.id.startsWith('cs')) {
+      setEditorPostType('short_blog');
+      setShortBlogCategory(article.id.startsWith('vv') ? 'volunteer' : 'community');
+    } else if (article.id.startsWith('f')) {
+      setEditorPostType('article');
+    } else {
+      setEditorPostType('thoughts');
+    }
+
+    const blocks = parseContentToBlocks(article.contentBody || article.summary);
+    setEditorBlocks(blocks);
+    setActiveBlockId(blocks[0]?.id || null);
+    setIsEditorVisible(true);
+  };
+
+  // --- Block Editing Handlers ---
+  const handleUpdateBlockContent = (blockId: string, text: string) => {
+    setEditorBlocks(prev => prev.map(b => b.id === blockId ? { ...b, content: text } : b));
+  };
+
+  const handleUpdateBlockCaption = (blockId: string, caption: string) => {
+    setEditorBlocks(prev => prev.map(b => b.id === blockId ? { ...b, caption } : b));
+  };
+
+  const handleDeleteBlock = (blockId: string) => {
+    if (editorBlocks.length === 1) return;
+    setEditorBlocks(prev => prev.filter(b => b.id !== blockId));
+  };
+
+  const handleInsertImageBlock = (uri: string) => {
+    setImageSheetVisible(false);
+    const activeIndex = editorBlocks.findIndex(b => b.id === activeBlockId);
+    
+    const newImageBlock: EditorBlock = {
+      id: `b-${Date.now()}-img`,
+      type: 'image',
+      content: uri,
+      caption: '',
+    };
+    const newTextBlock: EditorBlock = {
+      id: `b-${Date.now()}-txt`,
+      type: 'text',
+      content: '',
+    };
+
+    const nextBlocks = [...editorBlocks];
+    if (activeIndex !== -1) {
+      nextBlocks.splice(activeIndex + 1, 0, newImageBlock, newTextBlock);
+    } else {
+      nextBlocks.push(newImageBlock, newTextBlock);
+    }
+
+    setEditorBlocks(nextBlocks);
+    setActiveBlockId(newTextBlock.id);
+  };
+
+  const handleFormatText = (tag: 'bold' | 'italic' | 'underline' | 'list') => {
+    if (!activeBlockId) return;
+    setEditorBlocks(prev => prev.map(block => {
+      if (block.id !== activeBlockId) return block;
+      
+      const text = block.content;
+      const { start, end } = selection;
+      const selectedText = text.substring(start, end);
+      
+      let newText = '';
+      if (tag === 'bold') {
+        newText = text.substring(0, start) + `**${selectedText}**` + text.substring(end);
+      } else if (tag === 'italic') {
+        newText = text.substring(0, start) + `*${selectedText}*` + text.substring(end);
+      } else if (tag === 'underline') {
+        newText = text.substring(0, start) + `<u>${selectedText}</u>` + text.substring(end);
+      } else if (tag === 'list') {
+        newText = text.substring(0, start) + `\n- ${selectedText}` + text.substring(end);
+      }
+      
+      return { ...block, content: newText };
+    }));
+  };
+
+  const handleSave = (asDraft: boolean) => {
+    if (!editorTitle.trim()) {
+      alert('Please enter a title.');
+      return;
+    }
+
+    const serializedContent = serializeBlocksToContent(editorBlocks);
+    const isEdit = editorMode === 'edit' && editingArticle !== null;
+    const articleId = isEdit ? editingArticle!.id : `user-${Date.now()}`;
+    const authorName = isEdit ? editingArticle!.author : 'Nilap Saha';
+    const postDate = isEdit ? editingArticle!.date : 'June 20, 2026';
+    
+    const wordCount = serializedContent.split(/\s+/).length;
+    const readTime = `${Math.max(1, Math.round(wordCount / 150))} min read`;
+
+    let category = 'Personal Notes';
+    let intent: BadgeIntent = 'Warning';
+    
+    if (!asDraft) {
+      if (editorPostType === 'thoughts') {
+        category = 'Activity Log';
+        intent = 'Success';
+      } else if (editorPostType === 'short_blog') {
+        if (shortBlogCategory === 'volunteer') {
+          category = 'Environment';
+          intent = 'Success';
+        } else {
+          category = 'Neighborhood';
+          intent = 'Brand';
+        }
+      } else if (editorPostType === 'article') {
+        category = 'Best Practices';
+        intent = 'Brand';
+      }
+    }
+
+    const newArticle: Article = {
+      id: articleId,
+      title: editorTitle.trim(),
+      author: authorName,
+      date: postDate,
+      readTime,
+      summary: editorBlocks.find(b => b.type === 'text' && b.content.trim())?.content.slice(0, 100) || 'Personal thoughts',
+      category,
+      categoryIntent: intent,
+      contentBody: serializedContent,
+      bannerImage: editorBlocks.find(b => b.type === 'image')?.content || ((editorPostType === 'article' && !asDraft) ? 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=1000' : undefined),
+    };
+
+    if (isEdit) {
+      if (!asDraft) {
+        if (editorPostType === 'short_blog') {
+          if (shortBlogCategory === 'volunteer') {
+            setVolunteerVoices(prev => prev.some(a => a.id === articleId) ? prev.map(a => a.id === articleId ? newArticle : a) : [newArticle, ...prev]);
+            setCommunityStories(prev => prev.filter(a => a.id !== articleId));
+          } else {
+            setCommunityStories(prev => prev.some(a => a.id === articleId) ? prev.map(a => a.id === articleId ? newArticle : a) : [newArticle, ...prev]);
+            setVolunteerVoices(prev => prev.filter(a => a.id !== articleId));
+          }
+          setFeaturedArticles(prev => prev.filter(a => a.id !== articleId));
+        } else if (editorPostType === 'article') {
+          setFeaturedArticles(prev => prev.some(a => a.id === articleId) ? prev.map(a => a.id === articleId ? newArticle : a) : [newArticle, ...prev]);
+          setVolunteerVoices(prev => prev.filter(a => a.id !== articleId));
+          setCommunityStories(prev => prev.filter(a => a.id !== articleId));
+        } else {
+          setVolunteerVoices(prev => prev.filter(a => a.id !== articleId));
+          setCommunityStories(prev => prev.filter(a => a.id !== articleId));
+          setFeaturedArticles(prev => prev.filter(a => a.id !== articleId));
+        }
+      } else {
+        setFeaturedArticles(prev => prev.filter(a => a.id !== articleId));
+        setVolunteerVoices(prev => prev.filter(a => a.id !== articleId));
+        setCommunityStories(prev => prev.filter(a => a.id !== articleId));
+      }
+      
+      setMyPersonalBlogs(prev => prev.map(a => a.id === articleId ? newArticle : a));
+    } else {
+      setMyPersonalBlogs(prev => [newArticle, ...prev]);
+
+      if (!asDraft) {
+        if (editorPostType === 'short_blog') {
+          if (shortBlogCategory === 'volunteer') {
+            setVolunteerVoices(prev => [newArticle, ...prev]);
+          } else {
+            setCommunityStories(prev => [newArticle, ...prev]);
+          }
+        } else if (editorPostType === 'article') {
+          setFeaturedArticles(prev => [newArticle, ...prev]);
+        }
+      }
+    }
+
+    setIsEditorVisible(false);
+  };
+
   // Filter Helper
   const filterList = (list: Article[]) => {
     if (!searchQuery) return list;
@@ -289,15 +690,15 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
 
   // Filtered feeds memo
   const filteredFeatured = useMemo(() => filterList(featuredArticles), [featuredArticles, searchQuery, searchScope]);
-  const filteredVV = useMemo(() => filterList(VOLUNTEER_VOICES), [searchQuery, searchScope]);
-  const filteredNGO = useMemo(() => filterList(NGO_SCENES), [searchQuery, searchScope]);
-  const filteredCS = useMemo(() => filterList(COMMUNITY_STORIES), [searchQuery, searchScope]);
-  const filteredMy = useMemo(() => filterList(MY_PERSONAL_BLOGS), [searchQuery, searchScope]);
+  const filteredVV = useMemo(() => filterList(volunteerVoices), [volunteerVoices, searchQuery, searchScope]);
+  const filteredNGO = useMemo(() => filterList(ngoScenes), [ngoScenes, searchQuery, searchScope]);
+  const filteredCS = useMemo(() => filterList(communityStories), [communityStories, searchQuery, searchScope]);
+  const filteredMy = useMemo(() => filterList(myPersonalBlogs), [myPersonalBlogs, searchQuery, searchScope]);
 
   // Bookmarked articles list
   const savedArticles = useMemo(() => {
-    return ALL_ARTICLES.filter(item => savedArticleIds.includes(item.id));
-  }, [savedArticleIds]);
+    return allArticles.filter(item => savedArticleIds.includes(item.id));
+  }, [allArticles, savedArticleIds]);
 
   const filteredSaved = useMemo(() => filterList(savedArticles), [savedArticles, searchQuery, searchScope]);
 
@@ -727,8 +1128,8 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                   >
                     <View style={styles.compactCardTop}>
                       <Badge
-                        label={article.id === 'my1' ? 'Draft' : 'Published'}
-                        intent={article.id === 'my1' ? 'Warning' : 'Success'}
+                        label={article.category === 'Personal Notes' ? 'Draft' : 'Published'}
+                        intent={article.category === 'Personal Notes' ? 'Warning' : 'Success'}
                         variant="Tint"
                         size="Small"
                         isDarkMode={isDarkMode}
@@ -750,7 +1151,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                         Author: {article.author} • {article.readTime}
                       </Text>
                       
-                      <Pressable onPress={() => alert(`Opening editor for "${article.title}"`)}>
+                      <Pressable onPress={() => handleOpenEditorForArticle(article)}>
                         <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1 }]}>
                           Edit Entry →
                         </Text>
@@ -881,7 +1282,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
             <Pressable
               onPress={() => {
                 setFabMenuVisible(false);
-                alert("Successfully created entry:\nWrite note down your thoughts");
+                handleOpenCreator('thoughts');
               }}
               style={({ pressed }) => [
                 styles.fabMenuItem,
@@ -897,7 +1298,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
             <Pressable
               onPress={() => {
                 setFabMenuVisible(false);
-                alert("Successfully created entry:\nCreate short blogs");
+                handleOpenCreator('short_blog');
               }}
               style={({ pressed }) => [
                 styles.fabMenuItem,
@@ -913,7 +1314,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
             <Pressable
               onPress={() => {
                 setFabMenuVisible(false);
-                alert("Successfully created entry:\nWrite articles");
+                handleOpenCreator('article');
               }}
               style={({ pressed }) => [
                 styles.fabMenuItem,
@@ -1026,9 +1427,10 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                 </View>
 
                 {/* Full Article Text Block */}
-                <Text style={[Typography.body, styles.fullArticleParagraphs, { color: themeColors.neutralForeground1 }]}>
-                  {selectedArticle.contentBody || selectedArticle.summary + "\n\nVolunteering operations face key coordination demands across municipalities. Organizing physical supply lines, managing logistics files, and directing client intake require continuous local team syncs. Direct support activities establish community security. Actively guiding residents, checking on outpatients, and hosting neighborhood educational workshops build a stronger foundation for safety.\n\nProviding warm, empathetic outreach and resolving service obstacles create supportive settings. In the long term, case tracking grids and responsive volunteer circles ensure clients access recovery services and essential resources without delay."}
-                </Text>
+                {renderMarkdownContent(
+                  selectedArticle.contentBody || selectedArticle.summary + "\n\nVolunteering operations face key coordination demands across municipalities. Organizing physical supply lines, managing logistics files, and directing client intake require continuous local team syncs. Direct support activities establish community security. Actively guiding residents, checking on outpatients, and hosting neighborhood educational workshops build a stronger foundation for safety.\n\nProviding warm, empathetic outreach and resolving service obstacles create supportive settings. In the long term, case tracking grids and responsive volunteer circles ensure clients access recovery services and essential resources without delay.",
+                  themeColors
+                )}
 
                 {/* Category-Specific Interactions (No Banner Categories) */}
                 <View style={styles.detailFooterContainer}>
@@ -1144,6 +1546,88 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
 
                 </View>
 
+                {/* Direct-to-Author Feedback Section */}
+                <View style={[styles.feedbackSectionContainer, { borderTopWidth: 1, borderTopColor: themeColors.neutralStroke2, marginTop: Spacing.xl, paddingTop: Spacing.l }]}>
+                  {selectedArticle.author === 'Nilap Saha' ? (
+                    /* Author View */
+                    <View style={styles.feedbackAuthorContainer}>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
+                        Author Dashboard
+                      </Text>
+                      <Pressable
+                        onPress={() => setCommentsModalVisible(true)}
+                        style={({ pressed }) => [
+                          styles.feedbackViewCommentsBtn,
+                          {
+                            backgroundColor: pressed ? themeColors.brandBackgroundPressed : themeColors.brandBackground,
+                            padding: Spacing.m,
+                            borderRadius: Shapes.rounded,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }
+                        ]}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Ionicons name="mail-unread-outline" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                          <Text style={[Typography.bodyStrong, { color: '#ffffff' }]}>
+                            View Reader Comments ({feedbacks.filter(f => f.articleId === selectedArticle.id).length})
+                          </Text>
+                        </View>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    /* Reader View */
+                    <View style={styles.feedbackReaderContainer}>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.xs }]}>
+                        Send Feedback
+                      </Text>
+                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginBottom: Spacing.s }]}>
+                        Your comment will be sent privately to the author. Other readers cannot see it.
+                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.s }}>
+                        <TextInput
+                          value={feedbackInput}
+                          onChangeText={setFeedbackInput}
+                          placeholder="Send a comment to the author..."
+                          placeholderTextColor={themeColors.neutralForegroundDisabled}
+                          multiline
+                          style={[
+                            styles.feedbackTextInput,
+                            {
+                              flex: 1,
+                              borderColor: themeColors.neutralStroke1,
+                              backgroundColor: themeColors.neutralBackground2,
+                              color: themeColors.neutralForeground1,
+                            }
+                          ]}
+                        />
+                        <Pressable
+                          onPress={() => handleSendFeedback(selectedArticle.id)}
+                          disabled={!feedbackInput.trim()}
+                          style={({ pressed }) => [
+                            styles.feedbackSendBtn,
+                            {
+                              backgroundColor: feedbackInput.trim() 
+                                ? (pressed ? themeColors.brandBackgroundPressed : themeColors.brandBackground)
+                                : themeColors.neutralBackgroundDisabled,
+                            }
+                          ]}
+                        >
+                          <Ionicons name="send" size={16} color="#ffffff" />
+                        </Pressable>
+                      </View>
+                      {feedbackSuccess && (
+                        <View style={[styles.feedbackSuccessBanner, { backgroundColor: themeColors.successBackgroundSubtle, borderColor: themeColors.successForeground1 }]}>
+                          <Ionicons name="checkmark-circle" size={16} color={themeColors.successForeground1} style={{ marginRight: 6 }} />
+                          <Text style={[Typography.caption, { color: themeColors.successForeground1 }]}>
+                            Feedback sent to author!
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+
               </View>
             </ScrollView>
           </SafeAreaView>
@@ -1205,6 +1689,348 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                     </Pressable>
                   ))}
                 </View>
+              </View>
+            </Pressable>
+          </Modal>
+        </Modal>
+      )}
+
+      {/* 9. Direct-to-Author Feedback Inbox Modal (Author View) */}
+      <Modal
+        visible={commentsModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setCommentsModalVisible(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.neutralBackground1, paddingTop: Platform.OS === 'ios' ? 0 : 10 }}>
+          {/* Modal Header */}
+          <View style={[styles.feedbackInboxHeader, { borderBottomColor: themeColors.neutralStroke2, paddingBottom: Spacing.s, paddingHorizontal: Spacing.m, paddingTop: Spacing.m, borderBottomWidth: 1 }]}>
+            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 16 }]}>
+              Reader Comments Inbox
+            </Text>
+            <Pressable
+              onPress={() => setCommentsModalVisible(false)}
+              style={[styles.feedbackInboxCloseBtn, { backgroundColor: themeColors.neutralBackground3 }]}
+            >
+              <Ionicons name="close" size={20} color={themeColors.neutralForeground1} />
+            </Pressable>
+          </View>
+
+          {/* List of comments */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: Spacing.m }}
+            showsVerticalScrollIndicator={false}
+          >
+            {selectedArticle && feedbacks.filter(f => f.articleId === selectedArticle.id).length === 0 ? (
+              <View style={{ paddingVertical: Spacing.xxl, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="mail-outline" size={48} color={themeColors.neutralForeground3} style={{ marginBottom: 12 }} />
+                <Text style={[Typography.body, { color: themeColors.neutralForeground3, textAlign: 'center' }]}>
+                  No comments yet for this article.
+                </Text>
+              </View>
+            ) : (
+              selectedArticle && feedbacks.filter(f => f.articleId === selectedArticle.id).map(feedback => (
+                <View
+                  key={feedback.id}
+                  style={[
+                    styles.feedbackCard,
+                    {
+                      backgroundColor: themeColors.neutralBackground2,
+                      borderColor: themeColors.neutralStroke1,
+                    }
+                  ]}
+                >
+                  <View style={styles.feedbackCardHeader}>
+                    <View style={[styles.authorAvatarCircle, { width: 32, height: 32, backgroundColor: themeColors.brandBackgroundSubtle, marginRight: Spacing.s }]}>
+                      <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, fontSize: 11 }]}>
+                        {feedback.author.split(' ').pop()?.[0]?.toUpperCase() || 'R'}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13 }]}>
+                        {feedback.author}
+                      </Text>
+                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, fontSize: 10 }]}>
+                        {feedback.timestamp}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[Typography.body, { color: themeColors.neutralForeground1, marginTop: Spacing.s, fontSize: 13, lineHeight: 18 }]}>
+                    {feedback.content}
+                  </Text>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 6. Rich Text Editor Modal */}
+      {isEditorVisible && (
+        <Modal
+          visible={isEditorVisible}
+          animationType="slide"
+          presentationStyle="fullScreen"
+          onRequestClose={() => setIsEditorVisible(false)}
+        >
+          <SafeAreaView style={[styles.detailModal, { flex: 1, backgroundColor: themeColors.neutralBackground1 }]}>
+            
+            {/* Editor Header */}
+            <View style={[styles.detailHeader, { borderBottomColor: themeColors.neutralStroke2 }]}>
+              <Pressable
+                onPress={() => setIsEditorVisible(false)}
+                style={[styles.backBtn, { backgroundColor: themeColors.neutralBackground3 }]}
+              >
+                <Ionicons name="close" size={22} color={themeColors.neutralForeground1} />
+              </Pressable>
+              
+              <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 16 }]}>
+                {editorMode === 'create' ? 'Create New Entry' : 'Edit Entry'}
+              </Text>
+              
+              <View style={styles.detailHeaderActions}>
+                <Pressable
+                  onPress={() => handleSave(true)}
+                  style={[styles.editorDraftBtn, { backgroundColor: themeColors.neutralBackground3 }]}
+                >
+                  <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground1 }]}>
+                    Draft
+                  </Text>
+                </Pressable>
+                
+                <Pressable
+                  onPress={() => handleSave(false)}
+                  style={[styles.editorSaveBtn, { backgroundColor: themeColors.brandBackground }]}
+                >
+                  <Text style={[Typography.captionStrong, { color: '#FFFFFF' }]}>
+                    Publish
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* KeyboardAvoidingView for Editor content */}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1 }}
+            >
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ padding: Spacing.m, paddingBottom: 120 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {/* Display Editor Status Badge */}
+                <View style={{ flexDirection: 'row', marginBottom: Spacing.s }}>
+                  <Badge
+                    label={
+                      editorPostType === 'thoughts' ? 'Private Draft' :
+                      editorPostType === 'short_blog' ? 'Public Blog' : 'Featured Article'
+                    }
+                    intent={
+                      editorPostType === 'thoughts' ? 'Warning' :
+                      editorPostType === 'short_blog' ? 'Brand' : 'Success'
+                    }
+                    variant="Tint"
+                    size="Small"
+                    isDarkMode={isDarkMode}
+                  />
+                </View>
+
+                {/* Short Blog Category Destination Selector (Only for short blogs) */}
+                {editorPostType === 'short_blog' && (
+                  <View style={[styles.categorySelectorContainer, { borderColor: themeColors.neutralStroke2 }]}>
+                    <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, marginBottom: Spacing.xs }]}>
+                      Publish Destination:
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                      <Pressable
+                        onPress={() => setShortBlogCategory('volunteer')}
+                        style={[
+                          styles.categorySelectTab,
+                          {
+                            backgroundColor: shortBlogCategory === 'volunteer' ? themeColors.brandBackgroundSubtle : themeColors.neutralBackground3,
+                            borderColor: shortBlogCategory === 'volunteer' ? themeColors.brandForeground1 : 'transparent',
+                            borderWidth: 1
+                          }
+                        ]}
+                      >
+                        <Text style={[
+                          Typography.captionStrong,
+                          { color: shortBlogCategory === 'volunteer' ? themeColors.brandForeground1 : themeColors.neutralForeground2 }
+                        ]}>
+                          Volunteer Voices
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => setShortBlogCategory('community')}
+                        style={[
+                          styles.categorySelectTab,
+                          {
+                            backgroundColor: shortBlogCategory === 'community' ? themeColors.brandBackgroundSubtle : themeColors.neutralBackground3,
+                            borderColor: shortBlogCategory === 'community' ? themeColors.brandForeground1 : 'transparent',
+                            borderWidth: 1
+                          }
+                        ]}
+                      >
+                        <Text style={[
+                          Typography.captionStrong,
+                          { color: shortBlogCategory === 'community' ? themeColors.brandForeground1 : themeColors.neutralForeground2 }
+                        ]}>
+                          Community Stories
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+
+                {/* Title Input */}
+                <TextInput
+                  placeholder="Enter Title..."
+                  placeholderTextColor={themeColors.neutralForeground3}
+                  value={editorTitle}
+                  onChangeText={setEditorTitle}
+                  style={[styles.editorTitleInput, { color: themeColors.neutralForeground1 }]}
+                />
+
+                {/* Blocks Rendering */}
+                {editorBlocks.map((block) => {
+                  if (block.type === 'image') {
+                    return (
+                      <View key={block.id} style={[styles.editorImageBlockContainer, { borderColor: themeColors.neutralStroke2 }]}>
+                        <Image source={{ uri: block.content }} style={styles.editorImageBlock} />
+                        
+                        <TextInput
+                          placeholder="Image caption..."
+                          placeholderTextColor={themeColors.neutralForeground3}
+                          value={block.caption || ''}
+                          onChangeText={(newCaption) => handleUpdateBlockCaption(block.id, newCaption)}
+                          style={[styles.editorImageCaptionInput, { color: themeColors.neutralForeground1 }]}
+                        />
+
+                        <Pressable
+                          onPress={() => handleDeleteBlock(block.id)}
+                          style={styles.editorDeleteBlockBtn}
+                        >
+                          <Ionicons name="trash-outline" size={16} color="#C5221F" />
+                        </Pressable>
+                      </View>
+                    );
+                  }
+
+                  return (
+                    <View key={block.id} style={styles.editorTextBlockContainer}>
+                      <TextInput
+                        multiline
+                        placeholder="Write your story here..."
+                        placeholderTextColor={themeColors.neutralForeground3}
+                        value={block.content}
+                        onFocus={() => setActiveBlockId(block.id)}
+                        onSelectionChange={(e) => {
+                          if (activeBlockId === block.id) {
+                            setSelection(e.nativeEvent.selection);
+                          }
+                        }}
+                        onChangeText={(newText) => handleUpdateBlockContent(block.id, newText)}
+                        style={[styles.editorTextInput, { color: themeColors.neutralForeground1 }]}
+                      />
+                      
+                      {editorBlocks.length > 1 && (
+                        <Pressable
+                          onPress={() => handleDeleteBlock(block.id)}
+                          style={styles.editorDeleteBlockBtn}
+                        >
+                          <Ionicons name="trash-outline" size={16} color={themeColors.neutralForeground3} />
+                        </Pressable>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </KeyboardAvoidingView>
+
+            {/* Formatting Toolbar */}
+            <View style={[styles.editorToolbar, { backgroundColor: themeColors.neutralBackground1, borderTopColor: themeColors.neutralStroke2 }]}>
+              <Pressable onPress={() => handleFormatText('bold')} style={styles.toolbarIconBtn}>
+                <Text style={{ fontWeight: 'bold', fontSize: 18, color: themeColors.neutralForeground1, width: 20, textAlign: 'center' }}>B</Text>
+              </Pressable>
+              
+              <Pressable onPress={() => handleFormatText('italic')} style={styles.toolbarIconBtn}>
+                <Text style={{ fontStyle: 'italic', fontSize: 18, color: themeColors.neutralForeground1, width: 20, textAlign: 'center' }}>I</Text>
+              </Pressable>
+
+              <Pressable onPress={() => handleFormatText('underline')} style={styles.toolbarIconBtn}>
+                <Text style={{ textDecorationLine: 'underline', fontSize: 18, color: themeColors.neutralForeground1, width: 20, textAlign: 'center' }}>U</Text>
+              </Pressable>
+
+              <Pressable onPress={() => handleFormatText('list')} style={styles.toolbarIconBtn}>
+                <Ionicons name="list-outline" size={20} color={themeColors.neutralForeground1} />
+              </Pressable>
+
+              <View style={[styles.verticalDivider, { backgroundColor: themeColors.neutralStroke2, height: 24, marginHorizontal: 8 }]} />
+
+              <Pressable onPress={() => setImageSheetVisible(true)} style={styles.toolbarIconBtn}>
+                <Ionicons name="image-outline" size={20} color={themeColors.brandForeground1} />
+                <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginLeft: 4, fontSize: 11 }]}>
+                  Add Image
+                </Text>
+              </Pressable>
+            </View>
+
+          </SafeAreaView>
+
+          {/* Curated Image Asset Picker Slide-up Sheet */}
+          <Modal
+            visible={imageSheetVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setImageSheetVisible(false)}
+          >
+            <Pressable
+              style={styles.sheetBackdrop}
+              onPress={() => setImageSheetVisible(false)}
+            >
+              <View style={[
+                styles.sheetContent,
+                {
+                  backgroundColor: themeColors.neutralBackground1,
+                  borderColor: themeColors.neutralStroke2,
+                  paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : Spacing.l,
+                }
+              ]}>
+                
+                <View style={[styles.sheetIndicator, { backgroundColor: themeColors.neutralStroke2 }]} />
+                
+                <View style={styles.sheetHeader}>
+                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 16 }]}>
+                    Select Curated Image
+                  </Text>
+                  <Pressable onPress={() => setImageSheetVisible(false)} style={{ padding: 4 }}>
+                    <Ionicons name="close" size={22} color={themeColors.neutralForeground3} />
+                  </Pressable>
+                </View>
+
+                <ScrollView style={{ maxHeight: 350 }}>
+                  <View style={{ gap: 12 }}>
+                    {CURATED_IMAGES.map((img) => (
+                      <Pressable
+                        key={img.id}
+                        onPress={() => handleInsertImageBlock(img.uri)}
+                        style={[styles.curatedImagePickerRow, { borderColor: themeColors.neutralStroke2 }]}
+                      >
+                        <Image source={{ uri: img.uri }} style={styles.curatedPickerThumb} />
+                        <View style={{ flex: 1, marginLeft: Spacing.s }}>
+                          <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 14 }]}>
+                            {img.name}
+                          </Text>
+                          <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]} numberOfLines={2}>
+                            {img.description}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
               </View>
             </Pressable>
           </Modal>
@@ -1595,5 +2421,180 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: Spacing.xs,
+  },
+  editorTitleInput: {
+    fontSize: 24,
+    fontWeight: '700',
+    paddingVertical: Spacing.s,
+    marginBottom: Spacing.m,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  editorTextInput: {
+    fontSize: 16,
+    lineHeight: 24,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    flex: 1,
+    paddingRight: 32,
+  },
+  editorTextBlockContainer: {
+    position: 'relative',
+    flexDirection: 'row',
+    marginBottom: Spacing.m,
+  },
+  editorDeleteBlockBtn: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    padding: Spacing.xxs,
+  },
+  editorImageBlockContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: Spacing.s,
+    marginBottom: Spacing.m,
+    position: 'relative',
+  },
+  editorImageBlock: {
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    marginBottom: Spacing.s,
+  },
+  editorImageCaptionInput: {
+    fontSize: 13,
+    fontStyle: 'italic',
+    paddingVertical: 4,
+  },
+  editorToolbar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.m,
+    borderTopWidth: 1,
+    elevation: 5,
+  },
+  toolbarIconBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    borderRadius: 8,
+  },
+  curatedImagePickerRow: {
+    flexDirection: 'row',
+    padding: Spacing.s,
+    borderWidth: 1,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  curatedPickerThumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+  },
+  categorySelectorContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: Spacing.s,
+    marginBottom: Spacing.m,
+  },
+  categorySelectTab: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.s,
+    borderRadius: 8,
+  },
+  editorDraftBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.m,
+    borderRadius: 12,
+    marginRight: Spacing.xs,
+  },
+  editorSaveBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.m,
+    borderRadius: 12,
+  },
+  editorImageBlockContainerInline: {
+    width: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginVertical: Spacing.m,
+    height: 200,
+  },
+  inlineArticleImage: {
+    width: '100%',
+    height: '100%',
+  },
+  verticalDivider: {
+    width: 1,
+    height: '100%',
+  },
+  feedbackSectionContainer: {
+    paddingHorizontal: Spacing.m,
+    paddingBottom: Spacing.xl,
+  },
+  feedbackAuthorContainer: {
+    width: '100%',
+  },
+  feedbackViewCommentsBtn: {
+    width: '100%',
+  },
+  feedbackReaderContainer: {
+    width: '100%',
+  },
+  feedbackTextInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: Spacing.s,
+    fontSize: 14,
+    minHeight: 48,
+    maxHeight: 120,
+    textAlignVertical: 'top',
+  },
+  feedbackSendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedbackSuccessBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.s,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: Spacing.s,
+  },
+  feedbackInboxHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.m,
+    paddingVertical: Spacing.s,
+    borderBottomWidth: 1,
+  },
+  feedbackInboxCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedbackCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: Spacing.m,
+    marginBottom: Spacing.s,
+  },
+  feedbackCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
