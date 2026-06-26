@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { Pressable, Text, StyleSheet, View, ActivityIndicator, StyleProp, ViewStyle } from 'react-native';
 import { Colors, Shapes, Spacing, Typography } from '../constants/Theme';
 
 export type ButtonAppearance = 'Primary' | 'Secondary' | 'Outline' | 'Subtle';
@@ -17,6 +17,7 @@ interface ButtonProps {
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   isDarkMode?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -30,6 +31,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   iconPosition = 'left',
   isDarkMode = false,
+  style,
 }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
@@ -133,6 +135,7 @@ export const Button: React.FC<ButtonProps> = ({
             height: dimensions.height,
             opacity: disabled ? 0.6 : 1,
           },
+          style,
         ];
       }}
     >

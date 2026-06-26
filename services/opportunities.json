@@ -1,0 +1,1165 @@
+[
+  {
+    "id": "opp_garden",
+    "title": "Build a Thriving Community Garden from a Vacant Lot",
+    "cause": "Environment & Sustainability",
+    "tags": [
+      "In-Person",
+      "Environment",
+      "Food Security",
+      "Community"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
+    "organizationName": "GreenRoots Collective",
+    "organizationLogo": "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=80",
+    "locationName": "1420 Foothill Blvd, Oakland, CA 94606",
+    "distanceKm": 4.8,
+    "durationHrs": 5,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "8:30 AM - 1:30 PM",
+    "projectPace": "Moderate - steady hands-on work with breaks",
+    "description": "Help turn a neglected corner lot into a flourishing food garden that feeds 40+ neighborhood families every season.",
+    "organizerBackstory": "This lot has sat vacant for nine years, collecting waste and dividing the block. Together we'll build 12 raised beds, a pollinator border, and a tool-share shed — converting blight into a source of fresh produce and belonging for a neighborhood that lives in a food desert.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800",
+    "impactQuoteText": "I hadn't grown anything since I left my mother's farm 40 years ago. Now my grandchildren pull carrots from a bed I helped build. This garden gave the whole block its mornings back.",
+    "impactQuoteAuthor": "Maria Delgado, neighbor & first-season grower",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1595855759920-86582396756a?w=800",
+    "duties": [
+      "Building raised timber garden beds for community planting",
+      "Gardening and planting over 20 organic saplings & greens",
+      "Spreading nutrient-rich soil and organic wood mulch layers",
+      "Collaborating in volunteer teams to complete layout structures"
+    ],
+    "requirements": [
+      "16+ (under 18 needs guardian consent)",
+      "English or Spanish spoken on-site",
+      "Able to lift ~20 lbs and work standing"
+    ],
+    "perks": [
+      {
+        "title": "Hot lunch & snacks",
+        "description": "Vegetarian & halal options",
+        "icon": "restaurant-outline"
+      },
+      {
+        "title": "Transit stipend",
+        "description": "Up to $15 reimbursed",
+        "icon": "bus-outline"
+      },
+      {
+        "title": "Certificate",
+        "description": "Verified hours on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 16,
+      "friendsSignedUpNames": [
+        "Amara O.",
+        "Aman R.",
+        "Raman S.",
+        "Kanji T.",
+        "Sofia R."
+      ],
+      "communityText": "Amara O. and 15 others from your community have signed up."
+    },
+    "coordinators": [
+      {
+        "name": "Amara Okafor",
+        "role": "Site Lead",
+        "bio": "Master gardener, 8 years building urban food systems across the East Bay.",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "The Bay Area Resilience Fund",
+      "partnershipWith": "City of Oakland Parks",
+      "taxStatus": "Registered 501(c)(3)",
+      "verifiedStatus": "GreenRoots Collective · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (8:30 AM - 1:30 PM)",
+      "Sunday, July 13, 2026 (8:30 AM - 1:30 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_1",
+    "title": "Mentoring Students",
+    "cause": "Education",
+    "tags": [
+      "In-Person",
+      "Education",
+      "Reading Club"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1000",
+    "organizationName": "Pratham MP Education Group",
+    "organizationLogo": "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=80",
+    "locationName": "Gudi guda ka naka, Gwalior",
+    "distanceKm": 3.2,
+    "durationHrs": 1.5,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Spend a few hours mentoring students and helping them build confidence through reading.",
+    "organizerBackstory": "In our district, early reading proficiency has declined by 20% over the last three years. Local schools lack the resources to provide individual attention, leaving struggling students behind. We launched this literacy program at Pratham MP Education Group to pair eager young learners with friendly mentors, reading confidence.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800",
+    "impactQuoteText": "My son was terrified of reading in front of his class. After just three weeks with his mentor, he started reading bedtime stories to his little sister. The difference is night and day.",
+    "impactQuoteAuthor": "Rajesh Kumar, parent of 3rd grader",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1000",
+    "duties": [
+      "Read chapters aloud alongside elementary school students to build flow",
+      "Help learners sound out difficult words and define unfamiliar terms",
+      "Encourage active listening and self-correction during reading sessions",
+      "Provide friendly, encouraging feedback to boost student confidence"
+    ],
+    "requirements": [
+      "Patient and encouraging attitude towards young learners",
+      "Strong reading skills in local language",
+      "Background check clearance (completed online)"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [
+      "ASL interpreter on request",
+      "Sensory-friendly pace",
+      "Large-print materials"
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 9,
+      "friendsSignedUpNames": [
+        "anita",
+        "sunita",
+        "rahul",
+        "vivek"
+      ],
+      "communityText": "anita, sunita, rahul, vivek and 5 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Pratham MP Education Group",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Pratham MP Education Group · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_2",
+    "title": "Sort and Pack Medical Supplies",
+    "cause": "Healthcare",
+    "tags": [
+      "In-Person",
+      "Healthcare",
+      "Clinic Support"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1584515901367-f134706efc3c?w=1000",
+    "organizationName": "Red Cross Gwalior",
+    "organizationLogo": "https://images.unsplash.com/photo-1478479405421-ce83c92fb3ba?w=80",
+    "locationName": "City Centre Clinic, Gwalior",
+    "distanceKm": 4.8,
+    "durationHrs": 2,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Help sort and package essential medicines and primary diagnostic kits for rural clinics.",
+    "organizerBackstory": "Rural clinics in the outlying sectors of Gwalior serve thousands of families daily but struggle with stock management and sorting supplies. Expired diagnostics and unorganized medical supplies slow down critical healthcare delivery. We sort and bundle these resources so frontline doctors have immediate access to what they need.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800",
+    "impactQuoteText": "Having sorted packages means our triage nurse doesn't waste hours looking for basic diagnostics. It saves lives when speed is everything.",
+    "impactQuoteAuthor": "Dr. Ananya Joshi, rural health director",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1584515901367-f134706efc3c?w=1000",
+    "duties": [
+      "Sort incoming medical supplies by product category and expiration date",
+      "Verify packaging integrity of primary diagnostic kits and bandages",
+      "Pack sorted items into regional clinic distribution bins securely",
+      "Log packed box counts on the volunteer inventory sheet before dispatch"
+    ],
+    "requirements": [
+      "Detail-oriented and follows strict safety protocols",
+      "Able to stand and sort items at a sorting table",
+      "Sanitize hands and wear protective gloves provided on-site"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [
+      "Seating available",
+      "Quiet rest area"
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 1,
+      "friendsSignedUpNames": [
+        "vikram"
+      ],
+      "communityText": "vikram and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Red Cross Gwalior",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Red Cross Gwalior · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_3",
+    "title": "Evening Shelter Food Distribution",
+    "cause": "Poverty Alleviation & Livelihoods",
+    "tags": [
+      "In-Person",
+      "Poverty Alleviation & Livelihoods",
+      "Food Rescue"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1000",
+    "organizationName": "Robin Hood Army Gwalior",
+    "organizationLogo": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=80",
+    "locationName": "Hazira Railway Crossing, Gwalior",
+    "distanceKm": 12.5,
+    "durationHrs": 3,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Help distribute warm dinner packets and verify overnight counts at community transit shelters.",
+    "organizerBackstory": "During cold winter nights and severe weather, hundreds of transient laborers sleep at transit shelters without warm meals. Hunger compounds the physical toll of living on the streets. Our evening shelter run delivers freshly prepared, hot meals directly to these transit points, ensuring no neighbor goes to sleep hungry.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800",
+    "impactQuoteText": "A warm meal at the end of a long, exhausting day is a blessing. It shows us that Gwalior still cares about its workers.",
+    "impactQuoteAuthor": "Manoj S., seasonal construction worker",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1000",
+    "duties": [
+      "Assemble hot food packets into thermal delivery containers",
+      "Distribute meal boxes to transient laborers at designated transit shelters",
+      "Verify and log nightly count of served meals at each stop",
+      "Collect and recycle empty food packet packaging on-site"
+    ],
+    "requirements": [
+      "Empathetic, respectful, and friendly demeanor",
+      "Comfortable working outdoors in the evening",
+      "Must coordinate with the transport team for logistics"
+    ],
+    "perks": [
+      {
+        "title": "Hot dinner provided",
+        "description": "Freshly cooked shelter meal",
+        "icon": "restaurant-outline"
+      },
+      {
+        "title": "Transit stipend",
+        "description": "Up to $10 reimbursed",
+        "icon": "bus-outline"
+      }
+    ],
+    "accommodationsOffered": [
+      "Wheelchair accessible",
+      "Seating available",
+      "Quiet rest area"
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 4,
+      "friendsSignedUpNames": [
+        "rohan",
+        "priya",
+        "sanjay",
+        "sneha"
+      ],
+      "communityText": "rohan, priya, sanjay, sneha and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Robin Hood Army Gwalior",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Robin Hood Army Gwalior · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_4",
+    "title": "Miyawaki Plantation drive",
+    "cause": "Environment & Sustainability",
+    "tags": [
+      "In-Person",
+      "Environment & Sustainability",
+      "Afforestation"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
+    "organizationName": "Green Gwalior Initiative",
+    "organizationLogo": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=80",
+    "locationName": "Ghatigaon Forest Block",
+    "distanceKm": 28,
+    "durationHrs": 4,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Help dig, soil-prep, and plant saplings in the urban Miyawaki forest zone to combat summer temperatures.",
+    "organizerBackstory": "Urban concrete surfaces absorb heat, raising summer temperatures to extreme levels. Deforestation has stripped away natural canopies. We are planting native Miyawaki forests inside vacant public blocks to restore biodiversity, lower temperatures by up to 2°C, and bring clean air back to our families.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800",
+    "impactQuoteText": "We planted over 100 saplings in our neighborhood block. Now, birds have returned, and the area feels cooler and livelier already.",
+    "impactQuoteAuthor": "Sanjay V., local resident & tree warden",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
+    "duties": [
+      "Dig planting holes of appropriate depth for native saplings",
+      "Mix organic manure and soil compost into tree beds",
+      "Plant native tree starts and secure them with wooden supports",
+      "Water the newly planted zone and spread protective mulch layers"
+    ],
+    "requirements": [
+      "Able to perform physical outdoor work (shoveling, planting)",
+      "Wear sturdy closed-toe shoes and clothes that can get dirty",
+      "Bring your own water bottle to stay hydrated"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [
+      "Wheelchair accessible",
+      "Seating available",
+      "Quiet rest area"
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 0,
+      "friendsSignedUpNames": [],
+      "communityText": "Be the first from your community to sign up"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Green Gwalior Initiative",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Green Gwalior Initiative · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_5",
+    "title": "Review Crop Hailstorm Relief Requests",
+    "cause": "Disaster Relief",
+    "tags": [
+      "Remote",
+      "Disaster Relief",
+      "Data Verification"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1000",
+    "organizationName": "MP Disaster Management Authority",
+    "organizationLogo": "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 1,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Review field reports and remote photos of hailstorm damage to approve seed subsidy vouchers for farmers.",
+    "organizerBackstory": "Severe hailstorms frequently destroy crops in Gwalior's rural belt, leaving small farmers with massive losses and zero seed funds for the next season. Relief seed voucher approval is often delayed by slow paperwork verification. By reviewing field damage reports online, we speed up the distribution of relief seed vouchers.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800",
+    "impactQuoteText": "Getting my seed relief approved in days instead of months meant I didn't miss the monsoon sowing season. It saved my farm.",
+    "impactQuoteAuthor": "Ramesh Patel, wheat farmer",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1000",
+    "duties": [
+      "Access the field damage photo logs via the disaster management portal",
+      "Cross-reference damage claims with uploaded remote survey coordinates",
+      "Verify relief seed eligibility based on the hailstorm severity criteria",
+      "Approve or escalate claim requests to the district relief officer"
+    ],
+    "requirements": [
+      "Requires a computer with a stable internet connection",
+      "Attend a 30-minute online training session before starting",
+      "High attention to detail to prevent fraudulent claims"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 2,
+      "friendsSignedUpNames": [
+        "anita",
+        "sneha"
+      ],
+      "communityText": "anita, sneha and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "MP Disaster Management Authority",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "MP Disaster Management Authority · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_6",
+    "title": "Digitize Textbooks for Visually Impaired",
+    "cause": "Support for Persons with Disabilities",
+    "tags": [
+      "Remote",
+      "Support for Persons with Disabilities",
+      "Audio Recording"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000",
+    "organizationName": "NAB India Digitization Unit",
+    "organizationLogo": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 2,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Read and verify audio transcriptions of secondary school textbooks for visually impaired college students.",
+    "organizerBackstory": "Over 40% of visually impaired students drop out of secondary education due to a lack of accessible textbooks. Traditional audio recording is slow and expensive. We digitize text and verify audio transcriptions to provide high-quality, searchable screen-reader audio files, giving every student equal learning opportunities.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800",
+    "impactQuoteText": "Having screen-reader access to my biology textbooks allowed me to prepare for my board exams independently. I passed with honors!",
+    "impactQuoteAuthor": "Aarti M., college student",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000",
+    "duties": [
+      "Listen to automated audio text segments via the transcription portal",
+      "Compare the spoken audio with the printed textbook page script",
+      "Edit spelling, pronunciation, and flow errors in the transcription log",
+      "Submit verified audio files to the student accessible library"
+    ],
+    "requirements": [
+      "Requires a computer with a stable internet connection and headphones",
+      "Excellent listening and spelling skills",
+      "Commitment of at least 3 hours per week"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 5,
+      "friendsSignedUpNames": [
+        "rahul",
+        "priya",
+        "mohit",
+        "neha",
+        "sanjay"
+      ],
+      "communityText": "rahul, priya, mohit, neha, sanjay and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "NAB India Digitization Unit",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "NAB India Digitization Unit · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_7",
+    "title": "Vaccination Campaign Social Media Design",
+    "cause": "Animal Welfare",
+    "tags": [
+      "Remote",
+      "Animal Welfare",
+      "Creative Design"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1000",
+    "organizationName": "PFA Gwalior Unit",
+    "organizationLogo": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 1.5,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Draft graphics and local language posters for stray dog anti-rabies vaccination drives.",
+    "organizerBackstory": "Stray dog rabies outbreaks pose a serious health risk to both street animals and residents in Gwalior. Fear leads to cruelty towards stray dogs. We run vaccination and reflection collar drives to protect street animals, and create graphics and local posters to raise awareness and encourage compassion.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800",
+    "impactQuoteText": "Reflection collars and vaccine awareness drives have significantly reduced accidents and street conflicts in our sector.",
+    "impactQuoteAuthor": "Priya K., community stray welfare group lead",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1000",
+    "duties": [
+      "Design high-contrast posters explaining local vaccination schedules",
+      "Draft engaging social media graphics promoting animal welfare",
+      "Translate safety instructions into simple Hindi flyer layouts",
+      "Share draft graphics with the animal welfare site team for approval"
+    ],
+    "requirements": [
+      "Experience with Canva or basic design tools",
+      "Empathetic stance on stray animal welfare",
+      "Access to design software (remote volunteering)"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 0,
+      "friendsSignedUpNames": [],
+      "communityText": "Be the first from your community to sign up"
+    },
+    "coordinators": [
+      {
+        "name": "Amara Okafor",
+        "role": "Site Lead",
+        "bio": "Master gardener, 8 years building urban food systems across the East Bay.",
+        "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "PFA Gwalior Unit",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "PFA Gwalior Unit · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_8",
+    "title": "Verify Clean Water Tap Locations",
+    "cause": "Water, Sanitation, and Hygiene (WASH)",
+    "tags": [
+      "In-Person",
+      "Water, Sanitation, and Hygiene (WASH)",
+      "Mapping"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1000",
+    "organizationName": "WASH Coalition Gwalior",
+    "organizationLogo": "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=80",
+    "locationName": "Morar, Gwalior",
+    "distanceKm": 1.2,
+    "durationHrs": 0.08,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "Flexible (5 min)",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Verify water dispenser pin coordinates on the map for summer drinking points.",
+    "organizerBackstory": "Our community water points are critical for providing safe, clean drinking water to thousands of Gwalior residents during hot summer days. Incorrect GPS pin coordinates lead to logistics delays and broken dispensers. By cross-referencing and mapping these locations, you make clean water accessible to all.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800",
+    "impactQuoteText": "Verifying the dispenser locations ensures that when a tap breaks, our repair crew gets there within an hour. It keeps clean water flowing.",
+    "impactQuoteAuthor": "Rajesh V., municipal water engineer",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1000",
+    "duties": [
+      "Access the local mapping console via the volunteer dashboard",
+      "Cross-reference community submissions of summer drinking taps",
+      "Verify the geographical pins match public street locations",
+      "Approve mapped water points for listing in the mobile locator"
+    ],
+    "requirements": [
+      "Able to stand and walk during the shift"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [
+      "Wheelchair accessible",
+      "Seating available"
+    ],
+    "socialProof": {
+      "friendsSignedUpCount": 3,
+      "friendsSignedUpNames": [
+        "anita",
+        "sunita",
+        "rahul"
+      ],
+      "communityText": "anita, sunita, rahul and 0 others from your community"
+    },
+    "coordinators": [],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "WASH Coalition Gwalior",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "WASH Coalition Gwalior · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_9",
+    "title": "Sign Clean Air Petition",
+    "cause": "Environment & Sustainability",
+    "tags": [
+      "Remote",
+      "Environment & Sustainability",
+      "Advocacy"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
+    "organizationName": "Green Gwalior Initiative",
+    "organizationLogo": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 0.08,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "Flexible (5 min)",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Add your signature to the local air quality policy petition to city municipal corp.",
+    "organizerBackstory": "Urban concrete surfaces absorb heat, raising summer temperatures to extreme levels. Deforestation has stripped away natural canopies. We are planting native Miyawaki forests inside vacant public blocks to restore biodiversity, lower temperatures by up to 2°C, and bring clean air back to our families.",
+    "backstoryBlueprintUri": null,
+    "impactQuoteText": "We planted over 100 saplings in our neighborhood block. Now, birds have returned, and the area feels cooler and livelier already.",
+    "impactQuoteAuthor": "Sanjay V., local resident & tree warden",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
+    "duties": [
+      "Dig planting holes of appropriate depth for native saplings",
+      "Mix organic manure and soil compost into tree beds",
+      "Plant native tree starts and secure them with wooden supports",
+      "Water the newly planted zone and spread protective mulch layers"
+    ],
+    "requirements": [
+      "Able to perform physical outdoor work (shoveling, planting)",
+      "Wear sturdy closed-toe shoes and clothes that can get dirty",
+      "Bring your own water bottle to stay hydrated"
+    ],
+    "perks": [],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 12,
+      "friendsSignedUpNames": [
+        "vivek",
+        "rohan"
+      ],
+      "communityText": "vivek, rohan and 10 others from your community"
+    },
+    "coordinators": [],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Green Gwalior Initiative",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Green Gwalior Initiative · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_10",
+    "title": "Translate Health Clinic Flyer",
+    "cause": "Healthcare",
+    "tags": [
+      "Remote",
+      "Healthcare",
+      "Translation"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1584515901367-f134706efc3c?w=1000",
+    "organizationName": "Red Cross Gwalior",
+    "organizationLogo": "https://images.unsplash.com/photo-1478479405421-ce83c92fb3ba?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 0.25,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Translate a 1-page primary health awareness flyer from English to Hindi.",
+    "organizerBackstory": "Rural clinics in the outlying sectors of Gwalior serve thousands of families daily but struggle with stock management and sorting supplies. Expired diagnostics and unorganized medical supplies slow down critical healthcare delivery. We sort and bundle these resources so frontline doctors have immediate access to what they need.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800",
+    "impactQuoteText": "Having sorted packages means our triage nurse doesn't waste hours looking for basic diagnostics. It saves lives when speed is everything.",
+    "impactQuoteAuthor": "Dr. Ananya Joshi, rural health director",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1584515901367-f134706efc3c?w=1000",
+    "duties": [
+      "Sort incoming medical supplies by product category and expiration date",
+      "Verify packaging integrity of primary diagnostic kits and bandages",
+      "Pack sorted items into regional clinic distribution bins securely",
+      "Log packed box counts on the volunteer inventory sheet before dispatch"
+    ],
+    "requirements": [
+      "Detail-oriented and follows strict safety protocols",
+      "Able to stand and sort items at a sorting table",
+      "Sanitize hands and wear protective gloves provided on-site"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 2,
+      "friendsSignedUpNames": [
+        "sneha",
+        "priya"
+      ],
+      "communityText": "sneha, priya and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Red Cross Gwalior",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Red Cross Gwalior · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_11",
+    "title": "Proofread Literacy Handbook",
+    "cause": "Education",
+    "tags": [
+      "Remote",
+      "Education",
+      "Proofreading"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1000",
+    "organizationName": "Pratham MP Education Group",
+    "organizationLogo": "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 0.5,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Proofread one chapter of the local adult literacy training handbook.",
+    "organizerBackstory": "In our district, early reading proficiency has declined by 20% over the last three years. Local schools lack the resources to provide individual attention, leaving struggling students behind. We launched this literacy program at Pratham MP Education Group to pair eager young learners with friendly mentors, reading confidence.",
+    "backstoryBlueprintUri": null,
+    "impactQuoteText": "My son was terrified of reading in front of his class. After just three weeks with his mentor, he started reading bedtime stories to his little sister. The difference is night and day.",
+    "impactQuoteAuthor": "Rajesh Kumar, parent of 3rd grader",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1000",
+    "duties": [
+      "Read chapters aloud alongside elementary school students to build flow",
+      "Help learners sound out difficult words and define unfamiliar terms",
+      "Encourage active listening and self-correction during reading sessions",
+      "Provide friendly, encouraging feedback to boost student confidence"
+    ],
+    "requirements": [
+      "Patient and encouraging attitude towards young learners",
+      "Strong reading skills in local language",
+      "Background check clearance (completed online)"
+    ],
+    "perks": [],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 1,
+      "friendsSignedUpNames": [
+        "sunita"
+      ],
+      "communityText": "sunita and 0 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Pratham MP Education Group",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Pratham MP Education Group · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_12",
+    "title": "Upload Shelter Donation Receipts",
+    "cause": "Poverty Alleviation & Livelihoods",
+    "tags": [
+      "In-Person",
+      "Poverty Alleviation & Livelihoods",
+      "Data Entry"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1000",
+    "organizationName": "Robin Hood Army Gwalior",
+    "organizationLogo": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=80",
+    "locationName": "Hazira, Gwalior",
+    "distanceKm": 2.4,
+    "durationHrs": 0.25,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Moderate - steady pace with group breaks",
+    "description": "Scan and upload community transit shelter food donation receipts for audit.",
+    "organizerBackstory": "During cold winter nights and severe weather, hundreds of transient laborers sleep at transit shelters without warm meals. Hunger compounds the physical toll of living on the streets. Our evening shelter run delivers freshly prepared, hot meals directly to these transit points, ensuring no neighbor goes to sleep hungry.",
+    "backstoryBlueprintUri": null,
+    "impactQuoteText": "A warm meal at the end of a long, exhausting day is a blessing. It shows us that Gwalior still cares about its workers.",
+    "impactQuoteAuthor": "Manoj S., seasonal construction worker",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1000",
+    "duties": [
+      "Assemble hot food packets into thermal delivery containers",
+      "Distribute meal boxes to transient laborers at designated transit shelters",
+      "Verify and log nightly count of served meals at each stop",
+      "Collect and recycle empty food packet packaging on-site"
+    ],
+    "requirements": [
+      "Empathetic, respectful, and friendly demeanor",
+      "Comfortable working outdoors in the evening",
+      "Must coordinate with the transport team for logistics"
+    ],
+    "perks": [],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 0,
+      "friendsSignedUpNames": [],
+      "communityText": "Be the first from your community to sign up"
+    },
+    "coordinators": [],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "Robin Hood Army Gwalior",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "Robin Hood Army Gwalior · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_13",
+    "title": "Review Disability Transcript",
+    "cause": "Support for Persons with Disabilities",
+    "tags": [
+      "Remote",
+      "Support for Persons with Disabilities",
+      "Verification"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000",
+    "organizationName": "NAB India Digitization Unit",
+    "organizationLogo": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 0.5,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Review 5 minutes of speech-to-text transcription for visually impaired textbooks.",
+    "organizerBackstory": "Over 40% of visually impaired students drop out of secondary education due to a lack of accessible textbooks. Traditional audio recording is slow and expensive. We digitize text and verify audio transcriptions to provide high-quality, searchable screen-reader audio files, giving every student equal learning opportunities.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800",
+    "impactQuoteText": "Having screen-reader access to my biology textbooks allowed me to prepare for my board exams independently. I passed with honors!",
+    "impactQuoteAuthor": "Aarti M., college student",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000",
+    "duties": [
+      "Listen to automated audio text segments via the transcription portal",
+      "Compare the spoken audio with the printed textbook page script",
+      "Edit spelling, pronunciation, and flow errors in the transcription log",
+      "Submit verified audio files to the student accessible library"
+    ],
+    "requirements": [
+      "Requires a computer with a stable internet connection and headphones",
+      "Excellent listening and spelling skills",
+      "Commitment of at least 3 hours per week"
+    ],
+    "perks": [
+      {
+        "title": "Community service hours",
+        "description": "Verified on completion",
+        "icon": "ribbon-outline"
+      }
+    ],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 4,
+      "friendsSignedUpNames": [
+        "rahul",
+        "priya"
+      ],
+      "communityText": "rahul, priya and 2 others from your community"
+    },
+    "coordinators": [
+      {
+        "name": "Sofia Ramirez",
+        "role": "Volunteer Coordinator",
+        "bio": "Your day-of point of contact for questions, breaks, and accommodations.",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+      }
+    ],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "NAB India Digitization Unit",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "NAB India Digitization Unit · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  },
+  {
+    "id": "opp_14",
+    "title": "Categorize Stray Animal Reports",
+    "cause": "Animal Welfare",
+    "tags": [
+      "Remote",
+      "Animal Welfare",
+      "Database"
+    ],
+    "bannerImage": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1000",
+    "organizationName": "PFA Gwalior Unit",
+    "organizationLogo": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=80",
+    "locationName": "Remote / Online",
+    "distanceKm": 0,
+    "durationHrs": 0.25,
+    "dateString": "Saturday, July 12, 2026",
+    "timeString": "9:00 AM - 1:00 PM",
+    "projectPace": "Self-paced - complete tasks at your convenience",
+    "description": "Tag and sort incoming reflection collar requests by neighborhood sectors.",
+    "organizerBackstory": "Stray dog rabies outbreaks pose a serious health risk to both street animals and residents in Gwalior. Fear leads to cruelty towards stray dogs. We run vaccination and reflection collar drives to protect street animals, and create graphics and local posters to raise awareness and encourage compassion.",
+    "backstoryBlueprintUri": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800",
+    "impactQuoteText": "Reflection collars and vaccine awareness drives have significantly reduced accidents and street conflicts in our sector.",
+    "impactQuoteAuthor": "Priya K., community stray welfare group lead",
+    "impactQuoteAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "impactQuoteBanner": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1000",
+    "duties": [
+      "Design high-contrast posters explaining local vaccination schedules",
+      "Draft engaging social media graphics promoting animal welfare",
+      "Translate safety instructions into simple Hindi flyer layouts",
+      "Share draft graphics with the animal welfare site team for approval"
+    ],
+    "requirements": [
+      "Experience with Canva or basic design tools",
+      "Empathetic stance on stray animal welfare",
+      "Access to design software (remote volunteering)"
+    ],
+    "perks": [],
+    "accommodationsOffered": [],
+    "socialProof": {
+      "friendsSignedUpCount": 1,
+      "friendsSignedUpNames": [
+        "anita"
+      ],
+      "communityText": "anita and 0 others from your community"
+    },
+    "coordinators": [],
+    "backedTrusted": {
+      "financedBy": "Local Community Foundation",
+      "partnershipWith": "PFA Gwalior Unit",
+      "taxStatus": "Registered Non-Profit Organisation",
+      "verifiedStatus": "PFA Gwalior Unit · verified organizer"
+    },
+    "slots": [
+      "Saturday, July 12, 2026 (9:00 AM - 1:00 PM)",
+      "Sunday, July 13, 2026 (9:00 AM - 1:00 PM)"
+    ],
+    "requiredDocuments": [
+      {
+        "id": "doc_photo_id",
+        "name": "Government photo ID",
+        "required": true,
+        "description": "Required before arrival"
+      }
+    ]
+  }
+]

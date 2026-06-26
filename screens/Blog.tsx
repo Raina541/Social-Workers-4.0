@@ -19,10 +19,12 @@ import { Card } from '../components/Card';
 import { Badge, BadgeIntent } from '../components/Badge';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Personalization } from '../services/personalization';
 
 interface BlogProps {
   isDarkMode?: boolean;
   setParentScrollEnabled?: (enabled: boolean) => void;
+  onViewNgo?: (ngoName: string) => void;
 }
 
 interface Article {
@@ -36,6 +38,7 @@ interface Article {
   categoryIntent: BadgeIntent;
   contentBody?: string;
   bannerImage?: string;
+  ngoName?: string;
 }
 
 interface Feedback {
@@ -143,6 +146,7 @@ const NGO_SCENES: Article[] = [
     id: 'ngo1',
     title: 'NGO Funding Shifts: Crowdfunding in 2026',
     author: 'Global Alliance Team',
+    ngoName: 'Gwalior Green Canopy Foundation',
     date: 'June 14, 2026',
     readTime: '7 min read',
     summary: 'How modern digital micro-donations are changing how local small charities secure emergency capital.',
@@ -154,6 +158,7 @@ const NGO_SCENES: Article[] = [
     id: 'ngo2',
     title: 'Logistics of Emergency Shelter Placement',
     author: 'Intake Depot Staff',
+    ngoName: 'Robin Hood Army Gwalior',
     date: 'June 07, 2026',
     readTime: '8 min read',
     summary: 'An inside look at tracking physical clothing sizes, sorting donations, and delivering meal boxes to families.',
@@ -165,6 +170,7 @@ const NGO_SCENES: Article[] = [
     id: 'ngo3',
     title: 'Outpatient Coordination Systems',
     author: 'Clinic Coordinator',
+    ngoName: 'Red Cross Gwalior',
     date: 'May 25, 2026',
     readTime: '11 min read',
     summary: 'Behind the desk: how we guide hundreds of patient check-ins and refer elderly visitors to medical offices daily.',
@@ -322,7 +328,7 @@ const renderMarkdownContent = (text: string, themeColors: any) => {
 };
 
 
-export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollEnabled }) => {
+export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollEnabled, onViewNgo }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
   const insets = useSafeAreaInsets();
 
@@ -730,27 +736,26 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
       >
         
         {/* 1. Rebuilt Tab Header */}
-        <View style={[styles.tabsHeaderContainer, { borderBottomColor: themeColors.neutralStroke2 }]}>
+        <View style={styles.tabBarContainer}>
           <Pressable
             onPress={() => {
               setActiveTab('all');
               setSearchQuery('');
             }}
-            style={styles.tabHeaderItem}
+            style={[
+              styles.subTabButton,
+              activeTab === 'all' && [styles.subTabButtonActive, { borderBottomColor: themeColors.brandForeground1 }],
+            ]}
           >
             <Text style={[
-              Typography.bodyStrong,
+              styles.subTabText,
               {
-                color: activeTab === 'all' ? themeColors.brandForeground1 : themeColors.neutralForeground3,
-                paddingVertical: Spacing.s,
-                fontSize: 14,
+                color: activeTab === 'all' ? themeColors.brandForeground1 : themeColors.neutralForeground2,
+                fontWeight: activeTab === 'all' ? '600' : '500',
               }
             ]}>
               All Blogs
             </Text>
-            {activeTab === 'all' && (
-              <View style={[styles.tabHeaderUnderline, { backgroundColor: themeColors.brandForeground1 }]} />
-            )}
           </Pressable>
 
           <Pressable
@@ -758,33 +763,37 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
               setActiveTab('my');
               setSearchQuery('');
             }}
-            style={styles.tabHeaderItem}
+            style={[
+              styles.subTabButton,
+              activeTab === 'my' && [styles.subTabButtonActive, { borderBottomColor: themeColors.brandForeground1 }],
+            ]}
           >
             <Text style={[
-              Typography.bodyStrong,
+              styles.subTabText,
               {
-                color: activeTab === 'my' ? themeColors.brandForeground1 : themeColors.neutralForeground3,
-                paddingVertical: Spacing.s,
-                fontSize: 14,
+                color: activeTab === 'my' ? themeColors.brandForeground1 : themeColors.neutralForeground2,
+                fontWeight: activeTab === 'my' ? '600' : '500',
               }
             ]}>
               My Blogs
             </Text>
-            {activeTab === 'my' && (
-              <View style={[styles.tabHeaderUnderline, { backgroundColor: themeColors.brandForeground1 }]} />
-            )}
           </Pressable>
         </View>
 
         {/* 2. Prominent Search Bar */}
-        <View style={[styles.searchBar, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
-          <Ionicons name="search" size={18} color={themeColors.neutralForeground3} style={{ marginRight: Spacing.xs }} />
+        <View style={[styles.searchBar, {
+          backgroundColor: themeColors.neutralBackground1,
+          borderColor: isSearchFocused ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+          borderWidth: 1
+        }]}>
+          <Ionicons name="search-outline" size={18} color={themeColors.neutralForeground3} style={{ marginRight: Spacing.s }} />
           <TextInput
             placeholder={searchScope === 'title' ? "Search articles by title..." : "Search by author..."}
-            placeholderTextColor={themeColors.neutralForeground3}
+            placeholderTextColor={themeColors.neutralForegroundDisabled}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
             style={[styles.searchInput, { color: themeColors.neutralForeground1 }]}
           />
           {searchQuery.length > 0 && (
@@ -1151,9 +1160,17 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                         Author: {article.author} • {article.readTime}
                       </Text>
                       
-                      <Pressable onPress={() => handleOpenEditorForArticle(article)}>
-                        <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1 }]}>
-                          Edit Entry →
+                      <Pressable
+                        onPress={() => handleOpenEditorForArticle(article)}
+                        style={{
+                          backgroundColor: themeColors.brandForeground1,
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          borderRadius: 8,
+                        }}
+                      >
+                        <Text style={[Typography.captionStrong, { color: '#ffffff' }]}>
+                          Edit Entry
                         </Text>
                       </Pressable>
                     </View>
@@ -1207,11 +1224,6 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                     <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
                       By {article.author} • {article.date}
                     </Text>
-                    <Pressable onPress={() => setSelectedArticle(article)}>
-                      <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1 }]}>
-                        Read Now →
-                      </Text>
-                    </Pressable>
                   </View>
                 </Card>
               ))
@@ -1279,21 +1291,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
               CREATE NEW ENTRY
             </Text>
 
-            <Pressable
-              onPress={() => {
-                setFabMenuVisible(false);
-                handleOpenCreator('thoughts');
-              }}
-              style={({ pressed }) => [
-                styles.fabMenuItem,
-                { backgroundColor: pressed ? themeColors.neutralBackgroundPressed : 'transparent' }
-              ]}
-            >
-              <Ionicons name="document-text-outline" size={18} color={themeColors.brandForeground1} style={{ marginRight: Spacing.s }} />
-              <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13.5 }]}>
-                Write note down your thoughts
-              </Text>
-            </Pressable>
+            {/* 'Write note down your thoughts' option removed */}
 
             <Pressable
               onPress={() => {
@@ -1354,6 +1352,19 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
               </Text>
               
               <View style={styles.detailHeaderActions}>
+                {selectedArticle.author === 'Nilap Saha' && (
+                  <Pressable
+                    onPress={() => {
+                      const articleToEdit = selectedArticle;
+                      setSelectedArticle(null);
+                      handleOpenEditorForArticle(articleToEdit);
+                    }}
+                    style={[styles.actionBtn, { backgroundColor: themeColors.neutralBackground3 }]}
+                  >
+                    <Ionicons name="pencil-outline" size={20} color={themeColors.brandForeground1} />
+                  </Pressable>
+                )}
+                
                 <Pressable
                   onPress={() => handleToggleSave(selectedArticle.id)}
                   style={[styles.actionBtn, { backgroundColor: themeColors.neutralBackground3 }]}
@@ -1470,7 +1481,14 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                   {selectedArticle.id.startsWith('ngo') && (
                     <View style={styles.minimalistFooterRow}>
                       <Pressable
-                        onPress={() => alert(`Navigating to the NGO's official page.`)}
+                        onPress={() => {
+                          const name = selectedArticle.ngoName || selectedArticle.author;
+                          if (onViewNgo) {
+                            onViewNgo(name);
+                          } else {
+                            alert(`Navigating to the NGO's official page: ${name}`);
+                          }
+                        }}
                         style={({ pressed }) => [
                           styles.minimalistBtn,
                           { opacity: pressed ? 0.6 : 1 }
@@ -1514,7 +1532,10 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
                       </Pressable>
                       
                       <Pressable
-                        onPress={() => alert(`Successfully joined the community!`)}
+                        onPress={() => {
+                          Personalization.joinCommunity(selectedArticle.author, selectedArticle.category);
+                          alert(`Successfully joined the community: ${selectedArticle.author}!`);
+                        }}
                         style={({ pressed }) => [
                           styles.minimalistBtn,
                           { opacity: pressed ? 0.6 : 1 }
@@ -2052,39 +2073,45 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingVertical: Spacing.s,
   },
-  tabsHeaderContainer: {
+  tabBarContainer: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    width: '100%',
+    marginHorizontal: Spacing.m,
     borderBottomWidth: 1,
-    marginBottom: Spacing.m,
-    paddingHorizontal: Spacing.m,
+    borderBottomColor: 'transparent',
+    marginBottom: Spacing.xs,
+    marginTop: Spacing.m,
   },
-  tabHeaderItem: {
+  subTabButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
     flex: 1,
+    paddingVertical: Spacing.s,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  tabHeaderUnderline: {
-    position: 'absolute',
-    bottom: 0,
-    left: '25%',
-    right: '25%',
-    height: 3,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
+  subTabButtonActive: {
+    borderBottomWidth: 2,
+  },
+  subTabText: {
+    fontSize: 14,
   },
   searchBar: {
+    height: 48,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 20,
+    marginHorizontal: Spacing.m,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.s,
     paddingHorizontal: Spacing.m,
-    height: 40,
-    width: '90%',
-    alignSelf: 'center',
-    marginBottom: Spacing.xs,
+    borderRadius: 24, // pill-shaped capsule
+    borderWidth: 1,
+    // Premium floating look shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   searchInput: {
     flex: 1,
@@ -2094,8 +2121,7 @@ const styles = StyleSheet.create({
   searchScopeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '90%',
-    alignSelf: 'center',
+    marginHorizontal: Spacing.m,
     marginBottom: Spacing.m,
     paddingHorizontal: 4,
   },

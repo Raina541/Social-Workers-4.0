@@ -27,11 +27,21 @@ import Svg, {
   Line,
   G,
 } from 'react-native-svg';
+import { OpportunityDetail } from './OpportunityDetail';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 interface FeedProps {
   isDarkMode?: boolean;
+  activeMode?: 'In-person' | 'Online' | 'Micro volunteering';
+  onChangeActiveMode?: (mode: 'In-person' | 'Online' | 'Micro volunteering') => void;
+  timeFilter?: number;
+  onChangeTimeFilter?: (filter: number | undefined) => void;
+  selectedOpportunity?: Opportunity | null;
+  onSelectOpportunity?: (opp: Opportunity | null) => void;
+  activeDomainId?: string;
+  onChangeActiveDomainId?: (domainId: string | undefined) => void;
+  onViewNgo?: (ngoName: string) => void;
 }
 
 export interface Opportunity {
@@ -59,7 +69,7 @@ interface DomainConfig {
   darkAccent: string;
 }
 
-const DOMAINS: DomainConfig[] = [
+export const DOMAINS: DomainConfig[] = [
   {
     id: 'health',
     name: 'Health',
@@ -107,7 +117,7 @@ const DOMAINS: DomainConfig[] = [
   },
 ];
 
-const MOCK_OPPORTUNITIES: Record<'In-person' | 'Online' | 'Micro volunteering', Opportunity[]> = {
+export const MOCK_OPPORTUNITIES: Record<'In-person' | 'Online' | 'Micro volunteering', Opportunity[]> = {
   'In-person': [
     // Health
     {
@@ -601,7 +611,7 @@ const getNarrativeHook = (domainId: string): string => {
 };
 
 // Clipped Hero Image using a whimsical 5-petal flower/cloud SVG mask
-const ClippedHeroImage: React.FC<{ imageUri: string; size: number }> = ({ imageUri, size }) => {
+export const ClippedHeroImage: React.FC<{ imageUri: string; size: number }> = ({ imageUri, size }) => {
   return (
     <View style={{ width: size, height: size, alignSelf: 'center', marginTop: 0, marginBottom: Spacing.s, zIndex: 10 }}>
       <Svg width={size} height={size} viewBox="0 0 100 100">
@@ -625,7 +635,7 @@ const ClippedHeroImage: React.FC<{ imageUri: string; size: number }> = ({ imageU
 };
 
 // Whimsical Floating Background Elements (Blobs, Stars, Circles)
-const FloatingBackground: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+export const FloatingBackground: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   const primaryColor = isDarkMode ? '#81C784' : '#2E7D32';
   const secondaryColor = isDarkMode ? '#64B5F6' : '#1A73E8';
   const purpleColor = isDarkMode ? '#BA68C8' : '#7B1FA2';
@@ -669,7 +679,7 @@ const FloatingBackground: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) =
 };
 
 // Hand-drawn/Vector Stylized Mock Map View using Svg
-const MockMapView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+export const MockMapView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   const mapBg = isDarkMode ? '#1E2522' : '#F0F4F1';
   const streetColor = isDarkMode ? '#2B332F' : '#FFFFFF';
   const riverColor = isDarkMode ? '#1B2F42' : '#E0ECF8';
@@ -709,7 +719,7 @@ const MockMapView: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
 };
 
 // Continuous background winding path weaving left and right down the full scroll height
-const generateWindingPath = (w: number, h: number) => {
+export const generateWindingPath = (w: number, h: number) => {
   const mid = w / 2;
   const startY = 480; // Starts below greeting and shifted-up hero image (approx 480px)
   
@@ -725,12 +735,42 @@ const generateWindingPath = (w: number, h: number) => {
          `C ${w * 0.62} ${startY + pathH * 0.95}, ${mid} ${startY + pathH * 0.98}, ${mid} ${safeH - 50}`;
 };
 
-export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
+export const Feed: React.FC<FeedProps> = ({
+  isDarkMode = false,
+  activeMode: propActiveMode,
+  onChangeActiveMode,
+  timeFilter,
+  onChangeTimeFilter,
+  selectedOpportunity: propSelectedOpportunity,
+  onSelectOpportunity,
+  activeDomainId: propActiveDomainId,
+  onChangeActiveDomainId,
+  onViewNgo,
+}) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
-  const [activeMode, setActiveMode] = useState<ModeType>('In-person');
+  const [localActiveMode, setLocalActiveMode] = useState<ModeType>('In-person');
+  const activeMode = propActiveMode !== undefined ? propActiveMode : localActiveMode;
+  const setActiveMode = (mode: ModeType) => {
+    if (onChangeActiveMode) {
+      onChangeActiveMode(mode);
+    } else {
+      setLocalActiveMode(mode);
+    }
+  };
+
   const [activeDomainIndex, setActiveDomainIndex] = useState(0);
-  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
+
+  const [localSelectedOpportunity, setLocalSelectedOpportunity] = useState<Opportunity | null>(null);
+  const selectedOpportunity = propSelectedOpportunity !== undefined ? propSelectedOpportunity : localSelectedOpportunity;
+  const setSelectedOpportunity = (opp: Opportunity | null) => {
+    if (onSelectOpportunity) {
+      onSelectOpportunity(opp);
+    } else {
+      setLocalSelectedOpportunity(opp);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
 
   // Date Filter States
@@ -768,6 +808,34 @@ export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
       }).start();
     }
   }, [activeDomainIndex, isDarkMode]);
+
+  // Synchronize domain index and list scroll positioning when activeDomainId prop changes from parent
+  useEffect(() => {
+    if (propActiveDomainId) {
+      const idx = DOMAINS.findIndex(d => d.id === propActiveDomainId);
+      if (idx !== -1 && idx !== activeDomainIndex) {
+        setActiveDomainIndex(idx);
+        
+        // Find section index dynamically
+        const allSecs = getFilteredSections(activeMode, searchQuery);
+        const visSecs = allSecs.filter(s => s.data.length > 0);
+        const sIndex = visSecs.findIndex(s => s.domainId === propActiveDomainId);
+        if (sIndex !== -1) {
+          try {
+            sectionListRef.current?.scrollToLocation({
+              sectionIndex: sIndex,
+              itemIndex: 0,
+              viewOffset: 0,
+              viewPosition: 0,
+              animated: true,
+            });
+          } catch (e) {
+            // Catch potential layout-not-ready issues
+          }
+        }
+      }
+    }
+  }, [propActiveDomainId]);
 
   const backgroundColor = colorAnim.interpolate({
     inputRange: [0, 1],
@@ -871,6 +939,9 @@ export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
 
     isProgrammaticScroll.current = true;
     setActiveDomainIndex(domainIndex);
+    if (onChangeActiveDomainId) {
+      onChangeActiveDomainId(domainId);
+    }
 
     const newColor = isDarkMode ? DOMAINS[domainIndex].darkBg : DOMAINS[domainIndex].lightBg;
     if (newColor !== colors.curr) {
@@ -914,6 +985,9 @@ export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
         const index = DOMAINS.findIndex(d => d.id === sectionId);
         if (index !== -1 && index !== activeDomainIndex) {
           setActiveDomainIndex(index);
+          if (onChangeActiveDomainId) {
+            onChangeActiveDomainId(sectionId);
+          }
         }
       }
     }
@@ -1305,7 +1379,7 @@ export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
         </Pressable>
       </Modal>
 
-      {/* 5. Heavily Stylized Whimsical Detail View Modal with True Winding SVG Path */}
+      {/* 5. Overhauled Opportunity Detail View Modal */}
       {selectedOpportunity && (
         <Modal
           visible={selectedOpportunity !== null}
@@ -1313,285 +1387,12 @@ export const Feed: React.FC<FeedProps> = ({ isDarkMode = false }) => {
           presentationStyle="fullScreen"
           onRequestClose={() => setSelectedOpportunity(null)}
         >
-          <SafeAreaView style={[styles.detailModalWrapper, { flex: 1, backgroundColor: themeColors.neutralBackground1 }]}>
-            {/* Modal Header Actions (Non-sticky top bar) */}
-            <View style={styles.detailHeaderActions}>
-              <Pressable
-                onPress={() => setSelectedOpportunity(null)}
-                style={[styles.detailRoundBtn, { backgroundColor: themeColors.neutralBackground2 }]}
-              >
-                <Ionicons name="arrow-back" size={22} color={themeColors.neutralForeground1} />
-              </Pressable>
-
-              <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1 }]}>
-                Volunteering Details
-              </Text>
-
-              <Pressable
-                onPress={() => alert('Link copied to clipboard!')}
-                style={[styles.detailRoundBtn, { backgroundColor: themeColors.neutralBackground2 }]}
-              >
-                <Ionicons name="share-outline" size={22} color={themeColors.neutralForeground1} />
-              </Pressable>
-            </View>
-
-            <View style={{ flex: 1, position: 'relative' }}>
-              <ScrollView
-                style={{ flex: 1 }}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.detailScrollContent, { flexGrow: 1 }]}
-                onContentSizeChange={(w, h) => setDetailContentHeight(h)}
-              >
-                {/* 1. Full-Screen Absolute-Positioned Winding Bezier Path Background */}
-                <View style={{ ...StyleSheet.absoluteFillObject, zIndex: -1 }} pointerEvents="none">
-                  <Svg
-                    width="100%"
-                    height="100%"
-                    viewBox={`0 0 ${screenWidth} ${detailContentHeight}`}
-                  >
-                    <Path
-                      d={generateWindingPath(screenWidth, detailContentHeight)}
-                      stroke={modalAccentColor}
-                      strokeWidth={2}
-                      fill="none"
-                    />
-                  </Svg>
-                </View>
-
-                {/* Whimsical Floating Background Elements (Blobs & mini stars) */}
-                <View style={{ ...StyleSheet.absoluteFillObject, zIndex: -2 }} pointerEvents="none">
-                  <FloatingBackground isDarkMode={isDarkMode} />
-                </View>
-
-                {/* 2. Content Blocks ("Chunks") - Staggered layout masking the background path */}
-
-                {/* Hook Chunk (Centered top view) */}
-                <View style={[styles.centeredChunk, { marginBottom: Spacing.xs, zIndex: 5 }]}>
-                  <View style={styles.badgeRow}>
-                    <View style={[styles.detailBadge, { backgroundColor: modalDomain.lightBg }]}>
-                      <Ionicons name={modalDomain.icon} size={12} color={modalDomain.lightAccent} style={{ marginRight: 4 }} />
-                      <Text style={[Typography.captionStrong, { color: modalDomain.lightAccent, fontSize: 10 }]}>
-                        {modalDomain.name.toUpperCase()}
-                      </Text>
-                    </View>
-                    
-                    <View style={[styles.detailBadge, { backgroundColor: themeColors.neutralBackground3 }]}>
-                      <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, fontSize: 10 }]}>
-                        {activeMode.toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text style={[Typography.title, styles.detailGreeting, { color: themeColors.neutralForeground1, textAlign: 'center' }]}>
-                    Hello friend
-                  </Text>
-                  
-                  <Text style={[Typography.body, styles.detailHookText, { color: themeColors.neutralForeground2, textAlign: 'center' }]}>
-                    Our local community spaces are facing a critical decline in support and maintenance, leaving many families without safe areas to connect. By dedicating just a few hours, we can restore these vital hubs and bring our neighborhood closer together.
-                  </Text>
-                </View>
-
-                {/* organic hero visual (cloud-cropped image) centered and enlarged centerpiece */}
-                <View style={[styles.heroImageContainer, { alignSelf: 'center', zIndex: 5 }]}>
-                  <ClippedHeroImage imageUri={selectedOpportunity.imageUri} size={320} />
-                </View>
-
-                {/* Chunk A: Scannable core details (Date, Place, Time, Hours) - Aligned Right */}
-                <View style={[
-                  styles.floatingCard,
-                  styles.alignRight,
-                  {
-                    borderColor: themeColors.neutralStroke2,
-                    backgroundColor: themeColors.neutralBackground1,
-                    zIndex: 5,
-                  }
-                ]}>
-                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
-                    Core Details
-                  </Text>
-
-                  <View style={styles.scannableGrid}>
-                    {/* Cell 1: Date */}
-                    <View style={[styles.scannableGridCell, { backgroundColor: themeColors.neutralBackground2 }]}>
-                      <Ionicons name="calendar-outline" size={22} color={modalAccentColor} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: 4, fontSize: 10 }]}>DATE</Text>
-                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginTop: 2, fontSize: 12 }]}>
-                        Oct 24
-                      </Text>
-                    </View>
-
-                    {/* Cell 2: Place */}
-                    <View style={[styles.scannableGridCell, { backgroundColor: themeColors.neutralBackground2 }]}>
-                      <Ionicons name="location-outline" size={22} color={modalAccentColor} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: 4, fontSize: 10 }]}>PLACE</Text>
-                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginTop: 2, fontSize: 12 }]} numberOfLines={1}>
-                        Central Community Center
-                      </Text>
-                    </View>
-
-                    {/* Cell 3: Time */}
-                    <View style={[styles.scannableGridCell, { backgroundColor: themeColors.neutralBackground2 }]}>
-                      <Ionicons name="time-outline" size={22} color={modalAccentColor} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: 4, fontSize: 10 }]}>TIME</Text>
-                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginTop: 2, fontSize: 12 }]}>
-                        10:00 AM
-                      </Text>
-                    </View>
-
-                    {/* Cell 4: Hours */}
-                    <View style={[styles.scannableGridCell, { backgroundColor: themeColors.neutralBackground2 }]}>
-                      <Ionicons name="alarm-outline" size={22} color={modalAccentColor} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: 4, fontSize: 10 }]}>HOURS</Text>
-                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginTop: 2, fontSize: 12 }]}>
-                        4
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Chunk B: Description - Aligned Left */}
-                <View style={[
-                  styles.floatingCard,
-                  styles.alignLeft,
-                  {
-                    borderColor: themeColors.neutralStroke2,
-                    backgroundColor: themeColors.neutralBackground1,
-                    zIndex: 5,
-                  }
-                ]}>
-                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
-                    About the Project
-                  </Text>
-                  
-                  <Text style={[Typography.body, styles.detailFullDesc, { color: themeColors.neutralForeground2 }]}>
-                    Volunteers will assist in organizing the community hall, sorting incoming food and clothing donations, and setting up activity areas for children. You will work alongside local organizers to guide visitors, distribute essential supplies, and ensure the space remains clean, welcoming, and safe for all community members throughout the event.
-                  </Text>
-                </View>
-
-                {/* Chunk C: Mutuals / Community Avatar Stack - Aligned Right */}
-                <View style={[
-                  styles.floatingCard,
-                  styles.alignRight,
-                  {
-                    borderColor: themeColors.neutralStroke2,
-                    backgroundColor: themeColors.neutralBackground1,
-                    zIndex: 5,
-                  }
-                ]}>
-                  <View style={styles.socialProofHeader}>
-                    <Ionicons name="people" size={18} color={modalAccentColor} />
-                    <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginLeft: 6 }]}>
-                      Mutuals & Community
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.socialProofBody}>
-                    {/* Overlapping Avatar Stack */}
-                    <View style={styles.avatarStack}>
-                      <View style={[styles.avatarStackCircle, { backgroundColor: '#FF8A80', zIndex: 3 }]}>
-                        <Text style={styles.avatarStackText}>S</Text>
-                      </View>
-                      <View style={[styles.avatarStackCircle, { backgroundColor: '#80D8FF', marginLeft: -12, zIndex: 2 }]}>
-                        <Text style={styles.avatarStackText}>M</Text>
-                      </View>
-                      <View style={[styles.avatarStackCircle, { backgroundColor: '#CCFF90', marginLeft: -12, zIndex: 1 }]}>
-                        <Text style={styles.avatarStackText}>J</Text>
-                      </View>
-                      <View style={[styles.avatarStackCountCircle, { backgroundColor: themeColors.neutralBackground3, marginLeft: -12, zIndex: 0 }]}>
-                        <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground1, fontSize: 8 }]}>+12</Text>
-                      </View>
-                    </View>
-                    
-                    <Text style={[Typography.caption, styles.socialProofText, { color: themeColors.neutralForeground2 }]}>
-                      15 of your mutuals have signed up!
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Chunk D: Stylized Map - Aligned Left */}
-                <View style={[
-                  styles.floatingCard,
-                  styles.alignLeft,
-                  {
-                    borderColor: themeColors.neutralStroke2,
-                    backgroundColor: themeColors.neutralBackground1,
-                    zIndex: 5,
-                  }
-                ]}>
-                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
-                    Location
-                  </Text>
-                  <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginBottom: Spacing.s }]}>
-                    {selectedOpportunity.location}
-                  </Text>
-
-                  <MockMapView isDarkMode={isDarkMode} />
-                </View>
-
-                {/* Chunk E: Incentives List - Aligned Right */}
-                <View style={[
-                  styles.floatingCard,
-                  styles.alignRight,
-                  {
-                    borderColor: themeColors.neutralStroke2,
-                    backgroundColor: themeColors.neutralBackground1,
-                    zIndex: 5,
-                  }
-                ]}>
-                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
-                    Rewards & Incentives
-                  </Text>
-
-                  <View style={styles.incentivesList}>
-                    {[
-                      { icon: 'pizza-outline', text: 'Free Lunch & Refreshments' },
-                      { icon: 'ribbon-outline', text: 'Official Volunteering Experience Certificate' },
-                    ].map((incentive, index) => (
-                      <View key={index} style={styles.incentiveItem}>
-                        <Ionicons name={incentive.icon as any} size={14} color={modalAccentColor} style={{ marginRight: 8, marginTop: 2 }} />
-                        <Text style={[Typography.caption, { color: themeColors.neutralForeground2, flex: 1, lineHeight: 16 }]}>
-                          {incentive.text}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              </ScrollView>
-            </View>
-
-            {/* 6. Sticky Call to Action Footer */}
-            <View
-              style={[
-                styles.modalFooter,
-                {
-                  backgroundColor: themeColors.neutralBackground2,
-                  borderTopColor: themeColors.neutralStroke2,
-                  paddingBottom: Platform.OS === 'ios' ? Spacing.xl : Spacing.m,
-                },
-              ]}
-            >
-              <Pressable
-                onPress={() => alert(`Successfully applied for "${selectedOpportunity.title}"!`)}
-                style={[styles.applyButton, { backgroundColor: themeColors.brandBackground }]}
-              >
-                <Ionicons name="checkmark-circle-outline" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={[Typography.bodyStrong, { color: '#FFFFFF' }]}>Apply Now</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => alert('Link copied to clipboard!')}
-                style={[
-                  styles.shareButton,
-                  {
-                    backgroundColor: themeColors.neutralBackground1,
-                    borderColor: themeColors.neutralStroke1,
-                  },
-                ]}
-              >
-                <Ionicons name="share-social-outline" size={20} color={themeColors.neutralForeground1} />
-              </Pressable>
-            </View>
-          </SafeAreaView>
+          <OpportunityDetail
+            opportunityId={selectedOpportunity.id}
+            isDarkMode={isDarkMode}
+            onBack={() => setSelectedOpportunity(null)}
+            onViewNgo={onViewNgo || (() => {})}
+          />
         </Modal>
       )}
     </SafeAreaView>

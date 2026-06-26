@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,19 +6,27 @@ import {
   ScrollView,
   Dimensions,
   Pressable,
+  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Colors, Spacing, Typography, Shapes } from './constants/Theme';
 import { Avatar, PresenceState } from './components/Avatar';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import Screen Sections
 import { Home } from './screens/Home';
-import { Feed } from './screens/Feed';
+import { Feed, Opportunity as FeedOpportunity } from './screens/Feed';
 import { Community } from './screens/Community';
 import { Blog } from './screens/Blog';
 import { Profile } from './screens/Profile';
+import { HandshakeHeartIcon } from './components/HandshakeHeartIcon';
+import { NotificationsScreen } from './screens/NotificationsScreen';
+import { Personalization } from './services/personalization';
+import { AuthFlow } from './screens/auth-onboarding/AuthFlow';
+import { NgoDetail } from './screens/NgoDetail';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -50,7 +58,17 @@ function MainLayout() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [presence, setPresence] = useState<PresenceState>('Available');
   const [activeTab, setActiveTab] = useState(0);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(Personalization.getNotifications().filter(n => n.unread).length);
   const [parentScrollEnabled, setParentScrollEnabled] = useState(true);
+  const [feedActiveMode, setFeedActiveMode] = useState<'In-person' | 'Online' | 'Micro volunteering'>('In-person');
+  const [feedTimeFilter, setFeedTimeFilter] = useState<number | undefined>(undefined);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<FeedOpportunity | null>(null);
+  const [feedActiveDomainId, setFeedActiveDomainId] = useState<string | undefined>(undefined);
+  const [selectedNgoName, setSelectedNgoName] = useState<string | null>(null);
+
+  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
+  const [userData, setUserData] = useState<any>(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
@@ -81,6 +99,61 @@ function MainLayout() {
     }
   };
 
+  // Check first-launch/onboarding status from AsyncStorage on mount
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem('@has_onboarded');
+        if (value === 'true') {
+          setIsOnboarded(true);
+          const cachedUser = await AsyncStorage.getItem('@user_data');
+          if (cachedUser) {
+            setUserData(JSON.parse(cachedUser));
+          }
+        } else {
+          setIsOnboarded(false);
+        }
+      } catch (e) {
+        setIsOnboarded(false);
+      }
+    };
+    checkOnboardingStatus();
+  }, []);
+
+  const handleAuthComplete = async (user: any) => {
+    try {
+      await AsyncStorage.setItem('@has_onboarded', 'true');
+      await AsyncStorage.setItem('@user_data', JSON.stringify(user));
+    } catch (e) {
+      console.warn('Failed to save onboarding status', e);
+    }
+    setUserData(user);
+    setIsOnboarded(true);
+    // Use setTimeout to ensure ScrollView layout has updated and loaded before scrolling
+    setTimeout(() => {
+      handleTabPress(0);
+    }, 100);
+  };
+
+  // If status is checking, show loading indicator
+  if (isOnboarded === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.neutralBackground1 }}>
+        <ActivityIndicator size="large" color={themeColors.brandForeground1} />
+      </View>
+    );
+  }
+
+  // If not onboarded, show Onboarding AuthFlow screen
+  if (!isOnboarded) {
+    return (
+      <AuthFlow
+        isDarkMode={isDarkMode}
+        onAuthComplete={handleAuthComplete}
+      />
+    );
+  }
+
   return (
     <View
       style={[
@@ -103,15 +176,20 @@ function MainLayout() {
           },
         ]}
       >
-        <Text style={[Typography.bodyStrong, { color: themeColors.brandForeground1 }]}>
-          Social Workers 2.0
-        </Text>
-        
-        <Text style={[Typography.bodyStrong, styles.headerTitle, { color: themeColors.neutralForeground1 }]}>
-          {tabs[activeTab].name}
-        </Text>
+        <View style={styles.logoRow}>
+          <HandshakeHeartIcon size={24} color={themeColors.brandForeground1} style={styles.logoIcon} />
+          <Text style={[styles.logoText, { color: themeColors.brandForeground1 }]}>
+            SocialWorkers
+          </Text>
+        </View>
 
         <View style={styles.headerRight}>
+          <Pressable onPress={() => setIsNotificationsOpen(true)} style={styles.notificationBell}>
+            <Ionicons name="notifications-outline" size={22} color={themeColors.neutralForeground1} />
+            {unreadCount > 0 && (
+              <View style={[styles.notificationBadge, { backgroundColor: themeColors.brandForeground1 }]} />
+            )}
+          </Pressable>
           <Avatar size={32} name="Nilap Saha" presence={presence} isDarkMode={isDarkMode} />
         </View>
       </View>
@@ -129,19 +207,49 @@ function MainLayout() {
         style={styles.pager}
       >
         <View style={[styles.page, { width: screenWidth }]}>
-          <Home isDarkMode={isDarkMode} onNavigateToTab={handleTabPress} />
+          <Home
+            isDarkMode={isDarkMode}
+            activeTab={activeTab}
+            onNavigateToTab={handleTabPress}
+            onSelectFeedMode={(mode, timeFilter, domainId) => {
+              setFeedActiveMode(mode);
+              setFeedTimeFilter(timeFilter);
+              setFeedActiveDomainId(domainId);
+            }}
+            onSelectOpportunity={setSelectedOpportunity}
+            onViewNgo={(name) => setSelectedNgoName(name)}
+          />
         </View>
         
         <View style={[styles.page, { width: screenWidth }]}>
-          <Feed isDarkMode={isDarkMode} />
+          <Feed
+            isDarkMode={isDarkMode}
+            activeMode={feedActiveMode}
+            onChangeActiveMode={(mode) => {
+              setFeedActiveMode(mode);
+              setFeedTimeFilter(undefined);
+              setFeedActiveDomainId(undefined);
+            }}
+            timeFilter={feedTimeFilter}
+            onChangeTimeFilter={setFeedTimeFilter}
+            selectedOpportunity={selectedOpportunity}
+            onSelectOpportunity={setSelectedOpportunity}
+            activeDomainId={feedActiveDomainId}
+            onChangeActiveDomainId={setFeedActiveDomainId}
+            onViewNgo={(name) => setSelectedNgoName(name)}
+          />
         </View>
         
         <View style={[styles.page, { width: screenWidth }]}>
-          <Community isDarkMode={isDarkMode} />
+          <Community isDarkMode={isDarkMode} setParentScrollEnabled={setParentScrollEnabled} />
         </View>
         
         <View style={[styles.page, { width: screenWidth }]}>
-          <Blog isDarkMode={isDarkMode} setParentScrollEnabled={setParentScrollEnabled} />
+          <Blog
+            isDarkMode={isDarkMode}
+            setParentScrollEnabled={setParentScrollEnabled}
+            onViewNgo={(name) => setSelectedNgoName(name)}
+          />
         </View>
         
         <View style={[styles.page, { width: screenWidth }]}>
@@ -207,6 +315,39 @@ function MainLayout() {
           );
         })}
       </View>
+      {/* Notifications Screen Overlay Modal */}
+      {isNotificationsOpen && (
+        <Modal
+          visible={isNotificationsOpen}
+          animationType="slide"
+          onRequestClose={() => setIsNotificationsOpen(false)}
+        >
+          <NotificationsScreen
+            isDarkMode={isDarkMode}
+            onBack={() => setIsNotificationsOpen(false)}
+            onUnreadCountChange={setUnreadCount}
+            onViewIdea={(ideaId) => {
+              setIsNotificationsOpen(false);
+              handleTabPress(2);
+            }}
+          />
+        </Modal>
+      )}
+
+      {/* NGO Detail Screen Overlay Modal */}
+      {selectedNgoName && (
+        <Modal
+          visible={!!selectedNgoName}
+          animationType="slide"
+          onRequestClose={() => setSelectedNgoName(null)}
+        >
+          <NgoDetail
+            ngoName={selectedNgoName}
+            isDarkMode={isDarkMode}
+            onBack={() => setSelectedNgoName(null)}
+          />
+        </Modal>
+      )}
     </View>
   );
 }
@@ -276,5 +417,32 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 10,
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoIcon: {
+    marginRight: 6,
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+  },
+  notificationBell: {
+    position: 'relative',
+    padding: 6,
+    marginRight: Spacing.s,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });
