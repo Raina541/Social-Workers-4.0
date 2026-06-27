@@ -31,7 +31,7 @@ class StoryManagerService {
       timestamp: '2 hours ago',
       tags: ['child welfare', 'advocacy'],
       sourceName: 'Gwalior Times',
-      cause: 'Child Welfare',
+      cause: 'Education',
     },
     {
       id: 'edu_1',
@@ -71,7 +71,7 @@ class StoryManagerService {
       timestamp: 'Yesterday',
       tags: ['healthcare', 'clinic'],
       sourceName: 'Welfare Bulletin',
-      cause: 'Healthcare',
+      cause: 'Health',
     },
     {
       id: 'pov_1',
@@ -81,7 +81,7 @@ class StoryManagerService {
       timestamp: '1 day ago',
       tags: ['poverty', 'food bank'],
       sourceName: 'Social Echo',
-      cause: 'Poverty Alleviation & Livelihoods',
+      cause: 'Food',
     },
     {
       id: 'women_1',
@@ -91,7 +91,7 @@ class StoryManagerService {
       timestamp: '2 days ago',
       tags: ['women empowerment', 'training'],
       sourceName: 'Empower MP',
-      cause: 'Women Empowerment',
+      cause: 'Education',
     },
     {
       id: 'disaster_1',
@@ -101,7 +101,7 @@ class StoryManagerService {
       timestamp: 'Yesterday',
       tags: ['disaster relief', 'floods'],
       sourceName: 'Rescue News',
-      cause: 'Disaster Relief',
+      cause: 'Shelter',
     },
     {
       id: 'env_1',
@@ -111,7 +111,7 @@ class StoryManagerService {
       timestamp: '3 hours ago',
       tags: ['environment', 'tree planting'],
       sourceName: 'Eco Voice',
-      cause: 'Environment & Sustainability',
+      cause: 'Nature',
     },
     {
       id: 'env_2',
@@ -121,7 +121,7 @@ class StoryManagerService {
       timestamp: '1 week ago',
       tags: ['water', 'environment'],
       sourceName: 'Clean Earth',
-      cause: 'Environment & Sustainability',
+      cause: 'Nature',
     },
     {
       id: 'animal_1',
@@ -131,7 +131,7 @@ class StoryManagerService {
       timestamp: '4 days ago',
       tags: ['animal welfare', 'dogs'],
       sourceName: 'Paws Gwalior',
-      cause: 'Animal Welfare',
+      cause: 'Nature',
     },
     {
       id: 'disability_1',
@@ -141,7 +141,7 @@ class StoryManagerService {
       timestamp: '5 days ago',
       tags: ['disability', 'audiobooks'],
       sourceName: 'Inclusion Hub',
-      cause: 'Support for Persons with Disabilities',
+      cause: 'Health',
     },
     {
       id: 'elder_1',
@@ -151,7 +151,7 @@ class StoryManagerService {
       timestamp: '2 weeks ago',
       tags: ['elderly care', 'outreach'],
       sourceName: 'Golden Years',
-      cause: 'Elderly Care',
+      cause: 'Health',
     },
     {
       id: 'wash_1',
@@ -161,7 +161,7 @@ class StoryManagerService {
       timestamp: '3 days ago',
       tags: ['water', 'sanitation', 'WASH'],
       sourceName: 'WASH Initiative',
-      cause: 'Water, Sanitation, and Hygiene (WASH)',
+      cause: 'Health',
     },
     {
       id: 'rural_1',
@@ -171,7 +171,7 @@ class StoryManagerService {
       timestamp: '1 month ago',
       tags: ['rural development', 'farming'],
       sourceName: 'Agro Watch',
-      cause: 'Rural Development',
+      cause: 'Nature',
     },
   ];
 

@@ -12,6 +12,7 @@ import {
   ImageStyle,
   ScrollView,
   Alert,
+  TextInput,
 } from 'react-native';
 import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -123,6 +124,53 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
   const [radius, setRadius] = useState<number>(5.0); // radius in km (default: 5.0)
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [selectedOpp, setSelectedOpp] = useState<MappedOpportunity | null>(null);
+
+  const [showZipBanner, setShowZipBanner] = useState(false);
+  const [zipCode, setZipCode] = useState('');
+  const [resolvedLocationName, setResolvedLocationName] = useState('San Francisco, CA');
+
+  const ZIP_COORDS: Record<string, { latitude: number, longitude: number, name: string }> = {
+    '474001': { latitude: 26.2183, longitude: 78.1828, name: 'Gwalior, MP' },
+    '600001': { latitude: 13.0827, longitude: 80.2707, name: 'Chennai, TN' },
+    '110001': { latitude: 28.6139, longitude: 77.2090, name: 'New Delhi, DL' },
+    '400001': { latitude: 18.9220, longitude: 72.8347, name: 'Mumbai, MH' },
+    '94102': { latitude: 37.7749, longitude: -122.4194, name: 'San Francisco, CA' },
+  };
+
+  const handleZipSearch = (zip: string) => {
+    const cleanZip = zip.trim();
+    if (ZIP_COORDS[cleanZip]) {
+      const coords = ZIP_COORDS[cleanZip];
+      setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });
+      setResolvedLocationName(`${coords.name} (${cleanZip})`);
+      setShowZipBanner(false);
+      
+      if (mapRef.current) {
+        const region = getRegionForRadius({ latitude: coords.latitude, longitude: coords.longitude }, radius);
+        mapRef.current.animateToRegion(region, 800);
+      }
+    } else if (cleanZip.length >= 5) {
+      let hash = 0;
+      for (let i = 0; i < cleanZip.length; i++) {
+        hash = cleanZip.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const latOffset = ((Math.abs(hash) % 100) / 100) * 0.1 - 0.05;
+      const lngOffset = (((Math.abs(hash) >> 8) % 100) / 100) * 0.1 - 0.05;
+      const latitude = 26.2183 + latOffset;
+      const longitude = 78.1828 + lngOffset;
+      
+      setUserLocation({ latitude, longitude });
+      setResolvedLocationName(`Area ${cleanZip}`);
+      setShowZipBanner(false);
+
+      if (mapRef.current) {
+        const region = getRegionForRadius({ latitude, longitude }, radius);
+        mapRef.current.animateToRegion(region, 800);
+      }
+    } else {
+      Alert.alert("Invalid Zip Code", "Please enter a valid 5 or 6 digit ZIP code.");
+    }
+  };
 
   // Pulsing user location dot animation
   const pulseAnim = useRef(new Animated.Value(0)).current;
@@ -246,9 +294,14 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
             latitude: loc.coords.latitude,
             longitude: loc.coords.longitude,
           });
+          setResolvedLocationName("Current Location");
+          setShowZipBanner(false);
+        } else {
+          setShowZipBanner(true);
         }
       } catch (err) {
         console.log('Permission to access location was denied, using fallback coordinate.');
+        setShowZipBanner(true);
       }
     })();
   }, []);
@@ -547,9 +600,46 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
         {/* Floating Distance Tooltip */}
         <View style={[styles.floatingBox, { backgroundColor: themeColors.brandBackground, opacity: isDragging ? 0.95 : 0.85 }]}>
           <Text style={styles.floatingBoxText}>
-            {radius.toFixed(1)} km Radius • {filteredOpps.length} {filteredOpps.length === 1 ? 'opportunity' : 'opportunities'} in range
+            {radius.toFixed(1)} km Radius • {filteredOpps.length} opportunities in range
           </Text>
         </View>
+
+        {/* Change Location Button */}
+        <Pressable
+          onPress={() => setShowZipBanner(!showZipBanner)}
+          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1 }]}
+        >
+          <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
+          <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
+            {resolvedLocationName}
+          </Text>
+        </Pressable>
+
+        {/* Zip Code search banner */}
+        {showZipBanner && (
+          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
+            <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
+              Enter ZIP Code:
+            </Text>
+            <TextInput
+              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
+              value={zipCode}
+              onChangeText={(val) => {
+                setZipCode(val);
+                if (val.length === 5 || val.length === 6) {
+                  handleZipSearch(val);
+                }
+              }}
+              placeholder="e.g. 474001"
+              placeholderTextColor={themeColors.neutralForegroundDisabled}
+              keyboardType="number-pad"
+              maxLength={6}
+            />
+            <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
+              <Text style={styles.zipButtonText}>Search</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Back Button */}
         <Pressable
@@ -724,9 +814,46 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
         {/* Floating Distance Tooltip */}
         <View style={[styles.floatingBox, { backgroundColor: themeColors.brandBackground, opacity: isDragging ? 0.95 : 0.85, zIndex: 10 }]}>
           <Text style={styles.floatingBoxText}>
-            {radius.toFixed(1)} km Radius • {filteredOpps.length} {filteredOpps.length === 1 ? 'opportunity' : 'opportunities'} in range
+            {radius.toFixed(1)} km Radius • {filteredOpps.length} opportunities in range
           </Text>
         </View>
+
+        {/* Change Location Button */}
+        <Pressable
+          onPress={() => setShowZipBanner(!showZipBanner)}
+          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1, zIndex: 10 }]}
+        >
+          <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
+          <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
+            {resolvedLocationName}
+          </Text>
+        </Pressable>
+
+        {/* Zip Code search banner */}
+        {showZipBanner && (
+          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
+            <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
+              Enter ZIP Code:
+            </Text>
+            <TextInput
+              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
+              value={zipCode}
+              onChangeText={(val) => {
+                setZipCode(val);
+                if (val.length === 5 || val.length === 6) {
+                  handleZipSearch(val);
+                }
+              }}
+              placeholder="e.g. 474001"
+              placeholderTextColor={themeColors.neutralForegroundDisabled}
+              keyboardType="number-pad"
+              maxLength={6}
+            />
+            <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
+              <Text style={styles.zipButtonText}>Search</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Back Button */}
         <Pressable
@@ -903,6 +1030,66 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     overflow: 'hidden',
+  },
+  zipBanner: {
+    position: 'absolute',
+    top: Spacing.s + 36,
+    left: Spacing.m,
+    right: Spacing.m,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.s,
+    paddingVertical: Spacing.xs,
+    borderRadius: 8,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 101,
+  },
+  zipBannerText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  zipInput: {
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 12,
+    width: 70,
+    marginRight: Spacing.xs,
+    backgroundColor: '#ffffff',
+  },
+  zipButton: {
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  zipButtonText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  changeLocationBtn: {
+    position: 'absolute',
+    top: Spacing.s,
+    right: Spacing.m,
+    paddingHorizontal: Spacing.s,
+    paddingVertical: Spacing.xs,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  changeLocationText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginLeft: 3,
   },
   nativeMap: {
     width: '100%',

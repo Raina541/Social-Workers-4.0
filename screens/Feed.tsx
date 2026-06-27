@@ -28,6 +28,7 @@ import Svg, {
   G,
 } from 'react-native-svg';
 import { OpportunityDetail } from './OpportunityDetail';
+import { Button } from '../components/Button';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -1237,12 +1238,13 @@ export const Feed: React.FC<FeedProps> = ({
               <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: Spacing.xxs, textAlign: 'center', marginHorizontal: Spacing.l }]}>
                 Try adjusting your search terms or selecting a different date range.
               </Text>
-              <Pressable
+              <Button
+                label="Reset All Filters"
                 onPress={handleResetFilters}
-                style={[styles.resetCtaButton, { backgroundColor: themeColors.brandBackground }]}
-              >
-                <Text style={[Typography.captionStrong, { color: '#FFFFFF' }]}>Reset All Filters</Text>
-              </Pressable>
+                appearance="Primary"
+                isDarkMode={isDarkMode}
+                style={{ marginTop: Spacing.s }}
+              />
             </View>
           )}
         </View>
@@ -1353,27 +1355,25 @@ export const Feed: React.FC<FeedProps> = ({
 
             {/* Action Buttons */}
             <View style={styles.sheetActionContainer}>
-              <Pressable
+              <Button
+                label="Clear Filter"
                 onPress={() => {
                   setSelectedFilterType('all');
                   setSelectedCustomDate('');
                   setFilterModalVisible(false);
                 }}
-                style={[styles.resetButton, { borderColor: themeColors.neutralStroke1 }]}
-              >
-                <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13 }]}>
-                  Clear Filter
-                </Text>
-              </Pressable>
+                appearance="Secondary"
+                isDarkMode={isDarkMode}
+                style={{ flex: 1 }}
+              />
 
-              <Pressable
+              <Button
+                label="Apply Filter"
                 onPress={() => setFilterModalVisible(false)}
-                style={[styles.applyButtonSheet, { backgroundColor: themeColors.brandBackground }]}
-              >
-                <Text style={[Typography.bodyStrong, { color: '#FFFFFF', fontSize: 13 }]}>
-                  Apply Filter
-                </Text>
-              </Pressable>
+                appearance="Primary"
+                isDarkMode={isDarkMode}
+                style={{ flex: 2 }}
+              />
             </View>
           </Pressable>
         </Pressable>
@@ -1389,6 +1389,7 @@ export const Feed: React.FC<FeedProps> = ({
         >
           <OpportunityDetail
             opportunityId={selectedOpportunity.id}
+            opportunityData={selectedOpportunity}
             isDarkMode={isDarkMode}
             onBack={() => setSelectedOpportunity(null)}
             onViewNgo={onViewNgo || (() => {})}

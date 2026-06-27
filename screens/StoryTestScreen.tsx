@@ -18,34 +18,20 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 // 12 Cause Categories and their Search Queries
 const CAUSE_QUERIES: Record<string, string> = {
+  'Health': 'healthcare volunteering OR medical clinic volunteers',
   'Education': 'education volunteering OR school teaching volunteer',
-  'Healthcare': 'healthcare volunteering OR medical clinic volunteers',
-  'Child Welfare': 'child welfare volunteering OR youth support volunteer',
-  'Poverty Alleviation & Livelihoods': 'poverty volunteering OR food bank volunteer',
-  'Women Empowerment': 'women empowerment initiative OR girls education volunteer',
-  'Disaster Relief': 'disaster relief volunteering OR emergency rescue volunteers',
-  'Environment & Sustainability': 'environmental volunteering OR tree planting cleanup',
-  'Animal Welfare': 'animal shelter volunteering OR stray dog rescue volunteer',
-  'Support for Persons with Disabilities': 'disability volunteering OR assistive tech volunteer',
-  'Elderly Care': 'elderly care volunteering OR nursing home senior visits',
-  'Water, Sanitation, and Hygiene (WASH)': 'clean water sanitation volunteering WASH project',
-  'Rural Development': 'rural development volunteering OR village agriculture volunteer',
+  'Nature': 'environmental volunteering OR tree planting cleanup',
+  'Shelter': 'disaster relief volunteering OR emergency rescue volunteers',
+  'Food': 'food bank volunteer OR poverty volunteering hunger',
 };
 
 // Curated icons for cause visualization
 const CAUSE_ICONS: Record<string, { icon: string, family: string, color: string }> = {
+  'Health': { icon: 'medical', family: 'Ionicons', color: '#c41818' },
   'Education': { icon: 'book', family: 'Ionicons', color: '#106ebe' },
-  'Healthcare': { icon: 'medical', family: 'Ionicons', color: '#c41818' },
-  'Child Welfare': { icon: 'heart', family: 'Ionicons', color: '#b4009e' },
-  'Poverty Alleviation & Livelihoods': { icon: 'basket', family: 'Ionicons', color: '#d86109' },
-  'Women Empowerment': { icon: 'woman', family: 'Ionicons', color: '#e3008c' },
-  'Disaster Relief': { icon: 'flash', family: 'Ionicons', color: '#ffb900' },
-  'Environment & Sustainability': { icon: 'leaf', family: 'Ionicons', color: '#107c41' },
-  'Animal Welfare': { icon: 'paw', family: 'Ionicons', color: '#7a7574' },
-  'Support for Persons with Disabilities': { icon: 'hand-left', family: 'Ionicons', color: '#00b7c3' },
-  'Elderly Care': { icon: 'people', family: 'Ionicons', color: '#8764b8' },
-  'Water, Sanitation, and Hygiene (WASH)': { icon: 'water', family: 'Ionicons', color: '#0078d4' },
-  'Rural Development': { icon: 'home', family: 'Ionicons', color: '#a0a0a0' },
+  'Nature': { icon: 'leaf', family: 'Ionicons', color: '#107c41' },
+  'Shelter': { icon: 'home', family: 'Ionicons', color: '#a0a0a0' },
+  'Food': { icon: 'basket', family: 'Ionicons', color: '#d86109' },
 };
 
 const DIRECT_FEEDS = [
@@ -55,33 +41,19 @@ const DIRECT_FEEDS = [
 ];
 
 const CAUSE_KEYWORDS: Record<string, string[]> = {
+  'Health': ['health', 'medical', 'hospital', 'doctor', 'clinic', 'vaccin', 'disease', 'patient', 'diagnostics', 'treatment'],
   'Education': ['education', 'school', 'teaching', 'student', 'literacy', 'classroom', 'college', 'exam', 'teacher', 'tutoring', 'learning'],
-  'Healthcare': ['health', 'medical', 'hospital', 'doctor', 'clinic', 'vaccin', 'disease', 'patient', 'diagnostics', 'treatment'],
-  'Child Welfare': ['child', 'kid', 'welfare', 'orphan', 'minor', 'youth', 'children'],
-  'Poverty Alleviation & Livelihoods': ['poverty', 'food bank', 'poor', 'livelihood', 'hungry', 'aid', 'welfare', 'donation', 'homeless'],
-  'Women Empowerment': ['women', 'empowerment', 'girl', 'female', 'gender', 'mothers'],
-  'Disaster Relief': ['disaster', 'relief', 'rescue', 'emergency', 'flood', 'earthquake', 'storm', 'hail', 'cyclone', 'tsunami'],
-  'Environment & Sustainability': ['environment', 'sustainability', 'tree', 'climate', 'pollution', 'green', 'forest', 'wildlife', 'conservation', 'recycle'],
-  'Animal Welfare': ['animal', 'welfare', 'dog', 'cat', 'paw', 'rescue', 'tiger', 'wildlife', 'shelter', 'veterinary'],
-  'Support for Persons with Disabilities': ['disabilit', 'wheelchair', 'accessible', 'deaf', 'blind', 'assistive'],
-  'Elderly Care': ['elderly', 'senior', 'care home', 'nursing', 'grandparent', 'ageing', 'retirement'],
-  'Water, Sanitation, and Hygiene (WASH)': ['water', 'sanitation', 'hygiene', 'wash', 'toilet', 'clean water', 'filtration'],
-  'Rural Development': ['rural', 'village', 'farming', 'agriculture', 'farmer', 'crop', 'harvest'],
+  'Nature': ['environment', 'sustainability', 'tree', 'climate', 'pollution', 'green', 'forest', 'wildlife', 'conservation', 'recycle', 'animal', 'dog', 'cat'],
+  'Shelter': ['shelter', 'disaster', 'relief', 'rescue', 'emergency', 'flood', 'earthquake', 'storm', 'homeless', 'housing'],
+  'Food': ['food', 'hungry', 'soup kitchen', 'meals', 'nutrition', 'poverty', 'poor'],
 };
 
 const FLICKR_KEYWORDS: Record<string, string> = {
+  'Health': 'medical,hospital,clinic,doctor',
   'Education': 'school,classroom,students,learning',
-  'Healthcare': 'medical,hospital,clinic,doctor',
-  'Child Welfare': 'children,kids,welfare,orphanage',
-  'Poverty Alleviation & Livelihoods': 'poverty,help,foodbank,community',
-  'Women Empowerment': 'women,empowerment,girls,education',
-  'Disaster Relief': 'disaster,relief,rescue,aid,emergency',
-  'Environment & Sustainability': 'environment,sustainability,tree,nature',
-  'Animal Welfare': 'animal,welfare,dog,cat,rescue,shelter',
-  'Support for Persons with Disabilities': 'disability,wheelchair,accessibility,support',
-  'Elderly Care': 'elderly,senior,care,nursing',
-  'Water, Sanitation, and Hygiene (WASH)': 'cleanwater,sanitation,hygiene,wash',
-  'Rural Development': 'rural,development,village,farming,agriculture',
+  'Nature': 'environment,sustainability,tree,nature,animal,dog',
+  'Shelter': 'disaster,relief,rescue,aid,emergency,shelter',
+  'Food': 'food,hunger,soupkitchen,meals',
 };
 
 function matchesCause(title: string, desc: string, cause: string): boolean {
@@ -124,6 +96,23 @@ function synthesizeSummary(headline: string, cause: string, sourceName: string):
   ];
 
   const causeDetails: Record<string, { impact: string[], actions: string[], future: string[] }> = {
+    'Health': {
+      impact: [
+        "This project directly addresses community wellness and public health checkups.",
+        "Medical volunteers are hosting screening camps to support underprivileged families.",
+        "The clinic program provides critical access to healthcare services and medications."
+      ],
+      actions: [
+        "Volunteers are assisting doctors at the community health screening campsite.",
+        "Local groups are distributing medicine kits and sanitizers to elder homes.",
+        "Health educators are conducting wellness and dental hygiene workshops."
+      ],
+      future: [
+        "We plan to expand the mobile medical van to cover three more remote sectors.",
+        "Support is needed to purchase diagnostic instruments and blood pressure cuffs.",
+        "The clinic aims to secure stable sponsorship for children's polio vaccinations."
+      ]
+    },
     'Education': {
       impact: [
         "This project directly addresses rural learning deficits, providing key educational resources to underserved communities.",
@@ -141,191 +130,55 @@ function synthesizeSummary(headline: string, cause: string, sourceName: string):
         "Continued collaboration with local schools aims to ensure long-term integration and success."
       ]
     },
-    'Healthcare': {
+    'Nature': {
       impact: [
-        "The diagnostic initiative provides essential medical screenings, catching chronic issues early.",
-        "By setting up mobile health checkpoints, they are bridging the gap in primary emergency care.",
-        "Health workers are addressing vital nutritional and wellness needs in marginalized settlements."
+        "The environmental cleanup drive has removed plastic trash and waste from local reserves.",
+        "Tree planting volunteers are restoring native forest trees and green canopies.",
+        "Conservation coordinators are actively tracking wildlife nesting zones to prevent animal disruption."
       ],
       actions: [
-        "Doctors and paramedic volunteers are dedicating weekends to run free diagnostic camps.",
-        "Local NGOs are distributing vital hygiene kits and raising awareness about preventable diseases.",
-        "Volunteers are coordinating transport and medical supplies for patients in remote forest areas."
+        "Volunteers are clearing waste trails and planting tree saplings around Gwalior Fort.",
+        "Students are setting up rain collection units and composting centers in public gardens.",
+        "Activists are distributing seed balls and setting up wild bird nesting boxes."
       ],
       future: [
-        "Future phases will introduce digital telemedicine consultations to link remote blocks with specialists.",
-        "Community members are urged to volunteer for health education camps and support logistics.",
-        "The program seeks to establish permanent wellness kiosks run by trained local health guides."
+        "We target planting over 5,000 native saplings during the upcoming monsoon season.",
+        "Support is needed for soil diagnostics, planting tools, and organic compost supplies.",
+        "Future campaigns will focus on reducing single-use plastic across city food stalls."
       ]
     },
-    'Child Welfare': {
+    'Shelter': {
       impact: [
-        "The safety net program provides child rescue, rehabilitation, and long-term counseling support.",
-        "Child advocates are securing safe environments and academic pathways for at-risk youth.",
-        "By focusing on early intervention, the coalition protects minors from labor exploitation."
+        "Shelter volunteers are organizing warm beds, clothes, and safe spaces for displaced residents.",
+        "Emergency rescue teams are working around the clock to support families hit by floods.",
+        "The transitional housing support program offers security and safety to homeless individuals."
       ],
       actions: [
-        "Youth volunteers are organizing weekend recreational activities and emotional support groups.",
-        "Local counselors are coordinating with parents to highlight the importance of school retention.",
-        "Social workers are working with district officers to monitor and audit local market operations."
+        "Volunteers are setting up portable relief tents and distributing sleeping bags.",
+        "Teams are helping clean, paint, and repair transitional shelter facilities.",
+        "Coordinators are sorting clothes, blankets, and footwear for nighttime distribution."
       ],
       future: [
-        "Expanding the shelter networks will allow the group to house and support more children.",
-        "Donors and mentors are wanted to join the child-sponsorship programs to fund board and tuition.",
-        "Advocates hope this campaign will drive tougher local policy actions to guard youth welfare."
+        "We hope to establish two more permanent night shelter rooms before winter begins.",
+        "Donations of building materials, paint, and mattresses are highly appreciated.",
+        "Collaborations with city councils aim to secure more spaces for crisis housing."
       ]
     },
-    'Poverty Alleviation & Livelihoods': {
+    'Food': {
       impact: [
-        "The self-help framework enables direct skill development, elevating household incomes.",
-        "By introducing cooperative marketing networks, local artisans bypass expensive middlemen.",
-        "The micro-grant support helps launch stable home-based businesses for rural creators."
+        "The soup kitchen drive feeds hundreds of street children and daily earners every week.",
+        "Food salvage programs are reducing market surplus waste by routing it to community kitchens.",
+        "Nutrition packages are helping combat undernourishment in low-income families."
       ],
       actions: [
-        "Volunteers are training artisans in e-commerce setup, digital bookkeeping, and product packaging.",
-        "Community groups are organizing local craft fairs and setting up online shipping pipelines.",
-        "Financial advisors are volunteering to conduct basic budgeting and savings workshops."
+        "Volunteers are preparing hot meals and packing lunch boxes at the local hub.",
+        "Drivers are collecting surplus vegetable boxes from wholesale markets.",
+        "Teams are distributing dry ration kits containing rice, lentils, and cooking oil."
       ],
       future: [
-        "Scaling these cooperative exports globally will create resilient income streams for years.",
-        "You can contribute by purchasing products directly or donating sewing, weaving, and craft tools.",
-        "Collaborations with corporate CSR teams are underway to secure bulk purchase orders."
-      ]
-    },
-    'Women Empowerment': {
-      impact: [
-        "Providing vocational and digital training gives female leaders strong financial independence.",
-        "The gender parity campaign builds safe communal circles and strong peer networks.",
-        "Empowering women with modern finance tools leads to immediate positive household outcomes."
-      ],
-      actions: [
-        "Mentors are teaching courses on e-commerce, banking security, and legal rights.",
-        "Local networks are running self-defense classes and leadership development bootcamps.",
-        "Volunteers are assisting female entrepreneurs to apply for government startup grants."
-      ],
-      future: [
-        "The network aims to establish a permanent business incubator for women-led startups.",
-        "Join as a mentor or donor to support the next batch of rural women entering the digital economy.",
-        "Advocates hope this model will inspire similar gender-focused initiatives across the region."
-      ]
-    },
-    'Disaster Relief': {
-      impact: [
-        "The rapid emergency network coordinates supply delivery to families hit by severe weather.",
-        "Providing clean shelter materials and hot meals restores dignity in the hours after crises.",
-        "Emergency logistics support keeps key communication and transport lanes open."
-      ],
-      actions: [
-        "Volunteers are packing and dispatching relief dry-ration kits and basic medical supplies.",
-        "Rescue units are coordinate with regional bureaus to clear debris and secure basic water access.",
-        "On-ground coordinators are setting up temporary child-safe spaces inside communal shelters."
-      ],
-      future: [
-        "Rebuilding resilient housing units will be the core priority in the coming dry season.",
-        "Volunteering for mock drills and disaster preparation ensures local teams remain ready.",
-        "Financial donations help purchase heavy equipment and long-term rehabilitation supplies."
-      ]
-    },
-    'Environment & Sustainability': {
-      impact: [
-        "Creating Miyawaki forests restores native biodiversity and fights urban heat islands.",
-        "Active water harvesting replenishes dry wells, reversing seasonal crop droughts.",
-        "Cleaning plastic debris from local waterways preserves aquatic life and clean water tables."
-      ],
-      actions: [
-        "Volunteers are planting native saplings, digging trenches, and managing soil health.",
-        "Green advocates are holding community waste segregation audits and composting sessions.",
-        "Youth teams are building rain-catcher setups on school rooftops to save water."
-      ],
-      future: [
-        "The team plans to plant 10,000 more trees and set up bird nests before the monsoon.",
-        "You can join the weekend planting drives or sponsor saplings and water tanks.",
-        "Advocates are lobbying local councils to declare these micro-forests as protected reserves."
-      ]
-    },
-    'Animal Welfare': {
-      impact: [
-        "Fitting reflective collars drastically reduces highway collisions and stray injuries.",
-        "Free vaccination and sterilization clinics manage street dog populations humanely.",
-        "Providing medical aid to injured birds and stray cattle prevents painful infections."
-      ],
-      actions: [
-        "Volunteers are patrolling street zones to fit reflective bands and vaccinate strays.",
-        "Shelter workers are cleaning enclosures and socializing rescued dogs for adoption.",
-        "Local feeders are establishing community feeding points to reduce aggressive street behavior."
-      ],
-      future: [
-        "A dedicated veterinary ambulance service is planned to handle night emergencies.",
-        "Support is needed via food donations, old blankets, and foster home applications.",
-        "The charity hopes to run child-education school camps to build empathy for street animals."
-      ]
-    },
-    'Support for Persons with Disabilities': {
-      impact: [
-        "Recording textbooks into audio format opens academic doors for visually impaired students.",
-        "Installing wheelchair ramps in civic spaces establishes physical freedom and access.",
-        "Providing adaptive software tools makes remote career opportunities viable."
-      ],
-      actions: [
-        "Volunteers are dedicating hours to read, record, and edit academic audio chapters.",
-        "Engineers are volunteering to customize open-source screen readers and inputs.",
-        "Advocates are hosting sensitivity training and mapping public spaces for accessibility gaps."
-      ],
-      future: [
-        "Expanding the digital library to technical engineering texts will support higher education.",
-        "You can volunteer to transcribe files, record audiobooks, or donate hardware devices.",
-        "The team aims to partner with job portals to create disability-friendly job pipelines."
-      ]
-    },
-    'Elderly Care': {
-      impact: [
-        "The companionship model alleviates severe isolation and improves senior mental wellness.",
-        "Teaching smartphone skills empowers grandparents to stay connected with global families.",
-        "Routine health checkups inside elder care homes ensure early diagnosis of senior ailments."
-      ],
-      actions: [
-        "Youth groups are visiting nursing homes to read, play board games, and share stories.",
-        "Volunteers are helping seniors navigate digital banking, video calling, and news apps.",
-        "Healthcare teams are hosting regular geriatric physical therapy sessions."
-      ],
-      future: [
-        "Establishing a weekly community day-care club will give active seniors a social space.",
-        "Volunteer as a weekly visitor or donate tablets, medical aids, and recreational books.",
-        "Organizers are training home caretakers to provide specialized dementia support."
-      ]
-    },
-    'Water, Sanitation, and Hygiene (WASH)': {
-      impact: [
-        "Installing bio-sand filters stops enteric infections, keeping rural children in school.",
-        "Rebuilding broken school toilets ensures safe, private sanitation facilities for girls.",
-        "Hygiene camps decrease waterborne outbreaks, stabilizing family productivity."
-      ],
-      actions: [
-        "Volunteers are casting filter concrete blocks and teaching families sand washing.",
-        "Plumbers and community members are restoring clean water pipes and taps in school zones.",
-        "Youth leaders are running interactive handwashing and sanitation awareness plays."
-      ],
-      future: [
-        "The coalition intends to construct a community graywater recycling pond next spring.",
-        "Support this wash project by volunteering for setup or donating sand filter materials.",
-        "Partnering with panchayats will help declare the settlement fully open-defecation free."
-      ]
-    },
-    'Rural Development': {
-      impact: [
-        "Establishing seed depositories ensures seed sovereignty and guards local crop variety.",
-        "Introducing solar grid lights boosts village security and allows night study hours.",
-        "Constructing check dams retains monsoon runoff, increasing multi-crop farm yields."
-      ],
-      actions: [
-        "Volunteers are helping build community seed storage units and cataloging heritage seeds.",
-        "Technicians are teaching farmers organic composting and water-saving drip methods.",
-        "Youth groups are holding digital literacy classes inside rural community halls."
-      ],
-      future: [
-        "Setting up a solar-powered cold storage room will prevent summer crop spoilage.",
-        "Join as a rural trainer, donate solar lamps, or fund agricultural machinery tools.",
-        "The cooperative hopes to expand market links to sell organic produce directly to towns."
+        "We plan to install a commercial freezer to extend food preservation times.",
+        "Join as a kitchen chef assistant, package handler, or logistics volunteer.",
+        "The kitchen seeks corporate food sponsors to ensure continuous daily operations."
       ]
     }
   };

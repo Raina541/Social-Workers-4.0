@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Defs, Pattern, Circle, Rect, Path, Line } from 'react-native-svg';
 import { useScrapbookTheme, ScrapbookThemeColors, ScrapbookTheme } from '../context/ScrapbookThemeContext';
+import { Colors, Spacing, Shapes, Typography } from '../constants/Theme';
 import { PresenceState } from '../components/Avatar';
+import { Button } from '../components/Button';
 import { Personalization } from '../services/personalization';
+import { SandboxCommunityView } from '../components/sandbox_community/SandboxCommunityView';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -30,6 +33,8 @@ interface ProfileProps {
   onToggleDarkMode: () => void;
   presence: PresenceState;
   onChangePresence: (state: PresenceState) => void;
+  userData?: any;
+  onLogout?: () => void;
 }
 
 interface JourneyNode {
@@ -353,6 +358,29 @@ const getDomainStyle = (domainName: string) => {
   return { color, hours };
 };
 
+const DEFAULT_JOURNEY_NODES: JourneyNode[] = [
+  {
+    id: '1',
+    title: 'Green Earth Tree Plantation',
+    date: 'June 2026',
+    description: 'Planted 15 saplings in the town square and helped set up the drip irrigation system.',
+    imageUri: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    id: '2',
+    title: 'Soup Kitchen Coordinator',
+    date: 'May 2026',
+    description: 'Coordinated food distribution and managed supplies for over 150 local citizens.',
+  },
+  {
+    id: '3',
+    title: 'Coding Bootcamp Tutor',
+    date: 'March 2026',
+    description: 'Introduced basic JS programming logic and helped high schoolers compile their first projects.',
+    imageUri: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80',
+  },
+];
+
 // ---------------------------------------------------------
 // Main Profile Component
 // ---------------------------------------------------------
@@ -361,9 +389,12 @@ export const Profile: React.FC<ProfileProps> = ({
   onToggleDarkMode,
   presence,
   onChangePresence,
+  userData,
+  onLogout,
 }) => {
   const insets = useSafeAreaInsets();
   const { theme, setTheme, colors } = useScrapbookTheme();
+  const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
   // Active Segment State
   const [activeSegment, setActiveSegment] = useState<'map' | 'journey'>('journey');
@@ -385,32 +416,48 @@ export const Profile: React.FC<ProfileProps> = ({
   const [communitiesCount, setCommunitiesCount] = useState(6);
 
   // Volunteering Journey States
-  const [journeyNodes, setJourneyNodes] = useState<JourneyNode[]>([
-    {
-      id: '1',
-      title: 'Green Earth Tree Plantation',
-      date: 'June 2026',
-      description: 'Planted 15 saplings in the town square and helped set up the drip irrigation system.',
-      imageUri: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80',
-    },
-    {
-      id: '2',
-      title: 'Soup Kitchen Coordinator',
-      date: 'May 2026',
-      description: 'Coordinated food distribution and managed supplies for over 150 local citizens.',
-    },
-    {
-      id: '3',
-      title: 'Coding Bootcamp Tutor',
-      date: 'March 2026',
-      description: 'Introduced basic JS programming logic and helped high schoolers compile their first projects.',
-      imageUri: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80',
-    },
-  ]);
+  const [journeyNodes, setJourneyNodes] = useState<JourneyNode[]>(DEFAULT_JOURNEY_NODES);
+
+  useEffect(() => {
+    if (userData) {
+      setName(userData.fullName || 'Nilap Saha');
+      setBio(`@${userData.username || 'nilap1'} • ${userData.role || 'Volunteer'}`);
+      if (userData.interests) {
+        setDomains(userData.interests);
+      }
+      if (userData.isNewUser) {
+        setTotalHours(0);
+        setJourneyNodes([]);
+        setFriendsCount(0);
+        setFollowersCount(0);
+        setCommunitiesCount(0);
+        setConsistencyTag('New Volunteer');
+      } else {
+        setTotalHours(142);
+        setJourneyNodes(DEFAULT_JOURNEY_NODES);
+        setFriendsCount(48);
+        setFollowersCount(120);
+        setCommunitiesCount(6);
+        setConsistencyTag('Bi-Monthly Volunteer');
+      }
+    } else {
+      setName('Nilap Saha');
+      setBio('Senior Case Manager • East County Division');
+      setTotalHours(142);
+      setJourneyNodes(DEFAULT_JOURNEY_NODES);
+      setFriendsCount(48);
+      setFollowersCount(120);
+      setCommunitiesCount(6);
+      setConsistencyTag('Bi-Monthly Volunteer');
+    }
+  }, [userData]);
 
   // Privacy Settings (Visibility)
   const [isBioPublic, setIsBioPublic] = useState(true);
   const [isStatsPublic, setIsStatsPublic] = useState(true);
+
+  // Sandbox Modal Visibility state
+  const [isSandboxVisible, setIsSandboxVisible] = useState(false);
   const [isInterestsPublic, setIsInterestsPublic] = useState(true);
   const [isSocialPublic, setIsSocialPublic] = useState(true);
   const [isJourneyPublic, setIsJourneyPublic] = useState(true);
@@ -905,34 +952,48 @@ export const Profile: React.FC<ProfileProps> = ({
             MANAGE PERSONALS BUTTON (CTAs to Full Modal Subpage)
            --------------------------------------------------------- */}
         <View style={{ marginVertical: 14 }}>
-          <Pressable
+          <Button
+            label="Manage Personals & Merits"
             onPress={() => setIsManagePersonalsVisible(true)}
-            style={({ pressed }) => [
-              {
-                backgroundColor: colors.primary,
-                borderWidth: 1,
-                borderColor: 'rgba(0, 0, 0, 0.08)',
-                borderRadius: 4,
-                paddingVertical: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.06,
-                shadowRadius: 5,
-                elevation: 2,
-                opacity: pressed ? 0.9 : 1,
-              },
-            ]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="folder-open-outline" size={18} color={colors.text} style={{ marginRight: 8 }} />
-              <Text style={{ fontFamily: 'Courier', fontSize: 14, fontWeight: 'bold', color: colors.text, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-                Manage Personals & Merits
-              </Text>
-            </View>
-          </Pressable>
+            appearance="Primary"
+            shape="Rounded"
+            icon={<Ionicons name="folder-open-outline" size={18} color="#FFFFFF" />}
+            isDarkMode={isDarkMode}
+            style={{ width: '100%', height: 48 }}
+          />
         </View>
+
+        {/* ---------------------------------------------------------
+            DEVELOPER SANDBOX MODE BUTTON
+           --------------------------------------------------------- */}
+        <View style={{ marginVertical: 14 }}>
+          <Button
+            label="Developer Sandbox Mode"
+            onPress={() => setIsSandboxVisible(true)}
+            appearance="Secondary"
+            shape="Rounded"
+            icon={<Ionicons name="flask-outline" size={18} color={themeColors.neutralForeground1} />}
+            isDarkMode={isDarkMode}
+            style={{ width: '100%', height: 48 }}
+          />
+        </View>
+
+        {/* ---------------------------------------------------------
+            LOG OUT BUTTON
+           --------------------------------------------------------- */}
+        {onLogout && (
+          <View style={{ marginVertical: 14 }}>
+            <Button
+              label="Log Out"
+              onPress={onLogout}
+              appearance="Outline"
+              shape="Rounded"
+              icon={<Ionicons name="log-out-outline" size={18} color={themeColors.dangerForeground1} />}
+              isDarkMode={isDarkMode}
+              style={{ width: '100%', height: 48, borderColor: themeColors.dangerForeground1 }}
+            />
+          </View>
+        )}
 
         {/* ---------------------------------------------------------
             VOLUNTEERING JOURNEY SECTION (Timeline/Map segment control)
@@ -1252,7 +1313,7 @@ export const Profile: React.FC<ProfileProps> = ({
             elevation: 2,
           }}>
             <Text style={{ fontFamily: 'Courier', fontSize: 11, fontWeight: 'bold', color: colors.text, marginBottom: 6 }}>
-              📅 EVENTS JOINED
+              📅 Opportunities joined
             </Text>
             <View style={{ gap: 4 }}>
               <Text style={{ fontFamily: 'Courier', fontSize: 10, color: colors.text }}>• July 1 - Gwalior Plantation Drive (Registered)</Text>
@@ -1720,6 +1781,20 @@ export const Profile: React.FC<ProfileProps> = ({
               </View>
             </ScrollView>
           </View>
+        </View>
+      </Modal>
+
+      {/* =========================================================
+          MODAL 4: DEVELOPER SANDBOX MODE
+          ========================================================= */}
+      <Modal
+        visible={isSandboxVisible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setIsSandboxVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+          <SandboxCommunityView isDarkMode={isDarkMode} onBack={() => setIsSandboxVisible(false)} />
         </View>
       </Modal>
     </View>

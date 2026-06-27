@@ -144,7 +144,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
       });
 
       if (user.interests && user.interests.length > 0) {
-        onAuthComplete(user);
+        onAuthComplete({ ...user, isNewUser: false });
       } else {
         navigateTo('SIGNUP_INTERESTS');
       }
@@ -227,6 +227,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
       username: formData.username,
       interests: formData.interests,
       role: formData.role,
+      isNewUser: true,
     });
   };
 
@@ -292,7 +293,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
                 onPress={() => navigateTo('LOGIN')}
               >
                 <Text style={[styles.secondaryButtonText, { color: colors.brandForeground1 }]}>
-                  Log In
+                  Sign In
                 </Text>
               </Pressable>
             </View>
@@ -425,7 +426,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
                     },
                   ]}
                 >
-                  Log In
+                  Sign In
                 </Text>
               )}
             </Pressable>

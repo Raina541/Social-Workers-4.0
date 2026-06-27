@@ -286,7 +286,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
                 onPress={() => navigateTo('LOGIN')}
               >
                 <Text style={[styles.secondaryButtonText, { color: colors.brandForeground1 }]}>
-                  Log In
+                  Sign In
                 </Text>
               </Pressable>
             </View>
@@ -419,7 +419,7 @@ export function AuthFlow({ isDarkMode, onAuthComplete }: AuthFlowProps) {
                     },
                   ]}
                 >
-                  Log In
+                  Sign In
                 </Text>
               )}
             </Pressable>

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Colors, Spacing, Typography, Shapes } from './constants/Theme';
-import { Avatar, PresenceState } from './components/Avatar';
+import { PresenceState } from './components/Avatar';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -135,6 +135,18 @@ function MainLayout() {
     }, 100);
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('@has_onboarded');
+      await AsyncStorage.removeItem('@user_data');
+    } catch (e) {
+      console.warn('Failed to clear onboarding status', e);
+    }
+    setUserData(null);
+    setIsOnboarded(false);
+    setActiveTab(0);
+  };
+
   // If status is checking, show loading indicator
   if (isOnboarded === null) {
     return (
@@ -190,7 +202,6 @@ function MainLayout() {
               <View style={[styles.notificationBadge, { backgroundColor: themeColors.brandForeground1 }]} />
             )}
           </Pressable>
-          <Avatar size={32} name="Nilap Saha" presence={presence} isDarkMode={isDarkMode} />
         </View>
       </View>
 
@@ -258,6 +269,8 @@ function MainLayout() {
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
             presence={presence}
             onChangePresence={setPresence}
+            userData={userData}
+            onLogout={handleLogout}
           />
         </View>
       </ScrollView>
@@ -433,7 +446,6 @@ const styles = StyleSheet.create({
   notificationBell: {
     position: 'relative',
     padding: 6,
-    marginRight: Spacing.s,
     alignItems: 'center',
     justifyContent: 'center',
   },

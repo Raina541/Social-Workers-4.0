@@ -1,16 +1,9 @@
 export type CauseType =
+  | 'Health'
   | 'Education'
-  | 'Healthcare'
-  | 'Child Welfare'
-  | 'Poverty Alleviation & Livelihoods'
-  | 'Women Empowerment'
-  | 'Disaster Relief'
-  | 'Environment & Sustainability'
-  | 'Animal Welfare'
-  | 'Support for Persons with Disabilities'
-  | 'Elderly Care'
-  | 'Water, Sanitation, and Hygiene (WASH)'
-  | 'Rural Development';
+  | 'Nature'
+  | 'Shelter'
+  | 'Food';
 
 export interface CommunityItem {
   id: string;
@@ -193,7 +186,7 @@ class PersonalizationService {
     {
       id: 'ip-gw-n1',
       title: 'Gwalior Fort Cleanliness Drive',
-      cause: 'Environment & Sustainability',
+      cause: 'Nature',
       isRemote: false,
       distanceKm: 5.0,
       locationName: 'Fort Road, Lashkar, Gwalior',
@@ -205,7 +198,7 @@ class PersonalizationService {
     {
       id: 'ip-ch-f1',
       title: 'Chennai Soup Kitchen Food Packing',
-      cause: 'Poverty Alleviation & Livelihoods',
+      cause: 'Food',
       isRemote: false,
       distanceKm: 5.0,
       locationName: 'T. Nagar Food Hub, Chennai',
@@ -217,7 +210,7 @@ class PersonalizationService {
     {
       id: 'ip-ch-h1',
       title: 'Chennai Medical Camp Assistant',
-      cause: 'Healthcare',
+      cause: 'Health',
       isRemote: false,
       distanceKm: 5.0,
       locationName: 'Adyar Community Health Pavilion, Chennai',
@@ -241,7 +234,7 @@ class PersonalizationService {
     {
       id: 'opp_2',
       title: 'Water filter installation drive',
-      cause: 'Water, Sanitation, and Hygiene (WASH)',
+      cause: 'Health',
       isRemote: false,
       distanceKm: 6.5,
       locationName: 'Morar, Gwalior',
@@ -406,20 +399,7 @@ class PersonalizationService {
   }
 
   getSortedCauses(): CauseType[] {
-    return [
-      'Education',
-      'Healthcare',
-      'Child Welfare',
-      'Poverty Alleviation & Livelihoods',
-      'Women Empowerment',
-      'Disaster Relief',
-      'Environment & Sustainability',
-      'Animal Welfare',
-      'Support for Persons with Disabilities',
-      'Elderly Care',
-      'Water, Sanitation, and Hygiene (WASH)',
-      'Rural Development',
-    ];
+    return ['Health', 'Education', 'Nature', 'Shelter', 'Food'];
   }
 
   rankOpportunities(opps: Opportunity[]) {
@@ -440,14 +420,14 @@ class PersonalizationService {
 }
 
 export const DOMAIN_TO_CAUSES_MAP: Record<string, CauseType[]> = {
-  'Environment 🌱': ['Environment & Sustainability', 'Water, Sanitation, and Hygiene (WASH)'],
+  'Environment 🌱': ['Nature'],
   'Education 🎓': ['Education'],
-  'Animal Welfare 🐶': ['Animal Welfare'],
-  'Food Rescue 🍎': ['Poverty Alleviation & Livelihoods'],
-  'Elderly Care 👵': ['Elderly Care'],
-  'Youth Mentoring 👦': ['Education', 'Child Welfare'],
-  'Disaster Relief 🚨': ['Disaster Relief'],
-  'Homeless Shelter 🏠': ['Poverty Alleviation & Livelihoods', 'Support for Persons with Disabilities']
+  'Animal Welfare 🐶': ['Nature'],
+  'Food Rescue 🍎': ['Food'],
+  'Elderly Care 👵': ['Health'],
+  'Youth Mentoring 👦': ['Education'],
+  'Disaster Relief 🚨': ['Shelter'],
+  'Homeless Shelter 🏠': ['Shelter']
 };
 
 export const Personalization = new PersonalizationService();

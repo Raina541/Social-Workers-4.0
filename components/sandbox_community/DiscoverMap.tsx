@@ -14,11 +14,11 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
+import { Colors, Spacing, Typography, Shapes } from '../../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 
-import MapView, { Marker, Circle } from './MapModules';
+import MapView, { Marker, Circle } from '../../screens/MapModules';
 
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -659,7 +659,7 @@ export const DiscoverMap: React.FC<DiscoverMapProps> = ({
         {/* Change Location Button */}
         <Pressable
           onPress={() => setShowZipBanner(!showZipBanner)}
-          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground3 }]}
+          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1 }]}
         >
           <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
           <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
@@ -669,12 +669,12 @@ export const DiscoverMap: React.FC<DiscoverMapProps> = ({
 
         {/* Zip Code search banner */}
         {showZipBanner && (
-          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground3 }]}>
+          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
             <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
               Enter ZIP Code:
             </Text>
             <TextInput
-              style={[styles.zipInput, { color: themeColors.neutralForeground1, backgroundColor: themeColors.neutralBackground1 }]}
+              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
               value={zipCode}
               onChangeText={(val) => {
                 setZipCode(val);
@@ -864,7 +864,7 @@ export const DiscoverMap: React.FC<DiscoverMapProps> = ({
         {/* Change Location Button */}
         <Pressable
           onPress={() => setShowZipBanner(!showZipBanner)}
-          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground3, zIndex: 10 }]}
+          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1, zIndex: 10 }]}
         >
           <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
           <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
@@ -874,12 +874,12 @@ export const DiscoverMap: React.FC<DiscoverMapProps> = ({
 
         {/* Zip Code search banner */}
         {showZipBanner && (
-          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground3, zIndex: 10 }]}>
+          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
             <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
               Enter ZIP Code:
             </Text>
             <TextInput
-              style={[styles.zipInput, { color: themeColors.neutralForeground1, backgroundColor: themeColors.neutralBackground1 }]}
+              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
               value={zipCode}
               onChangeText={(val) => {
                 setZipCode(val);
@@ -1070,9 +1070,15 @@ const styles = StyleSheet.create({
     right: Spacing.m,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.m,
+    paddingHorizontal: Spacing.s,
     paddingVertical: Spacing.xs,
-    borderRadius: Shapes.rounded,
+    borderRadius: 8,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
     zIndex: 101,
   },
   zipBannerText: {
@@ -1081,17 +1087,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   zipInput: {
-    borderRadius: Shapes.rounded,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     fontSize: 12,
-    width: 80,
+    width: 70,
     marginRight: Spacing.xs,
+    backgroundColor: '#ffffff',
   },
   zipButton: {
-    borderRadius: Shapes.rounded,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   zipButtonText: {
     color: '#ffffff',
@@ -1104,7 +1112,8 @@ const styles = StyleSheet.create({
     right: Spacing.m,
     paddingHorizontal: Spacing.s,
     paddingVertical: Spacing.xs,
-    borderRadius: Shapes.rounded,
+    borderRadius: 12,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     zIndex: 10,

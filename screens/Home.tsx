@@ -283,18 +283,11 @@ const CARD_WIDTH = ((screenWidth - Spacing.m * 2 - Spacing.s * 1.3) / 2.3) * 0.9
 
 // Unsplash cause icon mapping
 const CAUSE_IMAGES: Record<CauseType, string> = {
+  'Health': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=200',
   'Education': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=200',
-  'Healthcare': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=200',
-  'Child Welfare': 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=200',
-  'Poverty Alleviation & Livelihoods': 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=200',
-  'Women Empowerment': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200',
-  'Disaster Relief': 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=200',
-  'Environment & Sustainability': 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200',
-  'Animal Welfare': 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=200',
-  'Support for Persons with Disabilities': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200',
-  'Elderly Care': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200',
-  'Water, Sanitation, and Hygiene (WASH)': 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=200',
-  'Rural Development': 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=200',
+  'Nature': 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200',
+  'Shelter': 'https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=200',
+  'Food': 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=200',
 };
 
 
@@ -468,12 +461,7 @@ export const Home: React.FC<HomeProps> = ({
   const [showStoryCoachMark, setShowStoryCoachMark] = useState(false);
   const [causeSupportState, setCauseSupportState] = useState<Record<CauseType, { supported: boolean; count: number }>>(() => {
     const initial: any = {};
-    const causesList: CauseType[] = [
-      'Education', 'Healthcare', 'Child Welfare', 'Poverty Alleviation & Livelihoods',
-      'Women Empowerment', 'Disaster Relief', 'Environment & Sustainability', 'Animal Welfare',
-      'Support for Persons with Disabilities', 'Elderly Care', 'Water, Sanitation, and Hygiene (WASH)',
-      'Rural Development'
-    ];
+    const causesList: CauseType[] = ['Health', 'Education', 'Nature', 'Shelter', 'Food'];
     causesList.forEach(c => {
       initial[c] = { supported: false, count: 28 + Math.floor((c.charCodeAt(0) + c.charCodeAt(1)) % 30) };
     });
@@ -482,12 +470,7 @@ export const Home: React.FC<HomeProps> = ({
   
   const [causeBookmarkState, setCauseBookmarkState] = useState<Record<CauseType, boolean>>(() => {
     const initial: any = {};
-    const causesList: CauseType[] = [
-      'Education', 'Healthcare', 'Child Welfare', 'Poverty Alleviation & Livelihoods',
-      'Women Empowerment', 'Disaster Relief', 'Environment & Sustainability', 'Animal Welfare',
-      'Support for Persons with Disabilities', 'Elderly Care', 'Water, Sanitation, and Hygiene (WASH)',
-      'Rural Development'
-    ];
+    const causesList: CauseType[] = ['Health', 'Education', 'Nature', 'Shelter', 'Food'];
     causesList.forEach(c => {
       initial[c] = false;
     });
@@ -631,20 +614,7 @@ export const Home: React.FC<HomeProps> = ({
   // Notifications count disabled in Home screen (moved globally)
 
   // Curated sequence of causes
-  const causesList: CauseType[] = [
-    'Animal Welfare',
-    'Child Welfare',
-    'Disaster Relief',
-    'Education',
-    'Elderly Care',
-    'Environment & Sustainability',
-    'Healthcare',
-    'Poverty Alleviation & Livelihoods',
-    'Rural Development',
-    'Support for Persons with Disabilities',
-    'Water, Sanitation, and Hygiene (WASH)',
-    'Women Empowerment',
-  ];
+  const causesList: CauseType[] = ['Health', 'Education', 'Nature', 'Shelter', 'Food'];
 
   // Category and Pinned Category State
   const [pinnedCause, setPinnedCause] = useState<CauseType | null>(() => {
@@ -749,76 +719,34 @@ export const Home: React.FC<HomeProps> = ({
   // Helper to map causes to custom cover props (icon, color background)
   const getCauseCoverProps = (cause: CauseType) => {
     switch (cause) {
+      case 'Health':
+        return {
+          icon: 'medical-outline',
+          bgColor: themeColors.causeHealth || '#009688',
+          iconFamily: 'Ionicons'
+        };
       case 'Education':
         return {
           icon: 'school-outline',
           bgColor: themeColors.causeEducation || '#9c27b0',
           iconFamily: 'Ionicons'
         };
-      case 'Child Welfare':
-        return {
-          icon: 'baby',
-          bgColor: themeColors.causeChild || '#ff9800',
-          iconFamily: 'MaterialCommunityIcons'
-        };
-      case 'Healthcare':
-        return {
-          icon: 'stethoscope',
-          bgColor: themeColors.causeHealth || '#009688',
-          iconFamily: 'MaterialCommunityIcons'
-        };
-      case 'Women Empowerment':
-        return {
-          icon: 'sparkles-outline',
-          bgColor: themeColors.causeWomen || '#e91e63',
-          iconFamily: 'Ionicons'
-        };
-      case 'Elderly Care':
-        return {
-          icon: 'hand-heart',
-          bgColor: themeColors.causeElderly || '#3f51b5',
-          iconFamily: 'MaterialCommunityIcons'
-        };
-      case 'Poverty Alleviation & Livelihoods':
-        return {
-          icon: 'sprout',
-          bgColor: themeColors.causePoverty || '#4caf50',
-          iconFamily: 'MaterialCommunityIcons'
-        };
-      case 'Animal Welfare':
-        return {
-          icon: 'paw',
-          bgColor: themeColors.causeChild || '#ff9800',
-          iconFamily: 'Ionicons'
-        };
-      case 'Disaster Relief':
-        return {
-          icon: 'help-buoy-outline',
-          bgColor: themeColors.dangerForeground1 || '#c41818',
-          iconFamily: 'Ionicons'
-        };
-      case 'Environment & Sustainability':
+      case 'Nature':
         return {
           icon: 'leaf-outline',
           bgColor: themeColors.causePoverty || '#4caf50',
           iconFamily: 'Ionicons'
         };
-      case 'Rural Development':
+      case 'Shelter':
         return {
           icon: 'home-outline',
           bgColor: '#8d6e63',
           iconFamily: 'Ionicons'
         };
-      case 'Support for Persons with Disabilities':
+      case 'Food':
         return {
-          icon: 'accessibility-outline',
-          bgColor: themeColors.brandForeground1 || '#0f6cbd',
-          iconFamily: 'Ionicons'
-        };
-      case 'Water, Sanitation, and Hygiene (WASH)':
-        return {
-          icon: 'water-outline',
-          bgColor: '#2196f3',
+          icon: 'nutrition-outline',
+          bgColor: themeColors.causeChild || '#ff9800',
           iconFamily: 'Ionicons'
         };
       default:
@@ -2307,9 +2235,6 @@ export const Home: React.FC<HomeProps> = ({
         <Text style={[styles.sectionTitle, Typography.sectionHeading, { color: themeColors.neutralForeground1 }]}>
           Volunteer from anywhere
         </Text>
-        <Text style={[Typography.body, { color: themeColors.neutralForeground3, marginBottom: Spacing.xs, marginTop: -Spacing.xs }]}>
-          Remote volunteering opportunities
-        </Text>
         
         <View style={styles.opportunitiesStack}>
           {(() => {
@@ -2497,7 +2422,7 @@ export const Home: React.FC<HomeProps> = ({
                     ideaId={idea.id}
                     initialCount={idea.initialSupports}
                     hasSupported={hasSupported}
-                    onPress={() => handleSupportIdea(idea.id, 'Child Welfare')}
+                    onPress={() => handleSupportIdea(idea.id, 'Education')}
                     isDarkMode={isDarkMode}
                     themeColors={themeColors}
                   />
@@ -3520,6 +3445,7 @@ export const Home: React.FC<HomeProps> = ({
         >
           <OpportunityDetail
             opportunityId={selectedOnlineOpportunity.id}
+            opportunityData={selectedOnlineOpportunity}
             isDarkMode={isDarkMode}
             onBack={() => setSelectedOnlineOpportunity(null)}
             onViewNgo={(ngoName) => {

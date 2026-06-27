@@ -150,18 +150,31 @@ const getCombinedHeading = (title: string, desc: string) => {
 };
 
 interface OpportunityDetailProps {
-  opportunityId: string;
+  opportunityId?: string;
+  opportunityData?: any;
+  route?: {
+    params?: {
+      opportunityId?: string;
+      opportunityData?: any;
+    };
+  };
   isDarkMode?: boolean;
   onBack: () => void;
   onViewNgo: (ngoName: string) => void;
 }
 
 export function OpportunityDetail({
-  opportunityId = 'opp_garden',
+  opportunityId: propOpportunityId,
+  opportunityData: propOpportunityData,
+  route,
   isDarkMode = false,
   onBack,
   onViewNgo,
 }: OpportunityDetailProps) {
+  // Extract parameters from props or navigation route params
+  const opportunityId = propOpportunityId || route?.params?.opportunityId || 'opp_garden';
+  const opportunityData = propOpportunityData || route?.params?.opportunityData || null;
+
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
   const backendUrl = getBackendUrl();
 
@@ -387,9 +400,30 @@ export function OpportunityDetail({
   const headerHidden = useRef(false);
 
   const handleScroll = (event: any) => {
-    const currentOffset = event.nativeEvent.contentOffset.y;
-    // Check if scrolling down or up
-    if (currentOffset <= 0) {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const currentOffset = contentOffset.y;
+    const isNearBottom = 
+      layoutMeasurement.height + currentOffset >= contentSize.height - 100;
+
+    if (isNearBottom) {
+      // Near bottom, explicitly reveal bars
+      if (footerHidden.current) {
+        footerHidden.current = false;
+        Animated.timing(footerTranslateY, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+      if (headerHidden.current) {
+        headerHidden.current = false;
+        Animated.timing(headerTranslateY, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    } else if (currentOffset <= 0) {
       // At the top, make sure it is shown
       if (footerHidden.current) {
         footerHidden.current = false;
@@ -456,16 +490,39 @@ export function OpportunityDetail({
   const fetchOpportunityDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${backendUrl}/api/opportunities/${opportunityId}`);
+
+      const ID_MAP: Record<string, string> = {
+        'ip-h1': 'opp_2', 'ip-h2': 'opp_10', 'ol-h1': 'opp_2', 'ol-h2': 'opp_10', 'mv-h1': 'opp_2', 'mv-h2': 'opp_10',
+        'ip-e1': 'opp_1', 'ip-e2': 'opp_11', 'ol-e1': 'opp_1', 'ol-e2': 'opp_11', 'mv-e1': 'opp_6', 'mv-e2': 'opp_11',
+        'ip-v1': 'opp_4', 'ip-v2': 'opp_4',  'ol-v1': 'opp_9', 'ol-v2': 'opp_4',  'mv-v1': 'opp_4', 'mv-v2': 'opp_9',
+        'ip-s1': 'opp_3', 'ip-s2': 'opp_12', 'ol-s1': 'opp_3', 'ol-s2': 'opp_12', 'mv-s1': 'opp_3', 'mv-s2': 'opp_12',
+        'ip-f1': 'opp_garden', 'ip-f2': 'opp_3', 'ol-f1': 'opp_garden', 'ol-f2': 'opp_3', 'mv-f1': 'opp_garden', 'mv-f2': 'opp_3',
+        'ip-gw-e1': 'opp_1', 'ip-gw-n1': 'opp_4', 'ip-ch-f1': 'opp_3', 'ip-ch-h1': 'opp_2'
+      };
+
+      const targetId = ID_MAP[opportunityId] || opportunityId;
+
+      const response = await fetch(`${backendUrl}/api/opportunities/${targetId}`);
       if (response.ok) {
         const data = await response.json();
-        setOpportunity(data);
-        if (data.slots && data.slots.length > 0) {
-          setSelectedSlot(data.slots[0]);
+        
+        // Merge optional opportunityData overrides
+        const mergedData = {
+          ...data,
+          title: opportunityData?.title || data.title,
+          description: opportunityData?.description || opportunityData?.shortDescription || data.description,
+          bannerImage: opportunityData?.imageUri || data.bannerImage,
+          locationName: opportunityData?.location || data.locationName,
+          dateString: opportunityData?.displayDate || data.dateString,
+        };
+
+        setOpportunity(mergedData);
+        if (mergedData.slots && mergedData.slots.length > 0) {
+          setSelectedSlot(mergedData.slots[0]);
         }
         // Initialize documents from opportunity config
-        if (data.requiredDocuments) {
-          setDocuments(data.requiredDocuments.map((doc: any) => ({
+        if (mergedData.requiredDocuments) {
+          setDocuments(mergedData.requiredDocuments.map((doc: any) => ({
             ...doc,
             status: 'pending',
             lastUpdated: null
@@ -476,16 +533,34 @@ export function OpportunityDetail({
       }
     } catch (error) {
       console.warn('Backend fetch failed, loading local mock fallback...', error);
+      
+      const ID_MAP: Record<string, string> = {
+        'ip-h1': 'opp_2', 'ip-h2': 'opp_10', 'ol-h1': 'opp_2', 'ol-h2': 'opp_10', 'mv-h1': 'opp_2', 'mv-h2': 'opp_10',
+        'ip-e1': 'opp_1', 'ip-e2': 'opp_11', 'ol-e1': 'opp_1', 'ol-e2': 'opp_11', 'mv-e1': 'opp_6', 'mv-e2': 'opp_11',
+        'ip-v1': 'opp_4', 'ip-v2': 'opp_4',  'ol-v1': 'opp_9', 'ol-v2': 'opp_4',  'mv-v1': 'opp_4', 'mv-v2': 'opp_9',
+        'ip-s1': 'opp_3', 'ip-s2': 'opp_12', 'ol-s1': 'opp_3', 'ol-s2': 'opp_12', 'mv-s1': 'opp_3', 'mv-s2': 'opp_12',
+        'ip-f1': 'opp_garden', 'ip-f2': 'opp_3', 'ol-f1': 'opp_garden', 'ol-f2': 'opp_3', 'mv-f1': 'opp_garden', 'mv-f2': 'opp_3',
+        'ip-gw-e1': 'opp_1', 'ip-gw-n1': 'opp_4', 'ip-ch-f1': 'opp_3', 'ip-ch-h1': 'opp_2'
+      };
+
+      const targetId = ID_MAP[opportunityId] || opportunityId;
+
       // Find the opportunity in the exported opportunities.json database
-      const baseOpp = (opportunitiesData as any[]).find((o: any) => o.id === opportunityId) || (opportunitiesData as any[]).find((o: any) => o.id === 'opp_garden');
+      const baseOpp = (opportunitiesData as any[]).find((o: any) => o.id === targetId);
       
       if (baseOpp) {
-        // Build mockData fully from baseOpp
+        // Build mockData fully from baseOpp, and merge with opportunityData from card if provided
         const mockData = {
           ...baseOpp,
+          // Merge dynamic card content overrides!
+          title: opportunityData?.title || baseOpp.title,
+          description: opportunityData?.description || opportunityData?.shortDescription || baseOpp.description,
+          bannerImage: opportunityData?.imageUri || baseOpp.bannerImage,
+          locationName: opportunityData?.location || baseOpp.locationName,
+          dateString: opportunityData?.displayDate || baseOpp.dateString,
+          
           // Fallbacks for any missing arrays/nested objects
           tags: baseOpp.tags || [baseOpp.isRemote ? "Remote" : "In-Person", baseOpp.cause, baseOpp.categoryTag || "General"],
-          bannerImage: baseOpp.bannerImage || "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1000",
           organizationLogo: baseOpp.organizationLogo || "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=80",
           organizerBackstory: baseOpp.organizerBackstory || `This project supports critical community needs in ${baseOpp.cause.toLowerCase()} by coordinating volunteer efforts to work directly with ${baseOpp.organizationName}. Your involvement ensures that essential services are consistently delivered to our community members.`,
           backstoryBlueprintUri: baseOpp.backstoryBlueprintUri !== undefined ? baseOpp.backstoryBlueprintUri : "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800",
@@ -550,6 +625,7 @@ export function OpportunityDetail({
         })));
       } else {
         console.error("Opportunity fallback item not found");
+        setOpportunity(null);
       }
     } finally {
       setLoading(false);
@@ -656,7 +732,7 @@ export function OpportunityDetail({
   // Profile Documents synchronization
   const handleFetchFromProfile = async () => {
     setSyncingFromProfile(true);
-    triggerToast("Accessing volunteer credential vault...");
+    triggerToast("Retrieving your profile documents...");
     try {
       const response = await fetch(`${backendUrl}/api/users/profile/documents?username=volunteer_user`);
       setTimeout(async () => {
@@ -667,7 +743,7 @@ export function OpportunityDetail({
             const matched = profileDocs.find((d: any) => d.id === doc.id);
             return matched ? { ...doc, status: 'uploaded', lastUpdated: matched.lastUpdated || 'Just now' } : doc;
           }));
-          triggerToast("Successfully synced compliance documentation!");
+          triggerToast("Profile documents updated");
         } else {
           // Fake local success state mapping
           setDocuments(prev => prev.map(doc => {
@@ -682,7 +758,7 @@ export function OpportunityDetail({
       }, 1000);
     } catch (e) {
       setSyncingFromProfile(false);
-      triggerToast("Sync error. Checked profiles locally.");
+      triggerToast("Connection lost. Using offline profile info.");
     }
   };
 
@@ -847,7 +923,7 @@ export function OpportunityDetail({
       "Add to Calendar",
       "Would you like to sync this slot to Google Calendar or Apple Calendar?",
       [
-        { text: "Google Calendar", onPress: () => triggerToast("Syncing with Google Calendar API...") },
+        { text: "Google Calendar", onPress: () => triggerToast("Adding to Google Calendar...") },
         { text: "Apple Calendar (.ics)", onPress: () => triggerToast("Downloaded calendar event file successfully.") },
         { text: "Cancel", style: "cancel" }
       ]
@@ -859,6 +935,20 @@ export function OpportunityDetail({
       <View style={[styles.loadingWrapper, { backgroundColor: themeColors.neutralBackground1 }]}>
         <ActivityIndicator size="large" color={accentColor} />
         <Text style={{ marginTop: Spacing.s, color: themeColors.neutralForeground2 }}>Loading details...</Text>
+      </View>
+    );
+  }
+
+  if (!opportunity) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: themeColors.neutralBackground1 }]}>
+        <Ionicons name="alert-circle-outline" size={48} color={themeColors.warningForeground1} />
+        <Text style={[styles.errorText, { color: themeColors.neutralForeground1 }]}>
+          Opportunity details could not be loaded right now. Please try again.
+        </Text>
+        <Pressable onPress={onBack} style={[styles.errorBackBtn, { backgroundColor: themeColors.brandBackground }]}>
+          <Text style={styles.errorBackBtnText}>Go Back</Text>
+        </Pressable>
       </View>
     );
   }
@@ -1059,7 +1149,7 @@ export function OpportunityDetail({
           {/* Critical Requirements Card Separation */}
           <View style={[styles.requirementsCard, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1 }]}>
             <View style={styles.requirementsHeaderRow}>
-              <Text style={[styles.requirementsCardTitle, { color: themeColors.neutralForeground1 }]}>Critical requirements & restrictions</Text>
+              <Text style={[styles.requirementsCardTitle, { color: themeColors.neutralForeground1 }]}>Prerequisites</Text>
             </View>
             
             {opportunity.requirements && opportunity.requirements
@@ -1280,7 +1370,7 @@ export function OpportunityDetail({
               } else if (doc.id === 'doc_photo_id') {
                 docLabel = "Government photo ID (Required)";
               } else if (doc.id === 'doc_credential_sync') {
-                docLabel = "Partner credential sync (Optional)";
+                docLabel = "Partner document sync (Optional)";
               }
               return (
                 <View key={doc.id} style={{ marginBottom: Spacing.s, flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -1536,7 +1626,7 @@ export function OpportunityDetail({
         {isRegistered ? (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Button
-              label="Add to Cal"
+              label="Add to Calendar"
               onPress={handleAddToCalendar}
               appearance="Outline"
               size="Small"
@@ -1545,8 +1635,24 @@ export function OpportunityDetail({
               isDarkMode={isDarkMode}
             />
             <Button
-              label="Registered ✓"
-              onPress={() => triggerToast("You are registered! Check your calendar sync.")}
+              label="✓ Registered"
+              onPress={() => {
+                Alert.alert(
+                  "Cancel Registration",
+                  "Are you sure you want to cancel your registration for this opportunity?",
+                  [
+                    { text: "Keep Registration", style: "cancel" },
+                    {
+                      text: "Cancel Registration",
+                      style: "destructive",
+                      onPress: () => {
+                        setIsRegistered(false);
+                        triggerToast("Registration cancelled");
+                      }
+                    }
+                  ]
+                );
+              }}
               appearance="Primary"
               shape="Rounded"
               style={{ backgroundColor: themeColors.successForeground1 }}
@@ -1589,7 +1695,7 @@ export function OpportunityDetail({
                 </Animated.View>
                 <Text style={[styles.successTitle, { color: themeColors.neutralForeground1 }]}>Registered Successfully!</Text>
                 <Text style={[styles.successSubtitle, { color: themeColors.neutralForeground3 }]}>
-                  We notified your mutual contacts. Your coordinates are logged under the {opportunity.cause} cause dashboard.
+                  We notified your mutual contacts. Your registration is saved under the {opportunity.cause} cause dashboard.
                 </Text>
               </View>
             ) : (
@@ -1662,7 +1768,7 @@ export function OpportunityDetail({
                     displaySubtext = "Required before arrival";
                   } else if (doc.id === 'doc_credential_sync') {
                     displayTitleNode = (
-                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1 }]}>Partner credential sync</Text>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1 }]}>Partner document sync</Text>
                     );
                     displaySubtext = "Optional";
                   } else {
@@ -1969,6 +2075,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: Spacing.m,
+    marginBottom: Spacing.l,
+    textAlign: 'center',
+  },
+  errorBackBtn: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.s,
+    borderRadius: Shapes.rounded,
+  },
+  errorBackBtnText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   scrollContent: {
     paddingBottom: Spacing.xxl,

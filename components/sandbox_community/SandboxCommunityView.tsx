@@ -15,24 +15,13 @@ import {
   ImageStyle,
   Alert,
 } from 'react-native';
-import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
+import { Colors, Spacing, Typography, Shapes } from '../../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '../components/Avatar';
+import { Avatar } from '../Avatar';
 import * as Location from 'expo-location';
 
-// Try loading react-native-maps. Provide mock fallback if on Web or if it fails.
-let MapView: any;
-let Marker: any;
-let Circle: any;
+import MapView, { Marker, Circle } from '../../screens/MapModules';
 
-try {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-  Circle = Maps.Circle;
-} catch (e) {
-  // Web Fallback will be used
-}
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const drawerHeight = screenHeight - 110;
@@ -118,7 +107,7 @@ const getRegionForRadius = (center: GeoCoords, radiusKm: number) => {
   };
 };
 
-export const SandboxCommunityView: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = false }) => {
+export const SandboxCommunityView: React.FC<{ isDarkMode?: boolean; onBack?: () => void }> = ({ isDarkMode = false, onBack }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
   // VIEW MODE: 'dashboard' | 'search' | 'map'
@@ -1627,6 +1616,24 @@ export const SandboxCommunityView: React.FC<{ isDarkMode?: boolean }> = ({ isDar
       <View style={[styles.dashboardContainer, { backgroundColor: themeColors.neutralBackground2 }]}>
         {/* Rounded sticky search bar row */}
         <View style={styles.dashboardHeaderRow}>
+          {onBack && (
+            <Pressable
+              onPress={onBack}
+              style={{
+                marginRight: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: themeColors.neutralBackground1,
+                borderWidth: 1,
+                borderColor: themeColors.neutralStroke2,
+              }}
+            >
+              <Ionicons name="arrow-back" size={20} color={themeColors.neutralForeground1} />
+            </Pressable>
+          )}
           <Pressable
             onPress={() => setViewMode('search')}
             style={[styles.dashboardSearchBar, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}
@@ -1669,7 +1676,7 @@ export const SandboxCommunityView: React.FC<{ isDarkMode?: boolean }> = ({ isDar
 
           {/* Vertically stacked list layout of communities */}
           <Text style={[styles.stripTitle, Typography.captionStrong, { color: themeColors.neutralForeground2, marginTop: Spacing.m }]}>
-            COMMUNITIES
+            CHANNELS & COMMUNITIES
           </Text>
 
           <View style={styles.channelsListContainer}>

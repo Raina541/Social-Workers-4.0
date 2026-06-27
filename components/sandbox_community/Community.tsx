@@ -9,11 +9,9 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { Colors, Spacing, Shapes, Typography } from '../constants/Theme';
+import { Colors, Spacing, Typography } from '../../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '../components/Avatar';
-import { Button } from '../components/Button';
-import { Personalization } from '../services/personalization';
+import { Avatar } from '../Avatar';
 
 // Subcomponents
 import { DirectMessage } from './DirectMessage';
@@ -47,8 +45,7 @@ export const Community: React.FC<{
   isDarkMode?: boolean;
   onToggleTabBar?: (visible: boolean) => void;
   activeTab?: number;
-  setParentScrollEnabled?: (enabled: boolean) => void;
-}> = ({ isDarkMode = false, onToggleTabBar, activeTab, setParentScrollEnabled }) => {
+}> = ({ isDarkMode = false, onToggleTabBar, activeTab }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
   // Subscreen navigation and UI states
@@ -64,7 +61,6 @@ export const Community: React.FC<{
   useEffect(() => {
     if (activeTab === 2) {
       setActiveSubTab('following');
-      setCommunities(Personalization.getCommunities());
     }
   }, [activeTab]);
 
@@ -77,7 +73,47 @@ export const Community: React.FC<{
     { name: 'Diana Prince', unreadCount: 3, imageUri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' },
   ]);
 
-  const [communities, setCommunities] = useState<CommunityItem[]>(() => Personalization.getCommunities());
+  const [communities, setCommunities] = useState<CommunityItem[]>([
+    {
+      id: 'c1',
+      name: 'Child Welfare Services Taskforce',
+      members: 86,
+      activeMembers: 12,
+      lastMessage: 'Aman: Let me know if there are active cases in the North sector.',
+      time: '9:02 AM',
+      unreadCount: 4,
+      isPinned: true,
+      isMuted: false,
+      imageUri: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=150',
+      tags: ['Child Welfare', 'Education'],
+    },
+    {
+      id: 'c2',
+      name: 'Mental Health Support Group',
+      members: 54,
+      activeMembers: 5,
+      lastMessage: 'Bob: Shared resources for rehabilitation clinics.',
+      time: 'Yesterday',
+      unreadCount: 0,
+      isPinned: false,
+      isMuted: false,
+      imageUri: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=150',
+      tags: ['Mental Health', 'Support'],
+    },
+    {
+      id: 'c3',
+      name: 'Housing & Emergency Relocations',
+      members: 110,
+      activeMembers: 18,
+      lastMessage: 'Diana: Hotel vouchers have been updated in the room status list.',
+      time: '2 days ago',
+      unreadCount: 0,
+      isPinned: false,
+      isMuted: true,
+      imageUri: 'https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=150',
+      tags: ['Housing', 'Emergency Relief'],
+    },
+  ]);
 
   // Discover items states
   const [discoverCommunities, setDiscoverCommunities] = useState<CommunityItem[]>([
@@ -149,11 +185,6 @@ export const Community: React.FC<{
       onToggleTabBar?.(true);
     };
   }, [selectedColleague, selectedCommunity, onToggleTabBar]);
-
-  // Sync communities to Personalization service
-  useEffect(() => {
-    Personalization.setCommunities(communities);
-  }, [communities]);
 
   // Handle Channel Context Menu options
   const handleTogglePin = (id: string) => {
@@ -293,6 +324,38 @@ export const Community: React.FC<{
     <View style={[styles.container, { backgroundColor: themeColors.neutralBackground2 }]}>
       {/* Floating Capsule Search Bar & Navigation Tabs Header */}
       <View style={{ backgroundColor: themeColors.neutralBackground2, zIndex: 10 }}>
+        {/* Floating Capsule Search Bar */}
+        <View
+          style={[
+            styles.floatingSearchBarContainer,
+            {
+              backgroundColor: themeColors.neutralBackground1,
+              borderColor: isSearchFocused ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+            },
+          ]}
+        >
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color={themeColors.neutralForeground3}
+            style={{ marginRight: Spacing.s }}
+          />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Look for communities and friends"
+            placeholderTextColor={themeColors.neutralForegroundDisabled}
+            style={[styles.globalSearchInput, { color: themeColors.neutralForeground1 }]}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
+              <Ionicons name="close-circle" size={18} color={themeColors.neutralForeground3} />
+            </Pressable>
+          )}
+        </View>
+
         {/* Two Tab Navigation Menu */}
         <View style={styles.tabBarContainer}>
           {/* Following Tab */}
@@ -349,59 +412,18 @@ export const Community: React.FC<{
             </Text>
           </Pressable>
         </View>
-
-        {/* Floating Capsule Search Bar */}
-        <View
-          style={[
-            styles.floatingSearchBarContainer,
-            {
-              backgroundColor: themeColors.neutralBackground1,
-              borderColor: isSearchFocused ? themeColors.brandForeground1 : themeColors.neutralStroke2,
-            },
-          ]}
-        >
-          <Ionicons
-            name="search-outline"
-            size={18}
-            color={themeColors.neutralForeground3}
-            style={{ marginRight: Spacing.s }}
-          />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Look for communities and friends"
-            placeholderTextColor={themeColors.neutralForegroundDisabled}
-            style={[styles.globalSearchInput, { color: themeColors.neutralForeground1 }]}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
-              <Ionicons name="close-circle" size={18} color={themeColors.neutralForeground3} />
-            </Pressable>
-          )}
-        </View>
       </View>
 
       {/* Main Content Areas */}
-      <View style={{ flex: 1, display: activeSubTab === 'following' ? 'flex' : 'none' }}>
+      {activeSubTab === 'following' ? (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Direct Messages Strip */}
           {filteredColleagues.length > 0 && (
             <>
               <Text style={[styles.stripTitle, Typography.captionStrong, { color: themeColors.neutralForeground2 }]}>
-                Direct messages
+                DIRECT MESSAGES
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.friendsStrip}
-                onTouchStart={() => setParentScrollEnabled?.(false)}
-                onTouchEnd={() => setParentScrollEnabled?.(true)}
-                onScrollBeginDrag={() => setParentScrollEnabled?.(false)}
-                onScrollEndDrag={() => setParentScrollEnabled?.(true)}
-                onMomentumScrollEnd={() => setParentScrollEnabled?.(true)}
-              >
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.friendsStrip}>
                 {filteredColleagues.map((item) => (
                   <Pressable key={item.name} onPress={() => setSelectedColleague(item.name)} style={styles.friendAvatarItem}>
                     <View style={styles.avatarWrapper}>
@@ -421,9 +443,9 @@ export const Community: React.FC<{
             </>
           )}
 
-          {/* Communities Section */}
+          {/* Channels Section */}
           <Text style={[styles.stripTitle, Typography.captionStrong, { color: themeColors.neutralForeground2, marginTop: Spacing.m }]}>
-            Your communities
+            CHANNELS
           </Text>
 
           <View style={styles.channelsListContainer}>
@@ -440,26 +462,23 @@ export const Community: React.FC<{
                 </Text>
               </View>
               <Text style={[Typography.caption, { color: themeColors.neutralForeground1, marginVertical: Spacing.s }]}>
-                Create a group to organize events and collaborate with colleagues.
+                Create a new channel to coordinate, host events, and group collaborate with colleagues around specific social work causes.
               </Text>
-              <Button
-                label="+ Create New Community"
+              <Pressable
                 onPress={() => setCreateModalVisible(true)}
-                appearance="Primary"
-                isDarkMode={isDarkMode}
-                style={{ width: '100%', marginTop: Spacing.s }}
-              />
+                style={[styles.nudgeButton, { backgroundColor: themeColors.brandForeground1 }]}
+              >
+                <Text style={styles.nudgeButtonText}>+ Create New Channel</Text>
+              </Pressable>
             </View>
           )}
         </ScrollView>
-      </View>
-
-      <View style={{ flex: 1, display: activeSubTab === 'discover' ? 'flex' : 'none' }}>
+      ) : (
         <DiscoverMap
           isDarkMode={isDarkMode}
           onJoinCommunity={handleJoinCommunity}
         />
-      </View>
+      )}
 
       {/* Long Press Actions Modal */}
       <Modal visible={longPressedCommunity !== null} transparent animationType="fade">
@@ -741,8 +760,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: Spacing.m,
-    marginTop: Spacing.s,
-    marginBottom: Spacing.m,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.s,
     paddingHorizontal: Spacing.m,
     borderRadius: 24, // pill-shaped capsule
     borderWidth: 1,
@@ -759,7 +778,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'transparent',
     marginBottom: Spacing.xs,
-    marginTop: Spacing.m,
   },
   subTabButton: {
     flexDirection: 'row',
