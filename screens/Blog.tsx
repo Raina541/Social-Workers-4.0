@@ -25,6 +25,7 @@ interface BlogProps {
   isDarkMode?: boolean;
   setParentScrollEnabled?: (enabled: boolean) => void;
   onViewNgo?: (ngoName: string) => void;
+  userData?: any;
 }
 
 interface Article {
@@ -328,7 +329,7 @@ const renderMarkdownContent = (text: string, themeColors: any) => {
 };
 
 
-export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollEnabled, onViewNgo }) => {
+export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollEnabled, onViewNgo, userData }) => {
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
   const insets = useSafeAreaInsets();
 
@@ -599,7 +600,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
     const serializedContent = serializeBlocksToContent(editorBlocks);
     const isEdit = editorMode === 'edit' && editingArticle !== null;
     const articleId = isEdit ? editingArticle!.id : `user-${Date.now()}`;
-    const authorName = isEdit ? editingArticle!.author : 'Nilap Saha';
+    const authorName = isEdit ? editingArticle!.author : (userData?.fullName || 'Nilap Saha');
     const postDate = isEdit ? editingArticle!.date : 'June 20, 2026';
     
     const wordCount = serializedContent.split(/\s+/).length;
@@ -1352,7 +1353,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
               </Text>
               
               <View style={styles.detailHeaderActions}>
-                {selectedArticle.author === 'Nilap Saha' && (
+                {selectedArticle.author === (userData?.fullName || 'Nilap Saha') && (
                   <Pressable
                     onPress={() => {
                       const articleToEdit = selectedArticle;
@@ -1569,7 +1570,7 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
 
                 {/* Direct-to-Author Feedback Section */}
                 <View style={[styles.feedbackSectionContainer, { borderTopWidth: 1, borderTopColor: themeColors.neutralStroke2, marginTop: Spacing.xl, paddingTop: Spacing.l }]}>
-                  {selectedArticle.author === 'Nilap Saha' ? (
+                  {selectedArticle.author === (userData?.fullName || 'Nilap Saha') ? (
                     /* Author View */
                     <View style={styles.feedbackAuthorContainer}>
                       <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>

@@ -120,6 +120,76 @@ export const DOMAINS: DomainConfig[] = [
 
 export const MOCK_OPPORTUNITIES: Record<'In-person' | 'Online' | 'Micro volunteering', Opportunity[]> = {
   'In-person': [
+    {
+      id: 'ip-chennai-1',
+      title: 'Marina Beach Cleanup',
+      shortDescription: 'Clean plastic pollution along Marina Beach in Chennai.',
+      description: 'Gather at Marina Lighthouse to collect waste, plastics, and debris from the shores of Chennai. Helps protect local marine life and maintain clean coastlines.',
+      domainId: 'environment',
+      timeCommitment: '3 hrs/week',
+      durationAbbreviation: '3h',
+      date: '2026-07-05',
+      displayDate: 'Jul 5, 2026',
+      location: 'Marina Beach, Chennai',
+      impact: 'Cleans 500m coastline',
+      imageUri: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+    },
+    {
+      id: 'ip-gwalior-1',
+      title: 'Gwalior Fort Tree Planting',
+      shortDescription: 'Plant native saplings at Gwalior Fort foothills.',
+      description: 'Join us in planting local shrubs and shade-giving trees near Gwalior Fort. Helps reduce soil erosion and improve green cover in the region.',
+      domainId: 'environment',
+      timeCommitment: '4 hrs/week',
+      durationAbbreviation: '4h',
+      date: '2026-07-06',
+      displayDate: 'Jul 6, 2026',
+      location: 'Fort Foothills Park, Gwalior',
+      impact: 'Plants 150 saplings',
+      imageUri: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    },
+    {
+      id: 'ip-bangalore-1',
+      title: 'Tech Mentoring for Kids',
+      shortDescription: 'Teach basic computer science to children in Bangalore.',
+      description: 'Spend a weekend helping middle school students learn computational thinking and Scratch programming at our community lab in Bangalore.',
+      domainId: 'education',
+      timeCommitment: '2 hrs/week',
+      durationAbbreviation: '2h',
+      date: '2026-07-07',
+      displayDate: 'Jul 7, 2026',
+      location: 'Indiranagar Youth Club, Bangalore',
+      impact: 'Mentors 15 students',
+      imageUri: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800',
+    },
+    {
+      id: 'ip-pune-1',
+      title: 'Pune Food Rescue Drive',
+      shortDescription: 'Distribute surplus food to Pune local shelters.',
+      description: 'Help rescue excess cooked meals from partners in Pune and deliver them to shelter homes. Packing containers and delivery vehicle support provided.',
+      domainId: 'food',
+      timeCommitment: '3 hrs/week',
+      durationAbbreviation: '3h',
+      date: '2026-07-08',
+      displayDate: 'Jul 8, 2026',
+      location: 'Kothrud, Pune',
+      impact: 'Feeds 100+ daily',
+      imageUri: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800',
+    },
+    {
+      id: 'ip-varanasi-1',
+      title: 'Ghat Literacy Circles',
+      shortDescription: 'Conduct free reading lessons at Assi Ghat, Varanasi.',
+      description: 'Support under-resourced local children by teaching basic Hindi and English reading, grammar, and sentence structures at Assi Ghat.',
+      domainId: 'education',
+      timeCommitment: '2 hrs/week',
+      durationAbbreviation: '2h',
+      date: '2026-07-09',
+      displayDate: 'Jul 9, 2026',
+      location: 'Assi Ghat, Varanasi',
+      impact: 'Teaches 20+ kids',
+      imageUri: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800',
+    },
     // Health
     {
       id: 'ip-h1',
@@ -559,6 +629,90 @@ export const MOCK_OPPORTUNITIES: Record<'In-person' | 'Online' | 'Micro voluntee
       impact: 'Saves families up to 25% on groceries',
       imageUri: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800',
     },
+    {
+      id: 'mv-e3',
+      title: 'Verify OpenStreetMap School Locations',
+      shortDescription: 'Check and verify school coordinates in rural areas.',
+      description: 'Use satellite imagery on your phone to confirm if flagged locations in rural India match school structures. Helps map educational access.',
+      domainId: 'education',
+      timeCommitment: '10 mins (One-time)',
+      durationAbbreviation: '10m',
+      date: '2026-06-21',
+      displayDate: 'Jun 21, 2026',
+      location: 'Remote (OpenStreetMap App)',
+      impact: 'Validates 5 school coordinates',
+      imageUri: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800',
+    },
+    {
+      id: 'mv-v3',
+      title: 'Report Local Potholes',
+      shortDescription: 'Submit road damage photos to the municipal portal.',
+      description: 'Help improve pedestrian safety. Snap a photo of potholes or broken pavements on your street and upload them to the city portal in under 10 minutes.',
+      domainId: 'environment',
+      timeCommitment: '10 mins (One-time)',
+      durationAbbreviation: '10m',
+      date: '2026-06-25',
+      displayDate: 'Jun 25, 2026',
+      location: 'Local Neighborhood',
+      impact: 'Flags road hazards for fixing',
+      imageUri: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800',
+    },
+    {
+      id: 'mv-h3',
+      title: 'Share COVID/Flu Vaccine Clinic Info',
+      shortDescription: 'Post free local vaccine clinic dates on community boards.',
+      description: 'Help boost community health. Take our pre-made local vaccine clinic flyer and post it to local neighborhood chats or apartment WhatsApp groups.',
+      domainId: 'health',
+      timeCommitment: '15 mins (One-time)',
+      durationAbbreviation: '15m',
+      date: '2026-06-19',
+      displayDate: 'Jun 19, 2026',
+      location: 'Remote (WhatsApp/Telegram)',
+      impact: 'Reaches 150+ neighbors',
+      imageUri: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=800',
+    },
+    {
+      id: 'mv-f3',
+      title: 'Log Food Expiry in Shared Fridge',
+      shortDescription: 'Help audit items in the community fridge.',
+      description: 'Visit the community fridge in your neighborhood, check the expiration dates of the items inside, and log them on our shared spreadsheet.',
+      domainId: 'food',
+      timeCommitment: '15 mins (One-time)',
+      durationAbbreviation: '15m',
+      date: '2026-06-28',
+      displayDate: 'Jun 28, 2026',
+      location: 'Community Fridge Center',
+      impact: 'Prevents food wastage',
+      imageUri: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800',
+    },
+    {
+      id: 'mv-s3',
+      title: 'Transcribe Shelter Intake Forms',
+      shortDescription: 'Transcribe scanned paper forms into digital records.',
+      description: 'Help our local shelter go paperless. Transcribe 3 handwritten intake forms into our secure database from the comfort of your home.',
+      domainId: 'shelter',
+      timeCommitment: '30 mins (One-time)',
+      durationAbbreviation: '30m',
+      date: '2026-06-18',
+      displayDate: 'Jun 18, 2026',
+      location: 'Remote (Web Portal)',
+      impact: 'Processes 3 resident records',
+      imageUri: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800',
+    },
+    {
+      id: 'mv-f4',
+      title: 'Sort Non-Perishables at Food Bank',
+      shortDescription: 'Quickly sort donated cans by category.',
+      description: 'Stop by the community food bank for a quick 30-minute session to sort incoming canned food into beans, vegetables, and soups.',
+      domainId: 'food',
+      timeCommitment: '30 mins (One-time)',
+      durationAbbreviation: '30m',
+      date: '2026-06-20',
+      displayDate: 'Jun 20, 2026',
+      location: 'Local Food Bank',
+      impact: 'Sorts 50+ food items',
+      imageUri: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800',
+    },
   ],
 };
 
@@ -773,6 +927,7 @@ export const Feed: React.FC<FeedProps> = ({
   };
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Date Filter States
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -869,6 +1024,14 @@ export const Feed: React.FC<FeedProps> = ({
         // Apply date-wise filter
         if (!matchesDateFilter(o)) return false;
 
+        // Apply time-wise filter if specified
+        if (timeFilter !== undefined) {
+          const commitmentMins = parseInt(o.durationAbbreviation.replace(/[^0-9]/g, ''), 10);
+          if (isNaN(commitmentMins) || commitmentMins !== timeFilter) {
+            return false;
+          }
+        }
+
         // Apply text search filter
         if (!cleanQuery) return true;
         return (
@@ -900,6 +1063,9 @@ export const Feed: React.FC<FeedProps> = ({
     setSearchQuery('');
     setSelectedFilterType('all');
     setSelectedCustomDate('');
+    if (onChangeTimeFilter) {
+      onChangeTimeFilter(undefined);
+    }
   };
 
   // Handle tab mode selection
@@ -1066,14 +1232,29 @@ export const Feed: React.FC<FeedProps> = ({
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.neutralBackground2 }]}>
       {/* 1. Local Search Bar */}
       <View style={[styles.searchContainer, { backgroundColor: themeColors.neutralBackground1 }]}>
-        <View style={[styles.searchBar, { backgroundColor: themeColors.neutralBackground3 }]}>
-          <Ionicons name="search" size={18} color={themeColors.neutralForeground3} style={{ marginRight: Spacing.xs }} />
+        <View
+          style={[
+            styles.searchBar,
+            {
+              borderColor: isSearchFocused ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+              backgroundColor: themeColors.neutralBackground1,
+            },
+          ]}
+        >
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color={themeColors.neutralForeground3}
+            style={{ marginRight: Spacing.xs }}
+          />
           <TextInput
             placeholder="Search opportunities..."
             placeholderTextColor={themeColors.neutralForeground3}
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={[styles.searchInput, { color: themeColors.neutralForeground1 }]}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')} style={{ padding: Spacing.xxs }}>
@@ -1412,9 +1593,15 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: Shapes.rounded + 2,
+    borderWidth: 1.5,
+    borderRadius: Shapes.circular,
     paddingHorizontal: Spacing.s,
-    height: 40,
+    height: 42,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
   searchInput: {
     flex: 1,

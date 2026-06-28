@@ -326,6 +326,7 @@ const mapFeedOppToPersonalizationOpp = (feedOpp: FeedOpportunity): Opportunity =
     durationHrs: durationHrs,
     description: feedOpp.shortDescription || feedOpp.description,
     spotsLeft: 5,
+    imageUri: feedOpp.imageUri,
   };
 };
 
@@ -340,6 +341,7 @@ interface HomeProps {
   activeTab?: number;
   onSelectOpportunity?: (opp: FeedOpportunity | null) => void;
   onViewNgo?: (ngoName: string) => void;
+  userData?: any;
 }
 
 export const Home: React.FC<HomeProps> = ({
@@ -353,6 +355,7 @@ export const Home: React.FC<HomeProps> = ({
   activeTab,
   onSelectOpportunity,
   onViewNgo,
+  userData,
 }) => {
   const themeColors = (isDarkMode ? Colors.dark : Colors.light) as any;
   const isCompactScreen = screenWidth < 380;
@@ -823,24 +826,7 @@ export const Home: React.FC<HomeProps> = ({
   };
 
   // Micro-volunteering Card Redesign states and animations
-  const [selectedTimeFilter, setSelectedTimeFilter] = useState<number>(15);
-  const [microVolCount, setMicroVolCount] = useState(0);
-
-  // 1. Counter roll-up animation: 0 -> target count
-  useEffect(() => {
-    let current = 0;
-    const target = MOCK_OPPORTUNITIES['Micro volunteering']?.length || 0;
-    const interval = setInterval(() => {
-      if (current < target) {
-        current += 1;
-        setMicroVolCount(current);
-      } else {
-        setMicroVolCount(target);
-        clearInterval(interval);
-      }
-    }, 60);
-    return () => clearInterval(interval);
-  }, []);
+  const [selectedTime, setSelectedTime] = useState<number>(30);
 
   // 2. Shimmer animation for preview rows on filter change
   const previewShimmerAnim = useRef(new Animated.Value(0)).current;
@@ -852,14 +838,41 @@ export const Home: React.FC<HomeProps> = ({
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
     }).start();
-  }, [selectedTimeFilter]);
+  }, [selectedTime]);
 
   const shimmerTranslateX = previewShimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-180, screenWidth - Spacing.m * 2],
+    outputRange: [-150, screenWidth],
   });
 
-  // 3. CTA Haptic spring scale animation
+  const getMicroVolunteeringPreviewList = (): FeedOpportunity[] => {
+    const allOpps = MOCK_OPPORTUNITIES['Micro volunteering'] || [];
+    const filtered = allOpps.filter(opp => {
+      const commitmentMins = parseInt(opp.durationAbbreviation.replace(/[^0-9]/g, ''), 10);
+      return !isNaN(commitmentMins) && commitmentMins <= selectedTime;
+    });
+    return filtered.slice(0, 2);
+  };
+
+  const handleMicroVolunteeringPress = () => {
+    if (onSelectFeedMode) {
+      onSelectFeedMode('Micro volunteering', selectedTime);
+    }
+    if (onNavigateToTab) {
+      onNavigateToTab(1);
+    }
+  };
+
+  const handleTimeChipPress = (mins: number) => {
+    setSelectedTime(mins);
+  };
+
+  const filteredMicroOpps = (MOCK_OPPORTUNITIES['Micro volunteering'] || []).filter(opp => {
+    const commitmentMins = parseInt(opp.durationAbbreviation.replace(/[^0-9]/g, ''), 10);
+    return !isNaN(commitmentMins) && commitmentMins <= selectedTime;
+  });
+
+  // CTA Haptic spring scale animation
   const ctaButtonScale = useRef(new Animated.Value(1)).current;
   const handleCtaPressIn = () => {
     Animated.spring(ctaButtonScale, {
@@ -876,24 +889,6 @@ export const Home: React.FC<HomeProps> = ({
       friction: 8,
       useNativeDriver: true,
     }).start();
-  };
-
-  const getMicroVolunteeringPreviewList = (): FeedOpportunity[] => {
-    const allOpps = MOCK_OPPORTUNITIES['Micro volunteering'] || [];
-    const filtered = allOpps.filter(opp => {
-      const commitmentMins = parseInt(opp.durationAbbreviation.replace(/[^0-9]/g, ''), 10);
-      return !isNaN(commitmentMins) && commitmentMins <= selectedTimeFilter;
-    });
-    return filtered.slice(0, 2);
-  };
-
-  const handleMicroVolunteeringPress = () => {
-    if (onSelectFeedMode) {
-      onSelectFeedMode('Micro volunteering', selectedTimeFilter);
-    }
-    if (onNavigateToTab) {
-      onNavigateToTab(1);
-    }
   };
 
   const handleMicroOppPress = (opp: FeedOpportunity) => {
@@ -1788,6 +1783,14 @@ export const Home: React.FC<HomeProps> = ({
 
       <ScrollView ref={mainScrollViewRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
+        {/* Welcome Banner */}
+        <View style={{ marginBottom: Spacing.xs }}>
+          <Text style={{ fontSize: 13, color: themeColors.neutralForeground3, fontWeight: '500' }}>Welcome back,</Text>
+          <Text style={[Typography.title, { color: themeColors.neutralForeground1, fontWeight: '800', marginTop: 2 }]}>
+            {userData?.fullName || 'Volunteer'}
+          </Text>
+        </View>
+
         {/* ## Section 2: Causes Carousel ## */}
         
         <View
@@ -1947,7 +1950,7 @@ export const Home: React.FC<HomeProps> = ({
                   {/* Label below the circle */}
                   <Text
                     style={{
-                      marginTop: 6,
+                      marginTop: 2,
                       fontSize: 11,
                       fontWeight: isActive ? '600' : '500',
                       color: isActive ? themeColors.brandForeground1 : themeColors.neutralForeground2,
@@ -1967,8 +1970,6 @@ export const Home: React.FC<HomeProps> = ({
           {/* Fade Mask (16px) on the right edge */}
           <LinearGradient
             colors={['transparent', themeColors.neutralBackground2]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
             style={{
               position: 'absolute',
               top: 0,
@@ -1977,9 +1978,22 @@ export const Home: React.FC<HomeProps> = ({
               width: 16,
               zIndex: 10,
             }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             pointerEvents="none"
           />
         </View>
+
+        {/* Domain Subtitle Helper Text */}
+        <Text style={{
+          fontSize: 12,
+          color: themeColors.neutralForeground3,
+          marginTop: 2,
+          marginBottom: Spacing.xs,
+          fontStyle: 'italic',
+        }}>
+          get to know what is happening in each of these domains.
+        </Text>
 
         {/* ## Section 3: Micro-Volunteering Opportunity Card ## */}
         <View
@@ -2014,7 +2028,7 @@ export const Home: React.FC<HomeProps> = ({
               </View>
               <View style={styles.microCounterContainer}>
                 <OdometerText
-                  value={microVolCount}
+                  value={filteredMicroOpps.length}
                   style={[styles.microCounterNumber, { color: themeColors.brandForeground1 }]}
                 />
                 <Text style={[styles.microCounterLabel, { color: themeColors.neutralForeground3 }]}>
@@ -2034,14 +2048,14 @@ export const Home: React.FC<HomeProps> = ({
             {/* Selectable Time Filter Chips */}
             <View style={styles.timeChipsRow}>
               {[10, 15, 30].map((mins) => {
-                const isSelected = selectedTimeFilter === mins;
+                const isSelected = selectedTime === mins;
                 return (
                   <Pressable
                     key={mins}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isSelected }}
                     accessibilityLabel={`Filter by ${mins} minutes`}
-                    onPress={() => setSelectedTimeFilter(mins)}
+                    onPress={() => handleTimeChipPress(mins)}
                     style={[
                       styles.timeChip,
                       {
@@ -2071,91 +2085,7 @@ export const Home: React.FC<HomeProps> = ({
               })}
             </View>
 
-            {/* Opportunity Preview Rows */}
-            <View style={styles.previewsContainer}>
-              {getMicroVolunteeringPreviewList().map((opp, idx) => {
-                let iconName: any = 'help-circle-outline';
-                let iconColor = '#0f6cbd';
-                let iconBg = '#e1f0fa';
-                
-                if (opp.domainId === 'education') {
-                  iconName = 'book-outline';
-                  iconColor = '#107c41';
-                  iconBg = '#dff6dd';
-                } else if (opp.domainId === 'health') {
-                  iconName = 'medical-outline';
-                  iconColor = '#107c10';
-                  iconBg = '#dff6dd';
-                } else if (opp.domainId === 'environment') {
-                  iconName = 'leaf-outline';
-                  iconColor = '#107c41';
-                  iconBg = '#dff6dd';
-                } else if (opp.domainId === 'shelter') {
-                  iconName = 'home-outline';
-                  iconColor = '#8b5cf6';
-                  iconBg = '#f5f3ff';
-                } else if (opp.domainId === 'food') {
-                  iconName = 'nutrition-outline';
-                  iconColor = '#f97316';
-                  iconBg = '#fff7ed';
-                }
 
-                if (isDarkMode) {
-                   iconBg = 'rgba(255,255,255,0.06)';
-                }
-
-                const durationMins = parseInt(opp.durationAbbreviation.replace(/[^0-9]/g, ''), 10);
-                const isRemote = opp.location.toLowerCase().includes('remote');
-                const accessibilityLabel = `${opp.title}, takes ${durationMins} minutes, location is ${isRemote ? 'Remote' : opp.location}`;
-
-                return (
-                  <Pressable
-                    key={opp.id}
-                    accessible={true}
-                    accessibilityLabel={accessibilityLabel}
-                    onPress={() => handleMicroOppPress(opp)}
-                    style={({ pressed }) => [
-                      styles.previewRow,
-                      {
-                        borderBottomColor: idx === 0 ? themeColors.neutralStroke2 : 'transparent',
-                        borderBottomWidth: idx === 0 ? 1 : 0,
-                        backgroundColor: pressed ? themeColors.neutralBackgroundPressed : 'transparent',
-                      }
-                    ]}
-                  >
-                    <View style={[styles.previewIconWrapper, { backgroundColor: iconBg }]}>
-                      <Ionicons name={iconName} size={18} color={iconColor} />
-                    </View>
-                    <View style={styles.previewInfo}>
-                      <Text
-                        style={[styles.previewTitle, { color: themeColors.neutralForeground1 }]}
-                        numberOfLines={1}
-                      >
-                        {opp.title}
-                      </Text>
-                      <Text style={[styles.previewMeta, { color: themeColors.neutralForeground3 }]}>
-                        {durationMins}m • {isRemote ? 'Remote' : opp.location}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={14} color={themeColors.neutralForeground3} />
-                  </Pressable>
-                );
-              })}
-
-              {/* Shimmer Overlay effect */}
-              <Animated.View
-                pointerEvents="none"
-                style={[
-                  styles.shimmerOverlay,
-                  {
-                    transform: [{ translateX: shimmerTranslateX }],
-                    backgroundColor: isDarkMode
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(255, 255, 255, 0.4)',
-                  }
-                ]}
-              />
-            </View>
 
             {/* Primary CTA (Button) with Spring Haptic Animation */}
             <Animated.View style={{ transform: [{ scale: ctaButtonScale }] }}>
@@ -2165,9 +2095,9 @@ export const Home: React.FC<HomeProps> = ({
                 onPress={() => handleMicroVolunteeringPress()}
                 style={[styles.fullWidthCta, { backgroundColor: themeColors.brandForeground1 }]}
                 accessibilityRole="button"
-                accessibilityLabel={`See all ${MOCK_OPPORTUNITIES['Micro volunteering']?.length || 0} opportunities`}
+                accessibilityLabel={`See all ${filteredMicroOpps.length} opportunities`}
               >
-                <Text style={styles.fullWidthCtaText}>See all {MOCK_OPPORTUNITIES['Micro volunteering']?.length || 0} opportunities</Text>
+                <Text style={styles.fullWidthCtaText}>See all {filteredMicroOpps.length} opportunities</Text>
                 <Ionicons name="arrow-forward" size={16} color="#ffffff" style={{ marginLeft: 6 }} />
               </Pressable>
             </Animated.View>
@@ -2279,6 +2209,13 @@ export const Home: React.FC<HomeProps> = ({
         <View style={styles.ideasStack}>
           {ideas.map(idea => {
             const hasSupported = !!supportState[idea.id];
+            
+            // Determine a placeholder thumbnail based on the idea
+            let ideaImage = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400'; // water well/construction
+            if (idea.id === 'idea_2') {
+              ideaImage = 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'; // mobile health clinic
+            }
+
             return (
               <Card
                 key={idea.id}
@@ -2286,9 +2223,13 @@ export const Home: React.FC<HomeProps> = ({
                 isDarkMode={isDarkMode}
                 style={[
                   styles.ideaCard,
+                  {
+                    padding: Spacing.s,
+                    marginBottom: Spacing.s,
+                    borderColor: highlightedIdeaId === idea.id ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+                    borderWidth: highlightedIdeaId === idea.id ? 2 : 1,
+                  },
                   highlightedIdeaId === idea.id && {
-                    borderColor: themeColors.brandForeground1,
-                    borderWidth: 2,
                     shadowColor: themeColors.brandForeground1,
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
@@ -2297,138 +2238,123 @@ export const Home: React.FC<HomeProps> = ({
                   }
                 ]}
               >
-                {/* 1. Mention badge if a friend mentioned the user */}
-                {idea.isMentionedBadge && (
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      backgroundColor: themeColors.brandBackgroundSubtle,
-                      paddingVertical: 4,
-                      paddingHorizontal: 8,
-                      borderRadius: Shapes.rounded,
-                      alignSelf: 'flex-start',
-                      marginBottom: Spacing.s,
-                    }}
-                  >
-                    <Ionicons name="chatbubble-ellipses-outline" size={14} color={themeColors.brandForeground1} />
-                    <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginLeft: 6 }]}>
-                      Rahul mentioned you
-                    </Text>
+                {/* 1. Header: Creator Avatar & Name + Cause Badge */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.xs }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image source={{ uri: idea.creatorLogo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80' }} style={{ width: 32, height: 32, borderRadius: 16, marginRight: Spacing.xs }} />
+                    <View>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13 }]}>
+                        {idea.creatorName || 'Anonymous Partner'}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: themeColors.neutralForeground3 }}>
+                        Idea Starter
+                      </Text>
+                    </View>
                   </View>
-                )}
-
-                {/* Description */}
-                <Text style={[styles.ideaDesc, { color: themeColors.neutralForeground1 }]}>
-                  {idea.description}
-                </Text>
-
-                {/* Creator Profile */}
-                <View style={styles.creatorRow}>
-                  <Image source={{ uri: idea.creatorLogo }} style={styles.creatorAvatar} />
-                  <Text style={[styles.creatorName, { color: themeColors.neutralForeground2 }]}>
-                    {idea.creatorName}
-                  </Text>
+                  <Badge
+                    label={idea.cause || 'Community'}
+                    intent={idea.id === 'idea_1' ? 'Success' : 'Informative'}
+                    size="Small"
+                  />
                 </View>
 
-                <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2 }]} />
+                {/* 2. Body: Side-by-Side description and thumbnail */}
+                <View style={{ flexDirection: 'row', gap: Spacing.s, marginBottom: Spacing.s, alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    {idea.isMentionedBadge && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: themeColors.brandBackgroundSubtle,
+                          paddingVertical: 2,
+                          paddingHorizontal: 6,
+                          borderRadius: Shapes.rounded,
+                          alignSelf: 'flex-start',
+                          marginBottom: Spacing.xxs,
+                        }}
+                      >
+                        <Ionicons name="chatbubble-ellipses-outline" size={11} color={themeColors.brandForeground1} />
+                        <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginLeft: 4, fontSize: 10 }]}>
+                          Rahul mentioned you
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontSize: 14, lineHeight: 20 }]} numberOfLines={3}>
+                      {idea.description}
+                    </Text>
+                  </View>
+                  <Image
+                    source={{ uri: ideaImage }}
+                    style={{ width: 64, height: 64, borderRadius: Shapes.rounded - 2 }}
+                    resizeMode="cover"
+                  />
+                </View>
 
-                {/* 2. Interactive Footer Row (Mentions on Left, Support Pill Button on Right) */}
+                <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2, marginBottom: Spacing.s }]} />
+
+                {/* 3. Footer: Engagement Icons (Likes, Comments) + Mentions + Support Button */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   
-                  {/* Left: Mentions Stack */}
-                  <Pressable
-                    onPress={() => openPicker(idea.id)}
-                    style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: Spacing.s }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                      {idea.taggedFriends.slice(0, 3).map((username, idx) => {
-                        const info = MOCK_FRIENDS.find(f => f.username.toLowerCase() === username.toLowerCase()) || {
-                          displayName: username,
-                          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80',
-                        };
-                        return (
-                          <Image
-                            key={username}
-                            source={{ uri: info.avatar }}
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 12,
-                              borderWidth: 1.5,
-                              borderColor: themeColors.neutralBackground1,
-                              marginLeft: idx === 0 ? 0 : -8,
-                              zIndex: 10 - idx,
-                            }}
-                          />
-                        );
-                      })}
-                      
-                      {idea.mentionsCount > 3 && (
-                        <View
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 12,
-                            backgroundColor: themeColors.neutralBackground3,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderWidth: 1.5,
-                            borderColor: themeColors.neutralBackground1,
-                            marginLeft: -8,
-                            zIndex: 0,
-                          }}
-                        >
-                          <Text style={{ fontSize: 9, fontWeight: 'bold', color: themeColors.neutralForeground1 }}>
-                            +{idea.mentionsCount - 3}
-                          </Text>
-                        </View>
-                      )}
+                  {/* Left: Engagement Stats & Mentions Stack */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+                    {/* Likes/Supports */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="heart-outline" size={15} color={themeColors.neutralForeground3} />
+                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
+                        {idea.initialSupports + (hasSupported ? 1 : 0)}
+                      </Text>
                     </View>
 
-                    <Text
-                      style={[
-                        Typography.caption,
-                        {
-                          color: themeColors.neutralForeground2,
-                          flex: 1,
-                          fontSize: 12,
-                        }
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {(() => {
-                        const prioritized = [...idea.taggedFriends].sort((a, b) => {
-                          if (a === 'priya' || a === 'rahul') return -1;
-                          if (b === 'priya' || b === 'rahul') return 1;
-                          return 0;
-                        });
+                    {/* Comments/Mentions Count */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
+                      <Ionicons name="chatbubble-outline" size={14} color={themeColors.neutralForeground3} />
+                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
+                        {idea.mentionsCount}
+                      </Text>
+                    </View>
 
-                        if (prioritized.length === 0) {
-                          return 'No mentions yet';
-                        }
-                        
-                        const firstFriend = MOCK_FRIENDS.find(f => f.username.toLowerCase() === prioritized[0].toLowerCase())?.displayName || prioritized[0];
-                        if (idea.mentionsCount <= 1) {
-                          return `${firstFriend} tagged`;
-                        }
-                        return `${firstFriend} and ${idea.mentionsCount - 1} others tagged`;
-                      })()}
-                    </Text>
-                  </Pressable>
+                    {/* Mentions Stack */}
+                    <Pressable
+                      onPress={() => openPicker(idea.id)}
+                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
+                        {idea.taggedFriends.slice(0, 2).map((username, idx) => {
+                          const info = MOCK_FRIENDS.find(f => f.username.toLowerCase() === username.toLowerCase()) || {
+                            displayName: username,
+                            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80',
+                          };
+                          return (
+                            <Image
+                              key={username}
+                              source={{ uri: info.avatar }}
+                              style={{
+                                width: 18,
+                                height: 18,
+                                borderRadius: 9,
+                                borderWidth: 1,
+                                borderColor: themeColors.neutralBackground1,
+                                marginLeft: idx === 0 ? 0 : -6,
+                                zIndex: 10 - idx,
+                              }}
+                            />
+                          );
+                        })}
+                      </View>
+                    </Pressable>
+                  </View>
 
                   {/* Right: Support Button */}
                   <SupportButton
                     ideaId={idea.id}
                     initialCount={idea.initialSupports}
                     hasSupported={hasSupported}
-                    onPress={() => handleSupportIdea(idea.id, 'Education')}
+                    onPress={() => handleSupportIdea(idea.id, idea.cause || 'Education')}
                     isDarkMode={isDarkMode}
                     themeColors={themeColors}
                   />
-
                 </View>
-
               </Card>
             );
           })}
@@ -3499,6 +3425,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.m,
+    paddingTop: Spacing.xs,
     paddingBottom: Spacing.xxl * 2,
   },
   sectionTitle: {

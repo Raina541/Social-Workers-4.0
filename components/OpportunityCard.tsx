@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
 import { Opportunity } from '../services/personalization';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,34 +25,45 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, o
         pressed && { backgroundColor: themeColors.neutralBackgroundPressed }
       ]}
     >
-      <View style={styles.header}>
-        <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, flex: 1 }]} numberOfLines={1}>
-          {opportunity.title}
-        </Text>
-        <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1 }]}>
-          {opportunity.isRemote ? 'Remote' : `${opportunity.distanceKm} km`}
-        </Text>
-      </View>
-      
-      {opportunity.description && (
-        <Text style={[Typography.caption, { color: themeColors.neutralForeground2, marginTop: Spacing.xxs }]} numberOfLines={2}>
-          {opportunity.description}
-        </Text>
-      )}
-      
-      <View style={styles.footer}>
-        <View style={styles.meta}>
-          <Ionicons name="time-outline" size={14} color={themeColors.neutralForeground3} style={{ marginRight: 4 }} />
-          <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
-            {Math.round(opportunity.durationHrs * 60)}m commitment
-          </Text>
-        </View>
-        
-        {opportunity.spotsLeft !== undefined && (
-          <Text style={[Typography.captionStrong, { color: themeColors.warningForeground1 }]}>
-            {opportunity.spotsLeft} spots left
-          </Text>
+      <View style={{ flexDirection: 'row', gap: Spacing.s, alignItems: 'center' }}>
+        {opportunity.imageUri && (
+          <Image
+            source={{ uri: opportunity.imageUri }}
+            style={{ width: 70, height: 70, borderRadius: Shapes.rounded - 2 }}
+            resizeMode="cover"
+          />
         )}
+        <View style={{ flex: 1 }}>
+          <View style={styles.header}>
+            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, flex: 1, fontWeight: '700' }]} numberOfLines={1}>
+              {opportunity.title}
+            </Text>
+            <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginLeft: 8 }]}>
+              {opportunity.isRemote ? 'Remote' : `${opportunity.distanceKm} km`}
+            </Text>
+          </View>
+          
+          {opportunity.description && (
+            <Text style={[Typography.caption, { color: themeColors.neutralForeground2, marginTop: Spacing.xxs }]} numberOfLines={2}>
+              {opportunity.description}
+            </Text>
+          )}
+          
+          <View style={styles.footer}>
+            <View style={styles.meta}>
+              <Ionicons name="time-outline" size={14} color={themeColors.neutralForeground3} style={{ marginRight: 4 }} />
+              <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
+                {Math.round(opportunity.durationHrs * 60)}m commitment
+              </Text>
+            </View>
+            
+            {opportunity.spotsLeft !== undefined && (
+              <Text style={[Typography.captionStrong, { color: themeColors.warningForeground1 }]}>
+                {opportunity.spotsLeft} spots left
+              </Text>
+            )}
+          </View>
+        </View>
       </View>
     </Pressable>
   );

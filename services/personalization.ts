@@ -53,6 +53,7 @@ export interface Opportunity {
   spotsLeft?: number;
   tags?: string[];
   organizationName?: string;
+  imageUri?: string;
 }
 
 export interface Idea {

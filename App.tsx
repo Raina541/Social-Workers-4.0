@@ -221,6 +221,7 @@ function MainLayout() {
           <Home
             isDarkMode={isDarkMode}
             activeTab={activeTab}
+            userData={userData}
             onNavigateToTab={handleTabPress}
             onSelectFeedMode={(mode, timeFilter, domainId) => {
               setFeedActiveMode(mode);
@@ -260,6 +261,7 @@ function MainLayout() {
             isDarkMode={isDarkMode}
             setParentScrollEnabled={setParentScrollEnabled}
             onViewNgo={(name) => setSelectedNgoName(name)}
+            userData={userData}
           />
         </View>
         
