@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -131,7 +132,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
   }, []);
 
   const [isMember, setIsMember] = useState(initialIsMember);
-  const [activeTab, setActiveTab] = useState<'About' | 'Discussions' | 'People' | 'Events' | 'Blogs' | 'Friends'>(
+  const [activeTab, setActiveTab] = useState<'About' | 'Discussions' | 'People' | 'Events' | 'Blogs' | 'Friends' | 'Workspace'>(
     initialIsMember ? 'Discussions' : 'People'
   );
 
@@ -178,6 +179,19 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
 
   // Composer options FAB stack animation
   const composerOptionsAnim = useRef(new Animated.Value(0)).current;
+
+  const [subgroupCreated, setSubgroupCreated] = useState(false);
+  const [subgroupVisibility, setSubgroupVisibility] = useState<'community' | 'global' | null>(null);
+
+  useEffect(() => {
+    const checkSubgroup = async () => {
+      const created = await AsyncStorage.getItem('@subgroup_created_idea_1');
+      const visibility = await AsyncStorage.getItem('@subgroup_visibility_idea_1');
+      setSubgroupCreated(created === 'true');
+      setSubgroupVisibility(visibility as any);
+    };
+    checkSubgroup();
+  }, [leftPanelVisible]);
 
   useEffect(() => {
     if (leftPanelVisible) {
@@ -955,6 +969,128 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
           </View>
         )}
 
+        {activeTab === 'Workspace' && isMember && (
+          <View style={styles.feedContainer}>
+            {/* Render private sub-group workspace chat */}
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
+              
+              {/* Pinned Info Box */}
+              <View style={{
+                backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                borderWidth: 1,
+                borderColor: themeColors.neutralStroke2,
+                borderRadius: Shapes.rounded,
+                padding: Spacing.s,
+                marginBottom: Spacing.m,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <Ionicons name="lock-closed" size={16} color={themeColors.brandForeground1} />
+                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginLeft: 6, fontSize: 14 }]}>
+                    Private Event Sub-group Workspace
+                  </Text>
+                </View>
+                <Text style={[Typography.caption, { color: themeColors.neutralForeground2, lineHeight: 16 }]}>
+                  This private workspace was automatically created because the idea reached 100% backing. 
+                  Only backers can see and participate in this thread.
+                </Text>
+              </View>
+
+              {/* Render Workspace Specific Messages */}
+              {/* 1. Backer Message from Anita */}
+              <View style={styles.msgCard}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xxs }}>
+                  <Image source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80' }} style={{ width: 24, height: 24, borderRadius: 12, marginRight: 6 }} />
+                  <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground1 }]}>Anita</Text>
+                  <Text style={{ fontSize: 10, color: themeColors.neutralForeground3, marginLeft: 8 }}>9:15 AM</Text>
+                </View>
+                <View style={[styles.msgBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2, borderWidth: 1 }]}>
+                  <Text style={[Typography.body, { color: themeColors.neutralForeground1 }]}>
+                    So glad we reached 100% backing! Let's get this well rejuvenated. We need to schedule our first site audit.
+                  </Text>
+                </View>
+              </View>
+
+              {/* 2. Backer Message from Sunita */}
+              <View style={styles.msgCard}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xxs }}>
+                  <Image source={{ uri: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80' }} style={{ width: 24, height: 24, borderRadius: 12, marginRight: 6 }} />
+                  <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground1 }]}>Sunita</Text>
+                  <Text style={{ fontSize: 10, color: themeColors.neutralForeground3, marginLeft: 8 }}>9:18 AM</Text>
+                </View>
+                <View style={[styles.msgBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2, borderWidth: 1 }]}>
+                  <Text style={[Typography.body, { color: themeColors.neutralForeground1 }]}>
+                    I can bring the water testing kits. I voted for Saturday morning in the poll below.
+                  </Text>
+                </View>
+              </View>
+
+              {/* 3. Pinned Coordination Poll */}
+              <View style={{
+                backgroundColor: themeColors.neutralBackground1,
+                borderColor: themeColors.neutralStroke2,
+                borderWidth: 1,
+                borderRadius: Shapes.rounded,
+                padding: Spacing.m,
+                marginBottom: Spacing.m,
+                marginTop: Spacing.xs,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xs }}>
+                  <Ionicons name="bar-chart-outline" size={20} color={themeColors.brandForeground1} />
+                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginLeft: 6, fontSize: 15 }]}>
+                    Coordination Poll
+                  </Text>
+                </View>
+                <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontWeight: '600', marginBottom: 2 }]}>
+                  When should we conduct the first well site audit?
+                </Text>
+                <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginBottom: Spacing.s }]}>
+                  Proposed by original creator
+                </Text>
+
+                {/* Poll Options */}
+                {[
+                  { text: "This Saturday morning (9 AM)", votes: 3, percent: 60, selected: true },
+                  { text: "This Sunday afternoon (2 PM)", votes: 1, percent: 20, selected: false },
+                  { text: "Next weekday evening (6 PM)", votes: 1, percent: 20, selected: false },
+                ].map((opt, idx) => (
+                  <Pressable
+                    key={idx}
+                    style={{
+                      backgroundColor: isDarkMode ? '#1e293b' : '#f1f5f9',
+                      borderRadius: 8,
+                      padding: Spacing.s,
+                      marginBottom: Spacing.xs,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      borderWidth: opt.selected ? 1 : 0,
+                      borderColor: themeColors.brandForeground1,
+                    }}
+                  >
+                    {/* Progress Bar Background */}
+                    <View style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: `${opt.percent}%`,
+                      backgroundColor: opt.selected ? 'rgba(15, 108, 189, 0.15)' : 'rgba(0,0,0,0.05)',
+                    }} />
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+                      <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontSize: 13 }]}>
+                        {opt.text}
+                      </Text>
+                      <Text style={[Typography.bodyStrong, { color: themeColors.brandForeground1, fontSize: 13 }]}>
+                        {opt.votes} ({opt.percent}%)
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+
+            </ScrollView>
+          </View>
+        )}
+
         {activeTab === 'Discussions' && isMember && (
           <View style={styles.feedContainer}>
             {/* Render all non-system chat messages */}
@@ -1491,7 +1627,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
       )}
 
       {/* Member Input Composer */}
-      {isMember && activeTab === 'Discussions' && (
+      {isMember && (activeTab === 'Discussions' || activeTab === 'Workspace') && (
         <View style={styles.composerWrapper}>
           {/* Autocomplete mentions overlay */}
           {showMentions && (
@@ -2028,13 +2164,26 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
               </View>
             </View>
 
-            <View style={styles.leftPanelTabsStack}>
+            <ScrollView style={{ flex: 1, paddingHorizontal: Spacing.s }} showsVerticalScrollIndicator={false}>
+              
+              {/* Category 1: Main Channels */}
+              <Text style={{
+                fontSize: 10,
+                fontWeight: 'bold',
+                color: themeColors.neutralForeground3,
+                marginTop: Spacing.m,
+                marginBottom: Spacing.xs,
+                paddingLeft: Spacing.xs,
+                letterSpacing: 1,
+              }}>
+                CHANNELS
+              </Text>
+
               {([
-                { id: 'About', icon: 'information-circle-outline' },
-                { id: 'Discussions', icon: 'chatbubble-ellipses-outline' },
-                { id: 'People', icon: 'people-outline' },
-                { id: 'Events', icon: 'calendar-outline' },
-                { id: 'Blogs', icon: 'document-text-outline' },
+                { id: 'About', icon: 'information-circle-outline', label: 'About' },
+                { id: 'Discussions', icon: 'chatbubble-ellipses-outline', label: 'Discussions' },
+                { id: 'People', icon: 'people-outline', label: 'People' },
+                { id: 'Blogs', icon: 'document-text-outline', label: 'Blogs' },
               ] as const).map((tab) => {
                 const active = activeTab === tab.id;
                 return (
@@ -2051,7 +2200,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                   >
                     <Ionicons
                       name={tab.icon as any}
-                      size={20}
+                      size={18}
                       color={active ? themeColors.brandForeground1 : themeColors.neutralForeground2}
                     />
                     <Text
@@ -2060,15 +2209,98 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                         {
                           color: active ? themeColors.brandForeground1 : themeColors.neutralForeground1,
                           marginLeft: Spacing.s,
+                          fontSize: 13,
                         }
                       ]}
                     >
-                      {tab.id}
+                      {tab.label}
                     </Text>
                   </Pressable>
                 );
               })}
-            </View>
+
+              {/* Category 2: Events Folder */}
+              <View style={{ marginTop: Spacing.m }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: Spacing.xs, marginBottom: Spacing.xs }}>
+                  <Text style={{
+                    fontSize: 10,
+                    fontWeight: 'bold',
+                    color: themeColors.neutralForeground3,
+                    letterSpacing: 1,
+                  }}>
+                    📂 EVENTS
+                  </Text>
+                </View>
+
+                {/* Event Calendar Link */}
+                <Pressable
+                  onPress={() => {
+                    setActiveTab('Events');
+                    closeLeftPanel();
+                  }}
+                  style={[
+                    styles.leftPanelTabItem,
+                    activeTab === 'Events' && { backgroundColor: themeColors.brandBackgroundSubtle }
+                  ]}
+                >
+                  <Ionicons
+                    name="calendar-outline"
+                    size={18}
+                    color={activeTab === 'Events' ? themeColors.brandForeground1 : themeColors.neutralForeground2}
+                  />
+                  <Text
+                    style={[
+                      Typography.bodyStrong,
+                      {
+                        color: activeTab === 'Events' ? themeColors.brandForeground1 : themeColors.neutralForeground1,
+                        marginLeft: Spacing.s,
+                        fontSize: 13,
+                      }
+                    ]}
+                  >
+                    Calendar Events
+                  </Text>
+                </Pressable>
+
+                {/* Subgroup Private Workspace Link if created */}
+                {subgroupCreated && (
+                  <Pressable
+                    onPress={() => {
+                      setActiveTab('Workspace');
+                      closeLeftPanel();
+                    }}
+                    style={[
+                      styles.leftPanelTabItem,
+                      { paddingLeft: Spacing.m + 4 },
+                      activeTab === 'Workspace' && { backgroundColor: themeColors.brandBackgroundSubtle }
+                    ]}
+                  >
+                    <Ionicons
+                      name="chatbubble-outline"
+                      size={16}
+                      color={activeTab === 'Workspace' ? themeColors.brandForeground1 : themeColors.neutralForeground2}
+                    />
+                    <Text
+                      style={[
+                        Typography.body,
+                        {
+                          color: activeTab === 'Workspace' ? themeColors.brandForeground1 : themeColors.neutralForeground1,
+                          marginLeft: Spacing.xs,
+                          fontSize: 12,
+                          fontWeight: activeTab === 'Workspace' ? '600' : '400',
+                        }
+                      ]}
+                      numberOfLines={1}
+                    >
+                      💬 WASH Bio-Sand Well Workspace
+                    </Text>
+                    {/* Private indicator lock icon */}
+                    <Ionicons name="lock-closed" size={10} color={themeColors.neutralForeground3} style={{ marginLeft: 'auto' }} />
+                  </Pressable>
+                )}
+              </View>
+
+            </ScrollView>
           </Animated.View>
         </View>
       )}
@@ -2238,7 +2470,14 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
               onChangeText={setComposerTitle}
               placeholder="What initiative do you want to start? (e.g., Weekend Literacy Drive)..."
               placeholderTextColor={themeColors.neutralForegroundDisabled}
-              style={[styles.formInputTitleNew, { color: themeColors.neutralForeground1 }]}
+              style={[
+                styles.formInputTitleNew,
+                {
+                  color: themeColors.neutralForeground1,
+                  borderColor: themeColors.neutralStroke2,
+                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                }
+              ]}
               maxLength={80}
             />
 
@@ -2248,8 +2487,15 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
               onChangeText={setComposerDesc}
               placeholder="Detail your vision, goals, schedule, and who this helps..."
               placeholderTextColor={themeColors.neutralForegroundDisabled}
-              style={[styles.formInputDescNew, { color: themeColors.neutralForeground1 }]}
-              multiline
+              style={[
+                styles.formInputDescNew,
+                {
+                  color: themeColors.neutralForeground1,
+                  borderColor: themeColors.neutralStroke2,
+                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                }
+              ]}
+              multiline={true}
               textAlignVertical="top"
             />
 
@@ -3228,18 +3474,24 @@ const styles = StyleSheet.create({
     padding: Spacing.m,
   },
   formInputTitleNew: {
-    fontSize: 20,
-    fontWeight: '700',
-    borderBottomWidth: 0,
+    fontSize: 15,
+    fontWeight: '600',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    minHeight: 50,
     marginBottom: Spacing.m,
-    paddingVertical: Spacing.xs,
   },
   formInputDescNew: {
     fontSize: 14,
     lineHeight: 20,
-    borderBottomWidth: 0,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: Spacing.s,
     minHeight: 180,
     marginBottom: Spacing.m,
+    textAlignVertical: 'top',
   },
   sliderCardNew: {
     borderRadius: 12,

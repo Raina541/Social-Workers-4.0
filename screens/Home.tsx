@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -150,33 +151,32 @@ const SupportButton: React.FC<SupportButtonProps> = ({
       onPress={handlePress}
       style={{
         borderColor: themeColors.brandForeground1,
-        borderWidth: 1.5,
+        borderWidth: 1.2,
         backgroundColor: hasSupported ? themeColors.brandBackgroundSubtle : 'transparent',
-        paddingHorizontal: Spacing.s + 4,
-        height: 44, // Tap target >= 44px
-        borderRadius: 22,
+        paddingHorizontal: 8,
+        height: 32,
+        borderRadius: 16,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 90,
       }}
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <Ionicons
           name={hasSupported ? "heart" : "heart-outline"}
-          size={20}
+          size={14}
           color={themeColors.brandForeground1}
         />
       </Animated.View>
       
       {showLabel && (
-        <Text style={{ color: themeColors.brandForeground1, marginLeft: 6, fontSize: 13, fontWeight: '600' }}>
+        <Text style={{ color: themeColors.brandForeground1, marginLeft: 4, fontSize: 11, fontWeight: '600' }}>
           Support
         </Text>
       )}
 
       {showLabel && (
-        <Text style={{ color: themeColors.brandForeground1, marginHorizontal: 4 }}>·</Text>
+        <Text style={{ color: themeColors.brandForeground1, marginHorizontal: 2 }}>·</Text>
       )}
 
       <OdometerText
@@ -184,8 +184,8 @@ const SupportButton: React.FC<SupportButtonProps> = ({
         style={{
           color: themeColors.brandForeground1,
           fontWeight: '600',
-          fontSize: 17, // ~16-18px semibold
-          marginLeft: showLabel ? 0 : 6,
+          fontSize: 13,
+          marginLeft: showLabel ? 0 : 4,
         }}
       />
     </Pressable>
@@ -827,6 +827,12 @@ export const Home: React.FC<HomeProps> = ({
 
   // Micro-volunteering Card Redesign states and animations
   const [selectedTime, setSelectedTime] = useState<number>(30);
+
+  // Poster Choice Wizard Modal states
+  const [showWizardModal, setShowWizardModal] = useState(false);
+  const [wizardIdeaId, setWizardIdeaId] = useState<string | null>(null);
+  const [channelSetup, setChannelSetup] = useState<'subgroup' | 'main'>('subgroup');
+  const [visibility, setVisibility] = useState<'community' | 'global'>('community');
 
   // 2. Shimmer animation for preview rows on filter change
   const previewShimmerAnim = useRef(new Animated.Value(0)).current;
@@ -1618,6 +1624,16 @@ export const Home: React.FC<HomeProps> = ({
     });
     setIdeas(updatedIdeas);
     Personalization.updateIdea(ideaId, { initialSupports: updatedIdeas.find(i => i.id === ideaId)!.initialSupports });
+
+    // Check if this action achieves 100% support
+    const targetSupports = ideaId === 'idea_1' ? 16 : 10;
+    const currentSupports = updatedIdeas.find(i => i.id === ideaId)!.initialSupports + (newSupported ? 1 : 0);
+    if (currentSupports >= targetSupports && newSupported) {
+      setWizardIdeaId(ideaId);
+      setTimeout(() => {
+        setShowWizardModal(true);
+      }, 400); // Small delay for haptic/press feel
+    }
   };
 
   const handleDonePicker = () => {
@@ -2226,6 +2242,11 @@ export const Home: React.FC<HomeProps> = ({
               ideaImage = 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'; // mobile health clinic
             }
 
+            const currentSupports = idea.initialSupports + (hasSupported ? 1 : 0);
+            const targetSupports = idea.id === 'idea_1' ? 16 : 10;
+            const percent = Math.min(1, currentSupports / targetSupports);
+            const is100Percent = currentSupports >= targetSupports;
+
             return (
               <Card
                 key={idea.id}
@@ -2293,6 +2314,48 @@ export const Home: React.FC<HomeProps> = ({
                     <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontSize: 14, lineHeight: 20 }]} numberOfLines={3}>
                       {idea.description}
                     </Text>
+
+                    {/* Progress Bar */}
+                    <View style={{ marginTop: Spacing.s }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <Text style={{ fontSize: 11, color: themeColors.neutralForeground2, fontWeight: '500' }}>
+                          Support Target Progress: {currentSupports}/{targetSupports}
+                        </Text>
+                        <Text style={{ fontSize: 11, color: themeColors.brandForeground1, fontWeight: '600' }}>
+                          {Math.round(percent * 100)}%
+                        </Text>
+                      </View>
+                      <View style={{ height: 6, backgroundColor: isDarkMode ? '#1e293b' : '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                        <View style={{ height: '100%', width: `${percent * 100}%`, backgroundColor: is100Percent ? '#10b981' : themeColors.brandForeground1, borderRadius: 3 }} />
+                      </View>
+                    </View>
+
+                    {/* 100% Backed Action Badge */}
+                    {is100Percent && (
+                      <Pressable
+                        onPress={() => {
+                          setWizardIdeaId(idea.id);
+                          setShowWizardModal(true);
+                        }}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          borderColor: '#10b981',
+                          borderWidth: 1,
+                          paddingVertical: 4,
+                          paddingHorizontal: 8,
+                          borderRadius: Shapes.rounded - 2,
+                          alignSelf: 'flex-start',
+                          marginTop: Spacing.s,
+                        }}
+                      >
+                        <Ionicons name="checkmark-circle" size={14} color="#10b981" />
+                        <Text style={[Typography.captionStrong, { color: '#10b981', marginLeft: 4, fontSize: 11 }]}>
+                          100% Backed! Configure Subgroup
+                        </Text>
+                      </Pressable>
+                    )}
                   </View>
                   <Image
                     source={{ uri: ideaImage }}
@@ -2304,16 +2367,32 @@ export const Home: React.FC<HomeProps> = ({
                 <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2, marginBottom: Spacing.s }]} />
 
                 {/* 3. Footer: Engagement Icons (Likes, Comments) + Mentions + Support Button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.s }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   
                   {/* Left: Engagement Stats & Mentions Stack */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    {/* Avatar Stack */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+                    {/* Likes/Supports */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="heart-outline" size={15} color={themeColors.neutralForeground3} />
+                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
+                        {idea.initialSupports + (hasSupported ? 1 : 0)}
+                      </Text>
+                    </View>
+
+                    {/* Comments/Mentions Count */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
+                      <Ionicons name="chatbubble-outline" size={14} color={themeColors.neutralForeground3} />
+                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
+                        {idea.mentionsCount}
+                      </Text>
+                    </View>
+
+                    {/* Mentions Stack */}
                     <Pressable
-                      onPress={() => handleShowWhoMentioned(idea)}
+                      onPress={() => openPicker(idea.id)}
                       style={{ flexDirection: 'row', alignItems: 'center' }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
                         {idea.taggedFriends.slice(0, 2).map((username, idx) => {
                           const info = MOCK_FRIENDS.find(f => f.username.toLowerCase() === username.toLowerCase()) || {
                             displayName: username,
@@ -2963,6 +3042,202 @@ export const Home: React.FC<HomeProps> = ({
           </View>
         </View>
       )}
+
+      {/* Poster Choice Wizard Modal */}
+      <Modal
+        visible={showWizardModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowWizardModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'flex-end',
+        }}>
+          <View style={{
+            backgroundColor: themeColors.neutralBackground1,
+            borderTopLeftRadius: Shapes.rounded * 1.5,
+            borderTopRightRadius: Shapes.rounded * 1.5,
+            padding: Spacing.m,
+            maxHeight: '90%',
+          }}>
+            {/* Drag/Close Handle */}
+            <View style={{
+              width: 40,
+              height: 4,
+              backgroundColor: themeColors.neutralStroke2,
+              borderRadius: 2,
+              alignSelf: 'center',
+              marginBottom: Spacing.m,
+            }} />
+
+            {/* Header */}
+            <Text style={[Typography.title, { color: themeColors.neutralForeground1, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: Spacing.xs }]}>
+              🎉 Your idea has gained community backing!
+            </Text>
+            <Text style={[Typography.caption, { color: themeColors.neutralForeground3, textAlign: 'center', marginBottom: Spacing.m }]}>
+              Configure how you want to coordinate and run this event.
+            </Text>
+
+            {/* Choice Section 1: Channel Setup */}
+            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
+              Choice Section 1: Channel Setup
+            </Text>
+            
+            <View style={{ flexDirection: 'row', gap: Spacing.s, marginBottom: Spacing.m }}>
+              {/* Card A: Create Event Subgroup */}
+              <Pressable
+                onPress={() => setChannelSetup('subgroup')}
+                style={{
+                  flex: 1,
+                  borderWidth: 1.5,
+                  borderColor: channelSetup === 'subgroup' ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+                  borderRadius: Shapes.rounded,
+                  padding: Spacing.s,
+                  backgroundColor: channelSetup === 'subgroup' ? themeColors.brandBackgroundSubtle : 'transparent',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <Ionicons name="chatbubbles-outline" size={18} color={channelSetup === 'subgroup' ? themeColors.brandForeground1 : themeColors.neutralForeground2} />
+                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 12, marginLeft: 4 }]}>
+                    Create Event Subgroup
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 10, color: themeColors.neutralForeground3, lineHeight: 14 }}>
+                  Open a dedicated room under 'Events' with your backers to run coordination polls.
+                </Text>
+              </Pressable>
+
+              {/* Card B: Keep in Main Thread */}
+              <Pressable
+                onPress={() => setChannelSetup('main')}
+                style={{
+                  flex: 1,
+                  borderWidth: 1.5,
+                  borderColor: channelSetup === 'main' ? themeColors.brandForeground1 : themeColors.neutralStroke2,
+                  borderRadius: Shapes.rounded,
+                  padding: Spacing.s,
+                  backgroundColor: channelSetup === 'main' ? themeColors.brandBackgroundSubtle : 'transparent',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <Ionicons name="chatbubble-outline" size={18} color={channelSetup === 'main' ? themeColors.brandForeground1 : themeColors.neutralForeground2} />
+                  <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 12, marginLeft: 4 }]}>
+                    Keep in Main Thread
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 10, color: themeColors.neutralForeground3, lineHeight: 14 }}>
+                  Continue updates and discussion right here in the main community feed.
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Choice Section 2: Event Visibility */}
+            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: Spacing.s }]}>
+              Choice Section 2: Event Visibility
+            </Text>
+
+            <View style={{
+              flexDirection: 'row',
+              backgroundColor: isDarkMode ? '#1e293b' : '#f1f5f9',
+              borderRadius: 8,
+              padding: 3,
+              marginBottom: Spacing.l,
+            }}>
+              <Pressable
+                onPress={() => setVisibility('community')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                  backgroundColor: visibility === 'community' ? themeColors.neutralBackground1 : 'transparent',
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '600', color: visibility === 'community' ? themeColors.brandForeground1 : themeColors.neutralForeground2 }}>
+                  Community-Only Event
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setVisibility('global')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                  backgroundColor: visibility === 'global' ? themeColors.neutralBackground1 : 'transparent',
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '600', color: visibility === 'global' ? themeColors.brandForeground1 : themeColors.neutralForeground2 }}>
+                  Global Event
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={{ flexDirection: 'row', gap: Spacing.s, marginBottom: Spacing.m }}>
+              <Pressable
+                onPress={() => setShowWizardModal(false)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: Shapes.rounded,
+                  borderWidth: 1,
+                  borderColor: themeColors.neutralStroke2,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground2 }]}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={async () => {
+                  if (channelSetup === 'subgroup') {
+                    await AsyncStorage.setItem('@subgroup_created_idea_1', 'true');
+                    await AsyncStorage.setItem('@subgroup_visibility_idea_1', visibility);
+                    Alert.alert(
+                      "Subgroup Created",
+                      "A private workspace '💬 WASH Bio-Sand Well Workspace' has been successfully created under '📂 Events' in the Child Welfare Services Taskforce community!",
+                      [
+                        {
+                          text: "Go to Community",
+                          onPress: () => {
+                            setShowWizardModal(false);
+                            if (onNavigateToTab) {
+                              onNavigateToTab(2); // Navigate to Community tab
+                            }
+                          }
+                        },
+                        {
+                          text: "Awesome",
+                          onPress: () => setShowWizardModal(false)
+                        }
+                      ]
+                    );
+                  } else {
+                    await AsyncStorage.setItem('@subgroup_created_idea_1', 'false');
+                    Alert.alert("Choice Saved", "Discussion will continue in the main community thread.", [
+                      { text: "OK", onPress: () => setShowWizardModal(false) }
+                    ]);
+                  }
+                }}
+                style={{
+                  flex: 2,
+                  paddingVertical: 12,
+                  borderRadius: Shapes.rounded,
+                  backgroundColor: themeColors.brandForeground1,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={[Typography.bodyStrong, { color: '#ffffff' }]}>Confirm & Proceed</Text>
+              </Pressable>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
 
       {/* Friend Picker Bottom Sheet Modal */}
       {pickerIdeaId !== null && (
