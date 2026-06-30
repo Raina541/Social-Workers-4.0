@@ -28,6 +28,12 @@ const HEADER_HEIGHT = Platform.OS === 'ios' ? Spacing.xxxl + Spacing.xs + 36 : S
 
 // Dynamic dynamic IP resolver for local simulation/expo go runs
 const getBackendUrl = () => {
+  // If in production/standalone build (not DEV), fallback to a secure production API URL
+  // to comply with Android's Cleartext HTTP Traffic policies.
+  if (typeof __DEV__ !== 'undefined' && !__DEV__) {
+    return 'https://api.socialworkers.org';
+  }
+
   const hostUri = Constants.expoConfig?.hostUri;
   const ip = hostUri ? hostUri.split(':')[0] : 'localhost';
   return `http://${ip}:5000`;

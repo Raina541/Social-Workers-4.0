@@ -4,6 +4,12 @@ import { UserProfile, AuthResponse } from './types';
 
 // Helper to determine the backend base URL dynamically
 const getBackendUrl = () => {
+  // If in production/standalone build (not DEV), fallback to a secure production API URL
+  // to comply with Android's Cleartext HTTP Traffic policies.
+  if (typeof __DEV__ !== 'undefined' && !__DEV__) {
+    return 'https://api.socialworkers.org';
+  }
+
   // Web fallback
   if (Platform.OS === 'web') {
     return 'http://localhost:5000';

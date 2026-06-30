@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "social-workers-final",
-    "slug": "social-workers-final",
+    "slug": "social-workers",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +17,12 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.wild_goose34.socialworkers"
+      "package": "com.wild_goose34.socialworkers",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDummyApiKeyToPreventStartupCrash"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,7 +33,16 @@
       }
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow SocialWorkers to use your location.",
+          "locationWhenInUsePermission": "Allow SocialWorkers to use your location."
+        }
+      ],
+      "react-native-maps"
+    ],
+    "owner": "wild_goose34"
   }
 }
