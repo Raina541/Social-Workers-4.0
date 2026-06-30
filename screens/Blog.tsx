@@ -40,6 +40,8 @@ interface Article {
   contentBody?: string;
   bannerImage?: string;
   ngoName?: string;
+  likesCount?: number;
+  repliesCount?: number;
 }
 
 interface Feedback {
@@ -110,34 +112,40 @@ const VOLUNTEER_VOICES: Article[] = [
     id: 'vv1',
     title: 'My First Clean-up at Green Valley Preserve',
     author: 'Lisa Chang',
-    date: 'June 12, 2026',
+    date: '2h ago',
     readTime: '4 min read',
-    summary: 'An inspiring account of local residents clearing plastic trash, weeding invasive growth, and restoring trail path signs.',
-    category: 'Environment',
+    summary: "Met an incredible family at today's clinic — their resilience floored me. Despite the hardships, they are opening a neighborhood pantry next week. 💙",
+    category: 'Volunteer',
     categoryIntent: 'Success',
-    contentBody: 'My morning at Green Valley Nature Preserve was a powerful reminder of community collaboration. Thirty local residents met at the trailhead Picnic Area. Armed with heavy gloves, plastic bags, and trail cutters, we split into teams.\n\nOver four hours, we collected twelve bags of plastic waste, cleared encroaching weeds along two miles of trail paths, and re-anchored three damaged park markers. Seeing the visible difference on the forest trails was deeply satisfying. Getting muddy and working alongside neighbors created a shared bond that highlights why local action remains a vital pillar of environmental restoration.',
+    contentBody: "Met an incredible family at today's clinic — their resilience floored me. Despite the hardships, they are opening a neighborhood pantry next week. 💙",
+    likesCount: 24,
+    repliesCount: 6,
   },
   {
     id: 'vv2',
     title: 'Tutoring Kids in Underserved Districts',
     author: 'David K.',
-    date: 'June 08, 2026',
+    date: '3d ago',
     readTime: '5 min read',
     summary: 'Reflections on co-leading a classroom block coding Scratch circle for middle school students on weekends.',
     category: 'Education',
     categoryIntent: 'Brand',
-    contentBody: 'Teaching block-based coding to middle schoolers at the youth lab has been a highlight of my summer. Many of these kids have never had access to coding workbooks. Under my guidance, they built simple games using Scratch and Python variables.\n\nTheir enthusiasm is contagious. Watching a student struggle with loop logic and then beam with pride when their sprite finally moves is a reward unlike any other. Supporting these programs builds the digital literacy skills children need to unlock tech education pathways and thrive in modern school systems.',
+    contentBody: 'Teaching block-based coding to middle schoolers at the youth lab has been a highlight of my summer. Many of these kids have never had access to coding workbooks. Under my guidance, they built simple games using Scratch and Python variables.',
+    likesCount: 15,
+    repliesCount: 3,
   },
   {
     id: 'vv3',
     title: 'Serving Hot Meals at Hope Kitchen',
     author: 'Brenda Miller',
-    date: 'May 30, 2026',
+    date: '1w ago',
     readTime: '6 min read',
     summary: 'What a single Saturday shift at the dinner serving line taught me about food security, dignity, and teamwork.',
     category: 'Shelter & Food',
     categoryIntent: 'Warning',
     contentBody: 'Serving dinner at the Hope Kitchen was an eye-opening look at local housing struggles. Our kitchen team prepared hot dinners for 150 guests. We chopped vegetables, served food on the hot buffet line, and wiped down dining tables.\n\nThe guests represented all walks of life. Chatting with them made me realize how easily someone can fall into shelter insecurity due to medical bills or layout downsizings. Delivering a meal with a smile and treating guests with absolute dignity is just as important as the food itself. I left with a renewed sense of purpose and commitment to help.',
+    likesCount: 32,
+    repliesCount: 8,
   },
 ];
 
@@ -335,6 +343,28 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
 
   // 1. Tab States
   const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
+  const [activeBlogTab, setActiveBlogTab] = useState<'feed' | 'voices' | 'articles'>('feed');
+  const [likedVoices, setLikedVoices] = useState<string[]>([]);
+
+  const handleLikeVoice = (id: string) => {
+    if (likedVoices.includes(id)) {
+      setLikedVoices(likedVoices.filter(vId => vId !== id));
+      setVolunteerVoices(prev => prev.map(item => {
+        if (item.id === id) {
+          return { ...item, likesCount: (item.likesCount || 24) - 1 };
+        }
+        return item;
+      }));
+    } else {
+      setLikedVoices([...likedVoices, id]);
+      setVolunteerVoices(prev => prev.map(item => {
+        if (item.id === id) {
+          return { ...item, likesCount: (item.likesCount || 24) + 1 };
+        }
+        return item;
+      }));
+    }
+  };
 
   // 2. Search States
   const [searchQuery, setSearchQuery] = useState('');
@@ -736,394 +766,255 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
         showsVerticalScrollIndicator={false}
       >
         
-        {/* 1. Rebuilt Tab Header */}
-        <View style={styles.tabBarContainer}>
-          <Pressable
-            onPress={() => {
-              setActiveTab('all');
-              setSearchQuery('');
-            }}
-            style={[
-              styles.subTabButton,
-              activeTab === 'all' && [styles.subTabButtonActive, { borderBottomColor: themeColors.brandForeground1 }],
-            ]}
-          >
-            <Text style={[
-              styles.subTabText,
-              {
-                color: activeTab === 'all' ? themeColors.brandForeground1 : themeColors.neutralForeground2,
-                fontWeight: activeTab === 'all' ? '600' : '500',
-              }
-            ]}>
-              All Blogs
+        {/* Main Header Restructuring */}
+        <View style={styles.blogHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {activeTab === 'my' && (
+              <Pressable
+                onPress={() => {
+                  setActiveTab('all');
+                  setSearchQuery('');
+                }}
+                style={{ marginRight: 10, padding: 4 }}
+              >
+                <Ionicons name="arrow-back" size={24} color={themeColors.brandForeground1} />
+              </Pressable>
+            )}
+            <Text style={[styles.blogHeaderTitle, { color: themeColors.brandForeground1 }]}>
+              {activeTab === 'my' ? 'My posts' : 'Blog'}
             </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              setActiveTab('my');
-              setSearchQuery('');
-            }}
-            style={[
-              styles.subTabButton,
-              activeTab === 'my' && [styles.subTabButtonActive, { borderBottomColor: themeColors.brandForeground1 }],
-            ]}
-          >
-            <Text style={[
-              styles.subTabText,
-              {
-                color: activeTab === 'my' ? themeColors.brandForeground1 : themeColors.neutralForeground2,
-                fontWeight: activeTab === 'my' ? '600' : '500',
-              }
-            ]}>
-              My Blogs
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* 2. Prominent Search Bar */}
-        <View style={[styles.searchBar, {
-          backgroundColor: themeColors.neutralBackground1,
-          borderColor: isSearchFocused ? themeColors.brandForeground1 : themeColors.neutralStroke2,
-          borderWidth: 1
-        }]}>
-          <Ionicons name="search-outline" size={18} color={themeColors.neutralForeground3} style={{ marginRight: Spacing.s }} />
-          <TextInput
-            placeholder={searchScope === 'title' ? "Search articles by title..." : "Search by author..."}
-            placeholderTextColor={themeColors.neutralForegroundDisabled}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-            style={[styles.searchInput, { color: themeColors.neutralForeground1 }]}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} style={{ padding: Spacing.xxs }}>
-              <Ionicons name="close-circle" size={18} color={themeColors.neutralForeground3} />
+          </View>
+          
+          {activeTab !== 'my' && (
+            <Pressable
+              onPress={() => {
+                setActiveTab('my');
+                setSearchQuery('');
+              }}
+              style={[
+                styles.myPostsButtonNew,
+                {
+                  borderColor: themeColors.neutralStroke1,
+                  backgroundColor: 'transparent',
+                }
+              ]}
+            >
+              <Ionicons
+                name="document-text-outline"
+                size={15}
+                color={themeColors.neutralForeground1}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={[
+                Typography.captionStrong,
+                { color: themeColors.neutralForeground1, fontSize: 12 }
+              ]}>
+                My Posts
+              </Text>
             </Pressable>
           )}
         </View>
 
-        {/* Search Filter Scope Chips (Expanded below input on Focus or Typing) */}
-        {(isSearchFocused || searchQuery.length > 0) && (
-          <View style={styles.searchScopeRow}>
-            <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginRight: Spacing.s }]}>
-              Search by:
-            </Text>
-            
+        {/* Sub-Navigation Tabs */}
+        {activeTab === 'all' && (
+          <View style={styles.subNavBarNew}>
             <Pressable
-              onPress={() => setSearchScope('title')}
-              style={[
-                styles.scopeChip,
-                {
-                  backgroundColor: searchScope === 'title' ? themeColors.brandBackgroundSubtle : themeColors.neutralBackground3,
-                  borderColor: searchScope === 'title' ? themeColors.brandForeground1 : 'transparent',
-                  borderWidth: searchScope === 'title' ? 1 : 0,
-                }
-              ]}
+              onPress={() => setActiveBlogTab('feed')}
+              style={[styles.subNavTabNew, activeBlogTab === 'feed' && { borderBottomColor: themeColors.brandForeground1 }]}
             >
               <Text style={[
-                Typography.captionStrong,
-                { color: searchScope === 'title' ? themeColors.brandForeground1 : themeColors.neutralForeground3, fontSize: 11 }
+                styles.subNavTabTextNew,
+                { color: activeBlogTab === 'feed' ? themeColors.brandForeground1 : themeColors.neutralForeground3 },
+                activeBlogTab === 'feed' && { fontWeight: '700' }
               ]}>
-                Title
+                Feed
               </Text>
             </Pressable>
 
             <Pressable
-              onPress={() => setSearchScope('author')}
-              style={[
-                styles.scopeChip,
-                {
-                  backgroundColor: searchScope === 'author' ? themeColors.brandBackgroundSubtle : themeColors.neutralBackground3,
-                  borderColor: searchScope === 'author' ? themeColors.brandForeground1 : 'transparent',
-                  borderWidth: searchScope === 'author' ? 1 : 0,
-                }
-              ]}
+              onPress={() => setActiveBlogTab('articles')}
+              style={[styles.subNavTabNew, activeBlogTab === 'articles' && { borderBottomColor: themeColors.brandForeground1 }]}
             >
               <Text style={[
-                Typography.captionStrong,
-                { color: searchScope === 'author' ? themeColors.brandForeground1 : themeColors.neutralForeground3, fontSize: 11 }
+                styles.subNavTabTextNew,
+                { color: activeBlogTab === 'articles' ? themeColors.brandForeground1 : themeColors.neutralForeground3 },
+                activeBlogTab === 'articles' && { fontWeight: '700' }
               ]}>
-                People
+                Articles
               </Text>
             </Pressable>
 
-            {/* Clear/Dismiss Focus */}
             <Pressable
-              onPress={() => setIsSearchFocused(false)}
-              style={{ marginLeft: 'auto', paddingLeft: Spacing.s }}
+              onPress={() => setActiveBlogTab('voices')}
+              style={[styles.subNavTabNew, activeBlogTab === 'voices' && { borderBottomColor: themeColors.brandForeground1 }]}
             >
-              <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, fontSize: 11 }]}>
-                Done
+              <Text style={[
+                styles.subNavTabTextNew,
+                { color: activeBlogTab === 'voices' ? themeColors.brandForeground1 : themeColors.neutralForeground3 },
+                activeBlogTab === 'voices' && { fontWeight: '700' }
+              ]}>
+                Voices
               </Text>
             </Pressable>
           </View>
         )}
 
-        {/* Empty Search State */}
-        {!hasSearchResults && (
-          <View style={[styles.emptyStateContainer, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
-            <Ionicons name="document-text-outline" size={48} color={themeColors.neutralForeground3} style={{ marginBottom: Spacing.s }} />
-            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, textAlign: 'center' }]}>
-              No Articles Found
-            </Text>
-            <Text style={[Typography.caption, { color: themeColors.neutralForeground3, textAlign: 'center', marginTop: 4 }]}>
-              We couldn't find matches for "{searchQuery}". Try editing your query or changing scopes.
-            </Text>
-          </View>
-        )}
-
-        {/* TAB A: ALL BLOGS */}
-        {activeTab === 'all' && hasSearchResults && (
-          <View>
+        {/* Main Content Feed layout */}
+        {activeTab === 'all' ? (
+          <View style={{ marginTop: Spacing.s }}>
             
-            {/* 2. Featured Articles Header Row */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={[Typography.bodyStrong, styles.sectionTitle, { color: themeColors.neutralForeground1 }]}>
-                Featured Articles
-              </Text>
-              <Pressable
-                onPress={handleRefreshFeatured}
-                style={({ pressed }) => [
-                  styles.refreshButton,
-                  { opacity: pressed ? 0.6 : 1, backgroundColor: themeColors.neutralBackground3 }
-                ]}
-              >
-                <Ionicons name="refresh" size={14} color={themeColors.neutralForeground1} style={{ marginRight: 4 }} />
-                <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground1, fontSize: 11 }]}>
-                  Shuffle
-                </Text>
-              </Pressable>
-            </View>
+            {/* Featured Articles Section */}
+            {(activeBlogTab === 'feed' || activeBlogTab === 'articles') && (
+              <View style={{ marginBottom: Spacing.l }}>
+                <View style={styles.sectionHeaderNew}>
+                  <Text style={styles.sectionLabelCapsNew}>(FEATURED ARTICLES)</Text>
+                  <Pressable onPress={() => setActiveBlogTab('articles')}>
+                    <Text style={[styles.seeAllTextNew, { color: themeColors.brandForeground1 }]}>See all</Text>
+                  </Pressable>
+                </View>
 
-            {/* Featured Articles Horizontally scrolling Carousel with gesture handler locks */}
-            {filteredFeatured.length > 0 ? (
-              <GestureScrollView
-                horizontal
-                // @ts-ignore
-                activeOffsetX={[-20, 20]}
-                showsHorizontalScrollIndicator={false}
-                decelerationRate="fast"
-                snapToInterval={screenWidth * 0.82 + Spacing.m}
-                snapToAlignment="start"
-                contentContainerStyle={styles.carouselScrollPadding}
-                onTouchStart={() => setParentScrollEnabled?.(false)}
-                onTouchEnd={() => setParentScrollEnabled?.(true)}
-                onTouchCancel={() => setParentScrollEnabled?.(true)}
-              >
-                {filteredFeatured.map(article => {
-                  const cardAccentColor =
-                    article.categoryIntent === 'Brand' ? '#1A73E8' :
-                    article.categoryIntent === 'Success' ? '#137333' :
-                    article.categoryIntent === 'Warning' ? '#B06000' :
-                    article.categoryIntent === 'Danger' ? '#C5221F' : '#727272';
+                {filteredFeatured.length > 0 ? (
+                  <GestureScrollView
+                    horizontal
+                    // @ts-ignore
+                    activeOffsetX={[-20, 20]}
+                    showsHorizontalScrollIndicator={false}
+                    decelerationRate="fast"
+                    snapToInterval={screenWidth * 0.76 + Spacing.m}
+                    snapToAlignment="start"
+                    contentContainerStyle={styles.carouselScrollPadding}
+                    onTouchStart={() => setParentScrollEnabled?.(false)}
+                    onTouchEnd={() => setParentScrollEnabled?.(true)}
+                    onTouchCancel={() => setParentScrollEnabled?.(true)}
+                  >
+                    {filteredFeatured.map(article => (
+                      <Pressable
+                        key={article.id}
+                        onPress={() => setSelectedArticle(article)}
+                        style={[
+                          styles.featuredCardNew,
+                          {
+                            backgroundColor: themeColors.neutralBackground1,
+                            borderColor: themeColors.neutralStroke2,
+                          }
+                        ]}
+                      >
+                        <View style={[styles.featuredImageContainerNew, { backgroundColor: themeColors.neutralBackground3 }]}>
+                          {article.bannerImage ? (
+                            <Image source={{ uri: article.bannerImage }} style={styles.featuredImageNew} />
+                          ) : (
+                            <View style={styles.featuredImagePlaceholderNew} />
+                          )}
+                          <View style={[styles.readTimeBadgeNew, { backgroundColor: 'rgba(255, 255, 255, 0.95)' }]}>
+                            <Text style={styles.readTimeTextNew}>{article.readTime.toUpperCase()}</Text>
+                          </View>
+                        </View>
+                        <View style={{ paddingHorizontal: 4 }}>
+                          <Text style={[styles.featuredCategoryNew, { color: themeColors.brandForeground1 }]}>
+                            {article.category.toUpperCase()}
+                          </Text>
+                          <Text style={[styles.featuredTitleNew, { color: themeColors.neutralForeground1 }]} numberOfLines={2}>
+                            {article.title}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </GestureScrollView>
+                ) : (
+                  <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: Spacing.m }]}>
+                    No featured articles available.
+                  </Text>
+                )}
+              </View>
+            )}
 
-                  return (
-                    <Card
-                      key={article.id}
-                      variant="Filled"
-                      isDarkMode={isDarkMode}
-                      style={[styles.featuredCard, { width: screenWidth * 0.82 }]}
-                      size="Small"
-                      onPress={() => setSelectedArticle(article)}
-                    >
-                      {/* Top 60% Image/Graphic Placeholder */}
-                      <View style={[styles.featuredCardImageArea, { backgroundColor: themeColors.neutralBackground3 }]}>
-                        {/* Whimsical organic abstract geometric pattern */}
-                        <View style={[styles.abstractCircleShape, { backgroundColor: cardAccentColor, top: -25, left: -25, opacity: 0.16 }]} />
-                        <View style={[styles.abstractCircleShape, { backgroundColor: themeColors.brandForeground1, bottom: -45, right: -15, opacity: 0.1 }]} />
-                        <View style={[styles.abstractCircleShape, { backgroundColor: '#80D8FF', top: 20, right: 40, opacity: 0.15, width: 45, height: 45, borderRadius: 22.5 }]} />
-                        
-                        <View style={styles.badgeContainer}>
-                          <Badge label={article.category} intent={article.categoryIntent} variant="Tint" size="Small" isDarkMode={isDarkMode} />
+            {/* Community Voices Section */}
+            {(activeBlogTab === 'feed' || activeBlogTab === 'voices') && (
+              <View style={{ paddingHorizontal: Spacing.m, marginBottom: Spacing.l }}>
+                <View style={[styles.sectionHeaderNew, { paddingHorizontal: 0, marginBottom: Spacing.s }]}>
+                  <Text style={styles.sectionLabelCapsNew}>(COMMUNITY VOICES)</Text>
+                </View>
+
+                {filteredVV.length > 0 ? (
+                  filteredVV.map(item => {
+                    const isLiked = likedVoices.includes(item.id);
+                    return (
+                      <View
+                        key={item.id}
+                        style={[
+                          styles.voicePostContainer,
+                          {
+                            backgroundColor: themeColors.neutralBackground1,
+                            borderColor: themeColors.neutralStroke2,
+                          }
+                        ]}
+                      >
+                        {/* Top user row */}
+                        <View style={styles.voiceUserRow}>
+                          <View style={[styles.voiceAvatarCircle, { backgroundColor: themeColors.neutralBackground3 }]}>
+                            <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, fontSize: 13 }]}>
+                              {item.author.split(' ').map(n => n[0]).join('')}
+                            </Text>
+                          </View>
+                          <View style={styles.voiceUserInfo}>
+                            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 14 }]}>
+                              {item.author}
+                            </Text>
+                            <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
+                              Volunteer Voices • {item.date}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Post text content container */}
+                        <View style={[styles.voiceTextContainer, { backgroundColor: isDarkMode ? '#1f293d' : '#f0f4f8' }]}>
+                          <Text style={[Typography.body, { color: themeColors.neutralForeground1, fontSize: 13.5, lineHeight: 19 }]}>
+                            {item.summary}
+                          </Text>
+                        </View>
+
+                        {/* Engagement Bar */}
+                        <View style={styles.voiceEngagementRow}>
+                          <Pressable onPress={() => handleLikeVoice(item.id)} style={styles.voiceEngagementBtn}>
+                            <Ionicons
+                              name={isLiked ? "heart" : "heart-outline"}
+                              size={15}
+                              color={isLiked ? themeColors.brandForeground1 : themeColors.neutralForeground3}
+                              style={{ marginRight: 4 }}
+                            />
+                            <Text style={[
+                              Typography.captionStrong,
+                              { color: isLiked ? themeColors.brandForeground1 : themeColors.neutralForeground2, fontSize: 11 }
+                            ]}>
+                              {item.likesCount || 24} LIKES
+                            </Text>
+                          </Pressable>
+                          <Pressable onPress={() => setSelectedArticle(item)} style={styles.voiceEngagementBtn}>
+                            <Ionicons name="chatbubble-outline" size={15} color={themeColors.neutralForeground3} style={{ marginRight: 4 }} />
+                            <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, fontSize: 11 }]}>
+                              {item.repliesCount || 6} REPLIES
+                            </Text>
+                          </Pressable>
                         </View>
                       </View>
-
-                      {/* Bottom 40% Metadata Area */}
-                      <View style={styles.featuredCardTextContent}>
-                        <Text style={[Typography.bodyStrong, styles.featuredCardTitle, { color: themeColors.neutralForeground1 }]} numberOfLines={2}>
-                          {article.title}
-                        </Text>
-                        <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginTop: 4 }]}>
-                          {article.date} • {article.readTime}
-                        </Text>
-                      </View>
-                    </Card>
-                  );
-                })}
-              </GestureScrollView>
-            ) : (
-              <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: Spacing.m, marginBottom: Spacing.m }]}>
-                No featured articles match.
-              </Text>
-            )}
-
-            {/* 3. Categorized Horizontal Feeds */}
-
-            {/* Category Section 1: Volunteer Voices */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={[Typography.bodyStrong, styles.sectionTitle, { color: themeColors.neutralForeground1 }]}>
-                Volunteer Voices
-              </Text>
-            </View>
-            
-            {filteredVV.length > 0 ? (
-              <GestureScrollView
-                horizontal
-                // @ts-ignore
-                activeOffsetX={[-20, 20]}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.carouselScrollPadding}
-                onTouchStart={() => setParentScrollEnabled?.(false)}
-                onTouchEnd={() => setParentScrollEnabled?.(true)}
-                onTouchCancel={() => setParentScrollEnabled?.(true)}
-              >
-                {filteredVV.map(article => (
-                  <Card
-                    key={article.id}
-                    variant="Filled"
-                    isDarkMode={isDarkMode}
-                    style={styles.compactCard}
-                    size="Medium"
-                    onPress={() => setSelectedArticle(article)}
-                  >
-                    <View style={styles.compactCardTop}>
-                      <Badge label={article.category} intent={article.categoryIntent} variant="Subtle" size="Small" isDarkMode={isDarkMode} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
-                        {article.date}
-                      </Text>
-                    </View>
-                    <Text style={[Typography.bodyStrong, styles.compactCardTitle, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
-                      {article.title}
-                    </Text>
-                    <Text style={[Typography.caption, styles.compactCardSnippet, { color: themeColors.neutralForeground2 }]} numberOfLines={1}>
-                      {article.summary}
-                    </Text>
-                    <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground3, marginTop: Spacing.xs }]}>
-                      By {article.author}
-                    </Text>
-                  </Card>
-                ))}
-              </GestureScrollView>
-            ) : (
-              <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: Spacing.m, marginBottom: Spacing.m }]}>
-                No entries match search.
-              </Text>
-            )}
-
-            {/* Category Section 2: NGO Behind the Scenes */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={[Typography.bodyStrong, styles.sectionTitle, { color: themeColors.neutralForeground1 }]}>
-                NGO Behind the Scenes
-              </Text>
-            </View>
-
-            {filteredNGO.length > 0 ? (
-              <GestureScrollView
-                horizontal
-                // @ts-ignore
-                activeOffsetX={[-20, 20]}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.carouselScrollPadding}
-                onTouchStart={() => setParentScrollEnabled?.(false)}
-                onTouchEnd={() => setParentScrollEnabled?.(true)}
-                onTouchCancel={() => setParentScrollEnabled?.(true)}
-              >
-                {filteredNGO.map(article => (
-                  <Card
-                    key={article.id}
-                    variant="Filled"
-                    isDarkMode={isDarkMode}
-                    style={styles.compactCard}
-                    size="Medium"
-                    onPress={() => setSelectedArticle(article)}
-                  >
-                    <View style={styles.compactCardTop}>
-                      <Badge label={article.category} intent={article.categoryIntent} variant="Subtle" size="Small" isDarkMode={isDarkMode} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
-                        {article.date}
-                      </Text>
-                    </View>
-                    <Text style={[Typography.bodyStrong, styles.compactCardTitle, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
-                      {article.title}
-                    </Text>
-                    <Text style={[Typography.caption, styles.compactCardSnippet, { color: themeColors.neutralForeground2 }]} numberOfLines={1}>
-                      {article.summary}
-                    </Text>
-                    <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground3, marginTop: Spacing.xs }]}>
-                      By {article.author}
-                    </Text>
-                  </Card>
-                ))}
-              </GestureScrollView>
-            ) : (
-              <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: Spacing.m, marginBottom: Spacing.m }]}>
-                No entries match search.
-              </Text>
-            )}
-
-            {/* Category Section 3: Community Stories */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={[Typography.bodyStrong, styles.sectionTitle, { color: themeColors.neutralForeground1 }]}>
-                Community Stories
-              </Text>
-            </View>
-
-            {filteredCS.length > 0 ? (
-              <GestureScrollView
-                horizontal
-                // @ts-ignore
-                activeOffsetX={[-20, 20]}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.carouselScrollPadding}
-                onTouchStart={() => setParentScrollEnabled?.(false)}
-                onTouchEnd={() => setParentScrollEnabled?.(true)}
-                onTouchCancel={() => setParentScrollEnabled?.(true)}
-              >
-                {filteredCS.map(article => (
-                  <Card
-                    key={article.id}
-                    variant="Filled"
-                    isDarkMode={isDarkMode}
-                    style={styles.compactCard}
-                    size="Medium"
-                    onPress={() => setSelectedArticle(article)}
-                  >
-                    <View style={styles.compactCardTop}>
-                      <Badge label={article.category} intent={article.categoryIntent} variant="Subtle" size="Small" isDarkMode={isDarkMode} />
-                      <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
-                        {article.date}
-                      </Text>
-                    </View>
-                    <Text style={[Typography.bodyStrong, styles.compactCardTitle, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
-                      {article.title}
-                    </Text>
-                    <Text style={[Typography.caption, styles.compactCardSnippet, { color: themeColors.neutralForeground2 }]} numberOfLines={1}>
-                      {article.summary}
-                    </Text>
-                    <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground3, marginTop: Spacing.xs }]}>
-                      By {article.author}
-                    </Text>
-                  </Card>
-                ))}
-              </GestureScrollView>
-            ) : (
-              <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: Spacing.m, marginBottom: Spacing.m }]}>
-                No entries match search.
-              </Text>
+                    );
+                  })
+                ) : (
+                  <Text style={[Typography.caption, { color: themeColors.neutralForeground3 }]}>
+                    No community voices posts available.
+                  </Text>
+                )}
+              </View>
             )}
 
           </View>
-        )}
-
-        {/* TAB B: MY BLOGS */}
-        {activeTab === 'my' && hasSearchResults && (
+        ) : (
+          /* TAB B: MY BLOGS (User Personal Area) */
           <View style={styles.myBlogsFeedContainer}>
             
             {/* Section: My Drafts & Published Blogs */}
             {filteredMy.length > 0 && (
-              <View>
+              <View style={{ marginTop: Spacing.s }}>
                 <Text style={[Typography.bodyStrong, styles.sectionTitle, { color: themeColors.neutralForeground1, marginBottom: Spacing.m }]}>
                   My Drafts & Published Blogs
                 </Text>
@@ -1262,67 +1153,71 @@ export const Blog: React.FC<BlogProps> = ({ isDarkMode = false, setParentScrollE
       <Modal
         visible={fabMenuVisible}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setFabMenuVisible(false)}
       >
         <Pressable
-          style={styles.modalBackdrop}
+          style={styles.modalBackdropNew}
           onPress={() => setFabMenuVisible(false)}
         >
           <View
             style={[
-              styles.fabMenuContainer,
+              styles.fabMenuContainerNew,
               {
-                bottom: insets.bottom > 0 ? insets.bottom + 84 : 88,
+                bottom: insets.bottom > 0 ? insets.bottom + 16 : 20,
                 backgroundColor: themeColors.neutralBackground1,
-                borderColor: themeColors.neutralStroke2,
               }
             ]}
           >
-            <Text style={[
-              Typography.captionStrong,
-              {
-                color: themeColors.neutralForeground3,
-                fontSize: 10,
-                letterSpacing: 1,
-                marginBottom: Spacing.xs,
-                paddingHorizontal: Spacing.s,
-              }
-            ]}>
-              CREATE NEW ENTRY
-            </Text>
+            {/* Side-by-side options row */}
+            <View style={styles.fabOptionsRowNew}>
+              {/* Left Option Block (Short Blog) */}
+              <Pressable
+                onPress={() => {
+                  setFabMenuVisible(false);
+                  handleOpenCreator('short_blog');
+                }}
+                style={[styles.fabOptionBlockNew, { backgroundColor: isDarkMode ? '#1e283d' : '#f0f4f8' }]}
+              >
+                <View style={[styles.fabIconCircleNew, { backgroundColor: isDarkMode ? '#121824' : '#e1ebf5' }]}>
+                  <Ionicons name="create-outline" size={20} color={isDarkMode ? '#8ab4f8' : '#0B5A60'} />
+                </View>
+                <Text style={[styles.fabOptionTitleNew, { color: themeColors.neutralForeground1 }]}>
+                  Short Blog
+                </Text>
+                <Text style={[styles.fabOptionSubtextNew, { color: themeColors.neutralForeground3 }]}>
+                  Casual updates, quick stories, or check-ins.
+                </Text>
+              </Pressable>
 
-            {/* 'Write note down your thoughts' option removed */}
+              {/* Right Option Block (Article) */}
+              <Pressable
+                onPress={() => {
+                  setFabMenuVisible(false);
+                  handleOpenCreator('article');
+                }}
+                style={[styles.fabOptionBlockNew, { backgroundColor: isDarkMode ? '#1e283d' : '#f0f4f8' }]}
+              >
+                <View style={[styles.fabIconCircleNew, { backgroundColor: isDarkMode ? '#121824' : '#e1ebf5' }]}>
+                  <Ionicons name="menu-outline" size={20} color={isDarkMode ? '#8ab4f8' : '#0B5A60'} />
+                </View>
+                <Text style={[styles.fabOptionTitleNew, { color: themeColors.neutralForeground1 }]}>
+                  Article
+                </Text>
+                <Text style={[styles.fabOptionSubtextNew, { color: themeColors.neutralForeground3 }]}>
+                  Deep dives, research, or field guides.
+                </Text>
+              </Pressable>
+            </View>
 
+            {/* Dismiss Action Close Button */}
             <Pressable
-              onPress={() => {
-                setFabMenuVisible(false);
-                handleOpenCreator('short_blog');
-              }}
-              style={({ pressed }) => [
-                styles.fabMenuItem,
-                { backgroundColor: pressed ? themeColors.neutralBackgroundPressed : 'transparent' }
-              ]}
+              onPress={() => setFabMenuVisible(false)}
+              style={styles.fabCloseButtonNew}
             >
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color={themeColors.brandForeground1} style={{ marginRight: Spacing.s }} />
-              <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13.5 }]}>
-                Create short blogs
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => {
-                setFabMenuVisible(false);
-                handleOpenCreator('article');
-              }}
-              style={({ pressed }) => [
-                styles.fabMenuItem,
-                { backgroundColor: pressed ? themeColors.neutralBackgroundPressed : 'transparent' }
-              ]}
-            >
-              <Ionicons name="create-outline" size={18} color={themeColors.brandForeground1} style={{ marginRight: Spacing.s }} />
-              <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13.5 }]}>
-                Write articles
+              <Ionicons name="close" size={14} color={themeColors.neutralForeground3} style={{ marginRight: 4 }} />
+              <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground3, fontSize: 13 }]}>
+                Close
               </Text>
             </Pressable>
           </View>
@@ -2623,5 +2518,198 @@ const styles = StyleSheet.create({
   feedbackCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  blogHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: Spacing.m,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.s,
+  },
+  blogHeaderTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  myPostsButtonNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  subNavBarNew: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.m,
+    marginBottom: Spacing.m,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  subNavTabNew: {
+    paddingVertical: Spacing.s,
+    marginRight: Spacing.l,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  subNavTabTextNew: {
+    fontSize: 14.5,
+    fontWeight: '600',
+  },
+  sectionHeaderNew: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.m,
+    marginBottom: Spacing.s,
+    marginTop: Spacing.s,
+  },
+  sectionLabelCapsNew: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#727272',
+    letterSpacing: 0.5,
+  },
+  seeAllTextNew: {
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  featuredCardNew: {
+    width: 270,
+    marginRight: Spacing.m,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 0,
+    overflow: 'hidden',
+    paddingBottom: Spacing.s,
+  },
+  featuredImageContainerNew: {
+    height: 140,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: Spacing.s,
+  },
+  featuredImageNew: {
+    width: '100%',
+    height: '100%',
+  },
+  featuredImagePlaceholderNew: {
+    width: '100%',
+    height: '100%',
+  },
+  readTimeBadgeNew: {
+    position: 'absolute',
+    top: Spacing.s,
+    left: Spacing.s,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  readTimeTextNew: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#1a2638',
+    letterSpacing: 0.5,
+  },
+  featuredCategoryNew: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    marginTop: 4,
+  },
+  featuredTitleNew: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    lineHeight: 19,
+  },
+  voicePostContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: Spacing.m,
+    marginBottom: Spacing.m,
+  },
+  voiceUserRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.s,
+  },
+  voiceAvatarCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.s,
+  },
+  voiceUserInfo: {
+    flex: 1,
+  },
+  voiceTextContainer: {
+    borderRadius: 12,
+    padding: Spacing.m,
+    marginBottom: Spacing.s,
+  },
+  voiceEngagementRow: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  voiceEngagementBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  modalBackdropNew: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  fabMenuContainerNew: {
+    width: '92%',
+    borderRadius: 24,
+    padding: 16,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    alignSelf: 'center',
+  },
+  fabOptionsRowNew: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  fabOptionBlockNew: {
+    flex: 1,
+    borderRadius: 20,
+    padding: 16,
+    minHeight: 145,
+    marginHorizontal: 4,
+  },
+  fabIconCircleNew: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  fabOptionTitleNew: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  fabOptionSubtextNew: {
+    fontSize: 11,
+    lineHeight: 14.5,
+  },
+  fabCloseButtonNew: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
 });

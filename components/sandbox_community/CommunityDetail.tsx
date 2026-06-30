@@ -13,6 +13,7 @@ import {
   FlatList,
   Platform,
   Keyboard,
+  SafeAreaView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, Shapes } from '../../constants/Theme';
@@ -37,7 +38,7 @@ interface Comment {
 
 interface Message {
   id: string;
-  type: 'text' | 'image' | 'poll' | 'system';
+  type: 'text' | 'image' | 'poll' | 'system' | 'idea_thread';
   author: {
     name: string;
     avatar: string;
@@ -54,6 +55,11 @@ interface Message {
     options: { text: string; votes: string[] }[];
     totalVotes: number;
     owner: string;
+  };
+  ideaThreadData?: {
+    title: string;
+    description: string;
+    threshold: number;
   };
   comments?: Comment[];
 }
@@ -128,7 +134,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
   const [activeTab, setActiveTab] = useState<'About' | 'Discussions' | 'People' | 'Events' | 'Blogs' | 'Friends'>(
     initialIsMember ? 'Discussions' : 'People'
   );
-  
+
   // Settings popup menu
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
@@ -152,6 +158,13 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
 
   // Expandable composer options
   const [showMoreComposerOptions, setShowMoreComposerOptions] = useState(false);
+
+  // Idea Thread modal state
+  const [ideaThreadModalVisible, setIdeaThreadModalVisible] = useState(false);
+  const [ideaComposerVisible, setIdeaComposerVisible] = useState(false);
+  const [composerTitle, setComposerTitle] = useState('');
+  const [composerDesc, setComposerDesc] = useState('');
+  const [supportThreshold, setSupportThreshold] = useState(25);
 
   // Floating Rising Emoji micro-animation states
   const [flyingEmoji, setFlyingEmoji] = useState<{ emoji: string; messageId: string } | null>(null);
@@ -248,7 +261,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
   const [notifPreference, setNotifPreference] = useState<'All' | 'Mentions' | 'Mute'>('All');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Create Poll sheet
   const [pollModalVisible, setPollModalVisible] = useState(false);
   const [pollTemplate, setPollTemplate] = useState<'Event' | 'Time' | 'Day' | 'Venue' | null>(null);
@@ -595,6 +608,33 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
     setPollModalVisible(false);
   };
 
+  const handlePostIdeaThread = () => {
+    if (!composerTitle.trim()) {
+      alert('Please enter a title for your idea thread.');
+      return;
+    }
+    const newId = Date.now().toString();
+    const newMsg: Message = {
+      id: newId,
+      type: 'idea_thread',
+      author: { name: 'Me', avatar: '', username: 'me' },
+      reactions: [],
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      ideaThreadData: {
+        title: composerTitle.trim(),
+        description: composerDesc.trim(),
+        threshold: supportThreshold,
+      },
+    };
+
+    setMessages((prev) => [...prev, newMsg]);
+    setComposerTitle('');
+    setComposerDesc('');
+    setSupportThreshold(25);
+    setIdeaComposerVisible(false);
+    alert('Idea Thread posted successfully!');
+  };
+
   const votePollOption = (msgId: string, optIdx: number) => {
     setMessages((prev) =>
       prev.map((msg) => {
@@ -675,7 +715,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
           <Pressable onPress={onBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={themeColors.neutralForeground1} />
           </Pressable>
-          
+
           {/* Square community logo to the left of heading */}
           <Pressable onPress={() => setLeftPanelVisible(true)} style={[styles.headerLogo, { backgroundColor: '#b4009e' }]}>
             <Ionicons name="people" size={18} color="#ffffff" />
@@ -721,7 +761,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
             </Pressable>
           ))}
           <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2 }]} />
-          
+
           {/* Discussions page-specific search */}
           {activeTab === 'Discussions' && (
             <Pressable
@@ -927,7 +967,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 const commentsCount = msg.comments?.length || 0;
                 const isExpanded = !!expandedComments[msg.id];
                 const isMe = msg.author.name === 'Me' || msg.author.username === 'me';
-                
+
                 return (
                   <View key={msg.id} style={styles.msgCard}>
                     <Pressable
@@ -1093,7 +1133,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                             Comment {commentsCount > 0 ? `(${commentsCount})` : ''}
                           </Text>
                         </Pressable>
-                        
+
                         {/* Timestamp moves to bottom-right of card and reduced font size */}
                         <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: 'auto', fontSize: 10, alignSelf: 'center' }]}>
                           {msg.time}
@@ -1374,7 +1414,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.body, { color: themeColors.neutralForeground2, marginTop: 4 }]} numberOfLines={3}>
                   {item.excerpt}
                 </Text>
-                
+
                 <View style={styles.blogFooter}>
                   <View style={styles.blogVote}>
                     <Pressable style={styles.voteBtn}>
@@ -1387,7 +1427,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                       <Ionicons name="caret-down" size={18} color={themeColors.neutralForeground2} />
                     </Pressable>
                   </View>
-                  
+
                   <View style={styles.blogComments}>
                     <Ionicons name="chatbox-outline" size={16} color={themeColors.neutralForeground2} />
                     <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, marginLeft: 4 }]}>
@@ -1582,7 +1622,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 );
               })}
             </View>
-            
+
             <View style={[styles.longPressMenu, { backgroundColor: themeColors.neutralBackground1 }]}>
               {/* Edit Message */}
               {(() => {
@@ -1734,7 +1774,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.body, { color: themeColors.neutralForeground2, marginBottom: Spacing.s }]}>
                   Choose a Template
                 </Text>
-                
+
                 <Pressable
                   onPress={() => setPollTemplate('Event')}
                   style={[styles.templateCard, { backgroundColor: themeColors.neutralBackground2, borderColor: themeColors.neutralStroke1 }]}
@@ -1876,7 +1916,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
               </View>
 
               <Image source={{ uri: storyPhotos[activeStoryIdx] }} style={styles.storyViewerImage} />
-              
+
               {/* Story navigation tap zones */}
               <View style={styles.storyNavigation}>
                 <Pressable
@@ -1988,7 +2028,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
       <Modal visible={infoDrawerVisible} animationType="slide" transparent>
         <View style={styles.bottomDrawerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoDrawerVisible(false)} />
-          
+
           <View style={[styles.bottomDrawer, styles.infoDrawer, { backgroundColor: themeColors.neutralBackground1 }]}>
             {/* Drag Handle */}
             <Pressable onPress={() => setInfoDrawerVisible(false)} style={styles.drawerHandleWrapper}>
@@ -2013,7 +2053,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.subtitle, { color: themeColors.neutralForeground1, marginTop: Spacing.s, textAlign: 'center' }]}>
                   {communityName}
                 </Text>
-                
+
                 <Text style={[Typography.caption, { color: themeColors.neutralForeground2, marginTop: 4 }]}>
                   {memberCount} registered volunteers • {activeCount} active now
                 </Text>

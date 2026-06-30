@@ -4,7 +4,7 @@ import {
   Text,
   View,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
   Pressable,
   Modal,
   ActivityIndicator,
@@ -28,7 +28,7 @@ import { Personalization } from './services/personalization';
 import { AuthFlow } from './screens/auth-onboarding/AuthFlow';
 import { NgoDetail } from './screens/NgoDetail';
 
-const { width: screenWidth } = Dimensions.get('window');
+// screenWidth is now resolved dynamically using useWindowDimensions() inside MainLayout
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -55,6 +55,7 @@ export default function App() {
 }
 
 function MainLayout() {
+  const { width: screenWidth } = useWindowDimensions();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [presence, setPresence] = useState<PresenceState>('Available');
   const [activeTab, setActiveTab] = useState(0);
@@ -76,7 +77,7 @@ function MainLayout() {
 
   const tabs: TabConfig[] = [
     { name: 'Home', activeIcon: 'home', inactiveIcon: 'home-outline' },
-    { name: 'Feed', activeIcon: 'newspaper', inactiveIcon: 'newspaper-outline' },
+    { name: 'Opportunities', activeIcon: 'heart', inactiveIcon: 'heart-outline' },
     { name: 'Community', activeIcon: 'people', inactiveIcon: 'people-outline' },
     { name: 'Blog', activeIcon: 'book', inactiveIcon: 'book-outline' },
     { name: 'Profile', activeIcon: 'person', inactiveIcon: 'person-outline' },
@@ -291,11 +292,15 @@ function MainLayout() {
       >
         {tabs.map((tab, index) => {
           const isSelected = activeTab === index;
+          // Distribute horizontal space dynamically: give Opportunities (index 1) and Community (index 2) more space
+          const flexWeights = [0.85, 1.4, 1.1, 0.85, 0.8];
+          const tabFlex = flexWeights[index];
+
           return (
             <Pressable
               key={tab.name}
               onPress={() => handleTabPress(index)}
-              style={styles.tabItem}
+              style={[styles.tabItem, { flex: tabFlex }]}
             >
               {/* Active Tab Accent Line */}
               <View
@@ -431,7 +436,8 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
+    letterSpacing: -0.15,
   },
   logoRow: {
     flexDirection: 'row',

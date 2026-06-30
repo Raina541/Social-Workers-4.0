@@ -1116,6 +1116,16 @@ export const Home: React.FC<HomeProps> = ({
     }, 400);
   };
 
+  const [showMentionedModal, setShowMentionedModal] = useState(false);
+  const [mentionedFriendsList, setMentionedFriendsList] = useState<string[]>([]);
+  const [mentionedIdeaTitle, setMentionedIdeaTitle] = useState('');
+
+  const handleShowWhoMentioned = (idea: any) => {
+    setMentionedFriendsList(idea.taggedFriends || []);
+    setMentionedIdeaTitle(idea.description ? idea.description.split('.')[0] : '');
+    setShowMentionedModal(true);
+  };
+
   const loadPersonalizedData = () => {
     // 1. Sort causes: unseen first, seen/read causes towards the end (right side), keeping alphabetical order within groups
     const sorted = [...Personalization.getSortedCauses()].sort((a, b) => a.localeCompare(b));
@@ -2294,32 +2304,16 @@ export const Home: React.FC<HomeProps> = ({
                 <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2, marginBottom: Spacing.s }]} />
 
                 {/* 3. Footer: Engagement Icons (Likes, Comments) + Mentions + Support Button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.s }}>
                   
                   {/* Left: Engagement Stats & Mentions Stack */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
-                    {/* Likes/Supports */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="heart-outline" size={15} color={themeColors.neutralForeground3} />
-                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
-                        {idea.initialSupports + (hasSupported ? 1 : 0)}
-                      </Text>
-                    </View>
-
-                    {/* Comments/Mentions Count */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
-                      <Ionicons name="chatbubble-outline" size={14} color={themeColors.neutralForeground3} />
-                      <Text style={{ fontSize: 11, color: themeColors.neutralForeground3, marginLeft: 3 }}>
-                        {idea.mentionsCount}
-                      </Text>
-                    </View>
-
-                    {/* Mentions Stack */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    {/* Avatar Stack */}
                     <Pressable
-                      onPress={() => openPicker(idea.id)}
+                      onPress={() => handleShowWhoMentioned(idea)}
                       style={{ flexDirection: 'row', alignItems: 'center' }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {idea.taggedFriends.slice(0, 2).map((username, idx) => {
                           const info = MOCK_FRIENDS.find(f => f.username.toLowerCase() === username.toLowerCase()) || {
                             displayName: username,
@@ -2341,7 +2335,45 @@ export const Home: React.FC<HomeProps> = ({
                             />
                           );
                         })}
+                        {idea.taggedFriends.length > 2 && (
+                          <View
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: 9,
+                              borderWidth: 1,
+                              borderColor: themeColors.neutralBackground1,
+                              backgroundColor: themeColors.neutralBackground1,
+                              marginLeft: -6,
+                              zIndex: 8,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Text style={{ fontSize: 8, fontWeight: 'bold', color: themeColors.neutralForeground2 }}>
+                              +{idea.taggedFriends.length - 2}
+                            </Text>
+                          </View>
+                        )}
                       </View>
+                    </Pressable>
+
+                    {/* Mention Pill Button */}
+                    <Pressable
+                      onPress={() => openPicker(idea.id)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        borderRadius: 4,
+                        paddingVertical: 5,
+                        paddingHorizontal: 12,
+                        backgroundColor: isDarkMode ? '#1a365d' : '#e6f0fa',
+                      }}
+                    >
+                      <Ionicons name="at" size={14} color={themeColors.brandForeground1} style={{ marginRight: 4 }} />
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: themeColors.brandForeground1 }}>
+                        Mention
+                      </Text>
                     </Pressable>
                   </View>
 
@@ -3294,6 +3326,102 @@ export const Home: React.FC<HomeProps> = ({
           </View>
         </Modal>
       )}
+
+      {/* Read-only Who's Mentioned Modal */}
+      <Modal
+        visible={showMentionedModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMentionedModal(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() => setShowMentionedModal(false)}
+        >
+          <View
+            style={{
+              width: '85%',
+              backgroundColor: themeColors.neutralBackground1,
+              borderRadius: 16,
+              padding: Spacing.m,
+              borderWidth: 1,
+              borderColor: themeColors.neutralStroke2,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
+          >
+            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, marginBottom: 4 }]}>
+              Mentioned in Thread
+            </Text>
+            <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginBottom: Spacing.m }]} numberOfLines={2}>
+              "{mentionedIdeaTitle}"
+            </Text>
+
+            <ScrollView style={{ maxHeight: 300 }}>
+              {mentionedFriendsList.length === 0 ? (
+                <Text style={{ fontSize: 13, color: themeColors.neutralForeground3, textAlign: 'center', marginVertical: Spacing.s }}>
+                  No friends mentioned yet.
+                </Text>
+              ) : (
+                mentionedFriendsList.map((username) => {
+                  const friendInfo = MOCK_FRIENDS.find(f => f.username.toLowerCase() === username.toLowerCase()) || {
+                    displayName: username,
+                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80',
+                  };
+                  return (
+                    <View
+                      key={username}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 8,
+                        borderBottomWidth: 1,
+                        borderBottomColor: themeColors.neutralStroke2,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: friendInfo.avatar }}
+                        style={{ width: 28, height: 28, borderRadius: 14, marginRight: Spacing.s }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 13 }]}>
+                          {friendInfo.displayName}
+                        </Text>
+                        <Text style={{ fontSize: 11, color: themeColors.neutralForeground3 }}>
+                          @{username}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            <Pressable
+              onPress={() => setShowMentionedModal(false)}
+              style={{
+                marginTop: Spacing.m,
+                backgroundColor: themeColors.brandForeground1,
+                borderRadius: 8,
+                paddingVertical: 10,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#ffffff', fontWeight: 'bold', fontSize: 13 }}>
+                Close
+              </Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Undo Toast Notification */}
       {toast !== null && (

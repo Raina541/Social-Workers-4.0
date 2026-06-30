@@ -13,6 +13,7 @@ import {
   FlatList,
   Platform,
   Keyboard,
+  SafeAreaView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
@@ -37,7 +38,7 @@ interface Comment {
 
 interface Message {
   id: string;
-  type: 'text' | 'image' | 'poll' | 'system';
+  type: 'text' | 'image' | 'poll' | 'system' | 'idea_thread';
   author: {
     name: string;
     avatar: string;
@@ -54,6 +55,11 @@ interface Message {
     options: { text: string; votes: string[] }[];
     totalVotes: number;
     owner: string;
+  };
+  ideaThreadData?: {
+    title: string;
+    description: string;
+    threshold: number;
   };
   comments?: Comment[];
 }
@@ -128,7 +134,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
   const [activeTab, setActiveTab] = useState<'About' | 'Discussions' | 'People' | 'Events' | 'Blogs' | 'Friends'>(
     initialIsMember ? 'Discussions' : 'People'
   );
-  
+
   // Settings popup menu
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
@@ -155,6 +161,10 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
 
   // Idea Thread modal state
   const [ideaThreadModalVisible, setIdeaThreadModalVisible] = useState(false);
+  const [ideaComposerVisible, setIdeaComposerVisible] = useState(false);
+  const [composerTitle, setComposerTitle] = useState('');
+  const [composerDesc, setComposerDesc] = useState('');
+  const [supportThreshold, setSupportThreshold] = useState(25);
 
   // Floating Rising Emoji micro-animation states
   const [flyingEmoji, setFlyingEmoji] = useState<{ emoji: string; messageId: string } | null>(null);
@@ -251,7 +261,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
   const [notifPreference, setNotifPreference] = useState<'All' | 'Mentions' | 'Mute'>('All');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Create Poll sheet
   const [pollModalVisible, setPollModalVisible] = useState(false);
   const [pollTemplate, setPollTemplate] = useState<'Event' | 'Time' | 'Day' | 'Venue' | null>(null);
@@ -598,6 +608,33 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
     setPollModalVisible(false);
   };
 
+  const handlePostIdeaThread = () => {
+    if (!composerTitle.trim()) {
+      alert('Please enter a title for your idea thread.');
+      return;
+    }
+    const newId = Date.now().toString();
+    const newMsg: Message = {
+      id: newId,
+      type: 'idea_thread',
+      author: { name: 'Me', avatar: '', username: 'me' },
+      reactions: [],
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      ideaThreadData: {
+        title: composerTitle.trim(),
+        description: composerDesc.trim(),
+        threshold: supportThreshold,
+      },
+    };
+
+    setMessages((prev) => [...prev, newMsg]);
+    setComposerTitle('');
+    setComposerDesc('');
+    setSupportThreshold(25);
+    setIdeaComposerVisible(false);
+    alert('Idea Thread posted successfully!');
+  };
+
   const votePollOption = (msgId: string, optIdx: number) => {
     setMessages((prev) =>
       prev.map((msg) => {
@@ -678,7 +715,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
           <Pressable onPress={onBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={themeColors.neutralForeground1} />
           </Pressable>
-          
+
           {/* Square community logo to the left of heading */}
           <Pressable onPress={() => setLeftPanelVisible(true)} style={[styles.headerLogo, { backgroundColor: '#b4009e' }]}>
             <Ionicons name="people" size={18} color="#ffffff" />
@@ -724,7 +761,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
             </Pressable>
           ))}
           <View style={[styles.divider, { backgroundColor: themeColors.neutralStroke2 }]} />
-          
+
           {/* Discussions page-specific search */}
           {activeTab === 'Discussions' && (
             <Pressable
@@ -930,7 +967,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 const commentsCount = msg.comments?.length || 0;
                 const isExpanded = !!expandedComments[msg.id];
                 const isMe = msg.author.name === 'Me' || msg.author.username === 'me';
-                
+
                 return (
                   <View key={msg.id} style={styles.msgCard}>
                     <Pressable
@@ -1084,6 +1121,40 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                         </View>
                       )}
 
+                      {/* Render Idea Thread Card */}
+                      {msg.type === 'idea_thread' && msg.ideaThreadData && (
+                        <View style={[styles.ideaThreadMessageCard, { backgroundColor: themeColors.neutralBackground2, borderColor: themeColors.neutralStroke1 }]}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xs }}>
+                            <View style={{ backgroundColor: themeColors.brandBackgroundSubtle, padding: 6, borderRadius: 8, marginRight: 8 }}>
+                              <Ionicons name="bulb" size={20} color={themeColors.brandForeground1} />
+                            </View>
+                            <Text style={[Typography.bodyStrong, { color: themeColors.neutralForeground1, fontSize: 15 }]}>
+                              {msg.ideaThreadData.title}
+                            </Text>
+                          </View>
+
+                          <Text style={[Typography.body, { color: themeColors.neutralForeground2, marginBottom: Spacing.s }]}>
+                            {msg.ideaThreadData.description}
+                          </Text>
+
+                          {/* Target backer status bar */}
+                          <View style={{ backgroundColor: themeColors.neutralBackground1, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: themeColors.neutralStroke2 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                              <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2 }]}>
+                                Support Threshold: {msg.ideaThreadData.threshold} backers
+                              </Text>
+                              <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1 }]}>
+                                1 Backer (You)
+                              </Text>
+                            </View>
+                            {/* Progress bar track */}
+                            <View style={{ height: 6, borderRadius: 3, backgroundColor: themeColors.neutralStroke2, overflow: 'hidden' }}>
+                              <View style={{ width: `${(1 / msg.ideaThreadData.threshold) * 100}%`, height: '100%', backgroundColor: themeColors.brandForeground1 }} />
+                            </View>
+                          </View>
+                        </View>
+                      )}
+
                       {/* Action Row */}
                       <View style={styles.msgActions}>
                         <Pressable onPress={() => toggleComments(msg.id)} style={styles.actionItem}>
@@ -1096,7 +1167,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                             Comment {commentsCount > 0 ? `(${commentsCount})` : ''}
                           </Text>
                         </Pressable>
-                        
+
                         {/* Timestamp moves to bottom-right of card and reduced font size */}
                         <Text style={[Typography.caption, { color: themeColors.neutralForeground3, marginLeft: 'auto', fontSize: 10, alignSelf: 'center' }]}>
                           {msg.time}
@@ -1377,7 +1448,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.body, { color: themeColors.neutralForeground2, marginTop: 4 }]} numberOfLines={3}>
                   {item.excerpt}
                 </Text>
-                
+
                 <View style={styles.blogFooter}>
                   <View style={styles.blogVote}>
                     <Pressable style={styles.voteBtn}>
@@ -1390,7 +1461,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                       <Ionicons name="caret-down" size={18} color={themeColors.neutralForeground2} />
                     </Pressable>
                   </View>
-                  
+
                   <View style={styles.blogComments}>
                     <Ionicons name="chatbox-outline" size={16} color={themeColors.neutralForeground2} />
                     <Text style={[Typography.captionStrong, { color: themeColors.neutralForeground2, marginLeft: 4 }]}>
@@ -1601,7 +1672,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 );
               })}
             </View>
-            
+
             <View style={[styles.longPressMenu, { backgroundColor: themeColors.neutralBackground1 }]}>
               {/* Edit Message */}
               {(() => {
@@ -1753,7 +1824,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.body, { color: themeColors.neutralForeground2, marginBottom: Spacing.s }]}>
                   Choose a Template
                 </Text>
-                
+
                 <Pressable
                   onPress={() => setPollTemplate('Event')}
                   style={[styles.templateCard, { backgroundColor: themeColors.neutralBackground2, borderColor: themeColors.neutralStroke1 }]}
@@ -1895,7 +1966,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
               </View>
 
               <Image source={{ uri: storyPhotos[activeStoryIdx] }} style={styles.storyViewerImage} />
-              
+
               {/* Story navigation tap zones */}
               <View style={styles.storyNavigation}>
                 <Pressable
@@ -2006,7 +2077,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
       <Modal visible={infoDrawerVisible} animationType="slide" transparent>
         <View style={styles.bottomDrawerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoDrawerVisible(false)} />
-          
+
           <View style={[styles.bottomDrawer, styles.infoDrawer, { backgroundColor: themeColors.neutralBackground1 }]}>
             {/* Drag Handle */}
             <Pressable onPress={() => setInfoDrawerVisible(false)} style={styles.drawerHandleWrapper}>
@@ -2031,7 +2102,7 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
                 <Text style={[Typography.subtitle, { color: themeColors.neutralForeground1, marginTop: Spacing.s, textAlign: 'center' }]}>
                   {communityName}
                 </Text>
-                
+
                 <Text style={[Typography.caption, { color: themeColors.neutralForeground2, marginTop: 4 }]}>
                   {memberCount} registered volunteers • {activeCount} active now
                 </Text>
@@ -2079,48 +2150,183 @@ export const CommunityDetail: React.FC<CommunityDetailProps> = ({
         </View>
       </Modal>
 
-      {/* Idea Thread Description Modal */}
+      {/* VIEW 1: First-Time User Explanation Modal (Overlay State) */}
       <Modal
         visible={ideaThreadModalVisible}
-        animationType="slide"
         transparent
+        animationType="fade"
         onRequestClose={() => setIdeaThreadModalVisible(false)}
       >
-        <View style={styles.bottomDrawerOverlay}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setIdeaThreadModalVisible(false)} />
-          <View style={[styles.bottomDrawer, { backgroundColor: themeColors.neutralBackground1, padding: Spacing.m, paddingBottom: insets.bottom > 0 ? insets.bottom + Spacing.m : Spacing.m }]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.m }}>
-              <Text style={[Typography.subtitle, { color: themeColors.neutralForeground1 }]}>
-                Idea Thread
-              </Text>
-              <Pressable onPress={() => setIdeaThreadModalVisible(false)} style={{ padding: 4 }}>
-                <Ionicons name="close" size={24} color={themeColors.neutralForeground1} />
-              </Pressable>
+        <Pressable
+          style={styles.modalBackdropOverlayNew}
+          onPress={() => setIdeaThreadModalVisible(false)}
+        >
+          <Pressable
+            style={[styles.modalCardNew, { backgroundColor: themeColors.neutralBackground1 }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Top-Right Dismiss Button */}
+            <Pressable
+              onPress={() => setIdeaThreadModalVisible(false)}
+              style={styles.modalDismissBtnNew}
+            >
+              <Ionicons name="close" size={20} color={themeColors.neutralForeground3} />
+            </Pressable>
+
+            {/* Graphic Header Illustration */}
+            <View style={styles.graphicHeaderNew}>
+              <View style={[styles.graphicIconWrapperNew, { backgroundColor: isDarkMode ? '#1a365d' : '#e6f0fa' }]}>
+                <Ionicons name="bulb-outline" size={32} color={themeColors.brandForeground1} />
+                <Ionicons name="arrow-forward" size={16} color={themeColors.neutralForeground3} style={{ marginHorizontal: 8 }} />
+                <Ionicons name="calendar-outline" size={32} color={themeColors.brandForeground1} />
+              </View>
             </View>
-            
-            <Text style={[Typography.body, { color: themeColors.neutralForeground1, lineHeight: 22, marginBottom: Spacing.l }]}>
-              Idea threads are ideas the community wants to execute and you can get a rough number of people who will attend through this to better plan your event.
+
+            {/* Typography & Copy Hierarchy */}
+            <Text style={[styles.modalTitleNew, { color: themeColors.neutralForeground1 }]}>
+              Turn Ideas into Impact 💡
             </Text>
-            
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.s }}>
-              <Pressable
-                onPress={() => setIdeaThreadModalVisible(false)}
-                style={[styles.dedupeBtn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: themeColors.neutralStroke1 }]}
-              >
-                <Text style={[styles.dedupeBtnText, { color: themeColors.neutralForeground1 }]}>Close</Text>
-              </Pressable>
+
+            <Text style={[styles.modalBodyNew, { color: themeColors.neutralForeground2 }]}>
+              Post grass-roots initiatives into your community. Rally enough support from fellow members to unlock coordination tools and list it as an official event.
+            </Text>
+
+            {/* Action Row */}
+            <View style={styles.modalActionsRowNew}>
               <Pressable
                 onPress={() => {
                   setIdeaThreadModalVisible(false);
-                  alert('Idea thread created successfully!');
+                  setIdeaComposerVisible(true);
                 }}
-                style={[styles.dedupeBtn, { backgroundColor: themeColors.brandForeground1 }]}
+                style={[styles.modalPrimaryBtnNew, { backgroundColor: themeColors.brandForeground1 }]}
               >
-                <Text style={styles.dedupeBtnText}>Create</Text>
+                <Text style={styles.modalPrimaryBtnTextNew}>Create an Idea</Text>
               </Pressable>
             </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* VIEW 2: The Idea Composer Screen (Full-Screen Form State) */}
+      <Modal
+        visible={ideaComposerVisible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setIdeaComposerVisible(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.neutralBackground1 }}>
+          {/* Header Bar */}
+          <View style={[styles.composerHeaderNew, { borderBottomColor: themeColors.neutralStroke2 }]}>
+            <Pressable onPress={() => setIdeaComposerVisible(false)} style={styles.composerBackBtnNew}>
+              <Ionicons name="arrow-back" size={24} color={themeColors.neutralForeground1} />
+            </Pressable>
+            <Text style={[styles.composerTitleNew, { color: themeColors.neutralForeground1 }]}>
+              New Idea Thread
+            </Text>
+            <Pressable onPress={handlePostIdeaThread} style={styles.composerPostBtnNew}>
+              <Text style={[styles.composerPostBtnTextNew, { color: themeColors.brandForeground1 }]}>
+                Post to Group
+              </Text>
+            </Pressable>
           </View>
-        </View>
+
+          {/* Form Content */}
+          <ScrollView contentContainerStyle={styles.composerFormScrollNew} keyboardShouldPersistTaps="handled">
+            {/* Title input field */}
+            <TextInput
+              value={composerTitle}
+              onChangeText={setComposerTitle}
+              placeholder="What initiative do you want to start? (e.g., Weekend Literacy Drive)..."
+              placeholderTextColor={themeColors.neutralForegroundDisabled}
+              style={[styles.formInputTitleNew, { color: themeColors.neutralForeground1 }]}
+              maxLength={80}
+            />
+
+            {/* Description multi-line input field */}
+            <TextInput
+              value={composerDesc}
+              onChangeText={setComposerDesc}
+              placeholder="Detail your vision, goals, schedule, and who this helps..."
+              placeholderTextColor={themeColors.neutralForegroundDisabled}
+              style={[styles.formInputDescNew, { color: themeColors.neutralForeground1 }]}
+              multiline
+              textAlignVertical="top"
+            />
+
+            {/* The "Support Target Slider" Component */}
+            <View style={[styles.sliderCardNew, { backgroundColor: isDarkMode ? '#1a2233' : '#f5f7fa', borderColor: themeColors.neutralStroke2 }]}>
+              {/* Module Header */}
+              <Text style={[styles.sliderCardTitleNew, { color: themeColors.neutralForeground1 }]}>
+                Set Support Threshold
+              </Text>
+
+              {/* Dynamic Tracker Floating Badge */}
+              <View style={[styles.sliderTrackerBadgeNew, { backgroundColor: themeColors.brandForeground1 }]}>
+                <Text style={styles.sliderTrackerBadgeTextNew}>
+                  Target: {supportThreshold} Backers
+                </Text>
+              </View>
+
+              {/* Slider Horizontal Track Bar */}
+              <View style={styles.sliderTrackWrapperNew}>
+                <View style={[styles.sliderTrackLineNew, { backgroundColor: themeColors.neutralStroke2 }]}>
+                  {/* Active progress fill */}
+                  <View
+                    style={[
+                      styles.sliderTrackActiveFillNew,
+                      {
+                        backgroundColor: themeColors.brandForeground1,
+                        width: `${((supportThreshold - 10) / 40) * 100}%`,
+                      }
+                    ]}
+                  />
+                </View>
+
+                {/* Segment visual tick points/buttons */}
+                <View style={styles.sliderTicksContainerNew}>
+                  {[10, 20, 30, 40, 50].map((val) => {
+                    const isSelected = supportThreshold === val;
+                    return (
+                      <Pressable
+                        key={val}
+                        onPress={() => setSupportThreshold(val)}
+                        style={[
+                          styles.sliderTickPointNew,
+                          {
+                            backgroundColor: isSelected ? themeColors.brandForeground1 : themeColors.neutralBackground1,
+                            borderColor: themeColors.brandForeground1,
+                          }
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.sliderTickTextNew,
+                            {
+                              color: isSelected ? '#ffffff' : themeColors.neutralForeground1,
+                            }
+                          ]}
+                        >
+                          {val}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* slider min/max bounds */}
+              <View style={styles.sliderBoundsRowNew}>
+                <Text style={{ fontSize: 10, color: themeColors.neutralForeground3 }}>Min: 10</Text>
+                <Text style={{ fontSize: 10, color: themeColors.neutralForeground3 }}>Max: 50</Text>
+              </View>
+
+              {/* System Micro-copy */}
+              <Text style={[styles.sliderMicrocopyNew, { color: themeColors.neutralForeground3 }]}>
+                Achieving this specific support target unlocks direct planning polls and dedicated event coordination workspaces.
+              </Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -2935,5 +3141,179 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     color: '#ffffff',
+  },
+  modalBackdropOverlayNew: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.m,
+  },
+  modalCardNew: {
+    width: '90%',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalDismissBtnNew: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 8,
+  },
+  graphicHeaderNew: {
+    marginBottom: Spacing.m,
+  },
+  graphicIconWrapperNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 24,
+  },
+  modalTitleNew: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: Spacing.s,
+  },
+  modalBodyNew: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginBottom: Spacing.m,
+  },
+  modalActionsRowNew: {
+    width: '100%',
+    alignItems: 'flex-end',
+  },
+  modalPrimaryBtnNew: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  modalPrimaryBtnTextNew: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 13.5,
+  },
+  composerHeaderNew: {
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.s,
+    borderBottomWidth: 1,
+  },
+  composerBackBtnNew: {
+    padding: Spacing.xs,
+  },
+  composerTitleNew: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  composerPostBtnNew: {
+    padding: Spacing.xs,
+  },
+  composerPostBtnTextNew: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  composerFormScrollNew: {
+    padding: Spacing.m,
+  },
+  formInputTitleNew: {
+    fontSize: 20,
+    fontWeight: '700',
+    borderBottomWidth: 0,
+    marginBottom: Spacing.m,
+    paddingVertical: Spacing.xs,
+  },
+  formInputDescNew: {
+    fontSize: 14,
+    lineHeight: 20,
+    borderBottomWidth: 0,
+    minHeight: 180,
+    marginBottom: Spacing.m,
+  },
+  sliderCardNew: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: Spacing.m,
+    marginBottom: Spacing.m,
+  },
+  sliderCardTitleNew: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: Spacing.s,
+  },
+  sliderTrackerBadgeNew: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  sliderTrackerBadgeTextNew: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  sliderTrackWrapperNew: {
+    height: 40,
+    justifyContent: 'center',
+    position: 'relative',
+    marginBottom: 4,
+  },
+  sliderTrackLineNew: {
+    height: 6,
+    borderRadius: 3,
+    position: 'relative',
+  },
+  sliderTrackActiveFillNew: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  sliderTicksContainerNew: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sliderTickPointNew: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sliderTickTextNew: {
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  sliderBoundsRowNew: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.s,
+  },
+  sliderMicrocopyNew: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontStyle: 'italic',
+  },
+  ideaThreadMessageCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: Spacing.m,
+    marginTop: Spacing.s,
   },
 });

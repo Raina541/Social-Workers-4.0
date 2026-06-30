@@ -18,26 +18,15 @@ import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Opportunity as FeedOpportunity, DOMAINS, MOCK_OPPORTUNITIES } from './Feed';
+import Svg, { Defs, ClipPath, Path, G, Circle as CircleSvg, Rect, Line, Text as TextSvg } from 'react-native-svg';
 
-// Try loading react-native-maps. Provide mock fallback if on Web or if it fails.
-let MapView: any;
-let Marker: any;
-let Circle: any;
-
-try {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-  Circle = Maps.Circle;
-} catch (e) {
-  // Web Fallback will be used, react-native-maps imports ignored.
-}
+import MapView, { Marker, Circle } from './MapModules';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const drawerHeight = screenHeight - 110;
 
-// Coordinate center helper
-const SF_COORDS = { latitude: 37.7749, longitude: -122.4194 };
+// Coordinate center helper (Defaulting to Gwalior MP)
+const GWALIOR_COORDS = { latitude: 26.2183, longitude: 78.1828 };
 const EARTH_RADIUS_KM = 6371;
 const MAGENTA_RED = '#d8246c';
 const maxRadiusKm = 20;
@@ -120,14 +109,14 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
   const themeColors = isDarkMode ? Colors.dark : Colors.light;
 
   const mapRef = useRef<any>(null);
-  const [userLocation, setUserLocation] = useState<GeoCoords>(SF_COORDS);
+  const [userLocation, setUserLocation] = useState<GeoCoords>(GWALIOR_COORDS);
   const [radius, setRadius] = useState<number>(5.0); // radius in km (default: 5.0)
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [selectedOpp, setSelectedOpp] = useState<MappedOpportunity | null>(null);
 
   const [showZipBanner, setShowZipBanner] = useState(false);
   const [zipCode, setZipCode] = useState('');
-  const [resolvedLocationName, setResolvedLocationName] = useState('San Francisco, CA');
+  const [resolvedLocationName, setResolvedLocationName] = useState('Gwalior, MP');
 
   const ZIP_COORDS: Record<string, { latitude: number, longitude: number, name: string }> = {
     '474001': { latitude: 26.2183, longitude: 78.1828, name: 'Gwalior, MP' },
@@ -421,34 +410,48 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
               scrollEnabled={drawerState === 'expanded'}
             >
               {/* Summary Row */}
-              <View style={styles.drawerHeaderRow}>
-                <Image source={{ uri: selectedOpp.imageUri }} style={styles.drawerImage as ImageStyle} />
-                <View style={styles.drawerHeaderDetails}>
-                  <Text style={[styles.drawerTitle, { color: themeColors.neutralForeground1 }]}>
-                    {selectedOpp.title}
-                  </Text>
-                  <Text style={[Typography.body, { color: themeColors.neutralForeground3, fontSize: 13, marginTop: 2 }]}>
-                    {selectedOpp.timeCommitment} • {selectedOpp.impact}
-                  </Text>
-                  <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginTop: 4, fontSize: 12 }]}>
-                    {(selectedOpp.distance ?? 0).toFixed(1)} km away
-                  </Text>
-                </View>
-              </View>
+              {(() => {
+                const membersCount = Math.abs(selectedOpp.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)) % 250 + 150;
+                const onlineCount = Math.floor(membersCount * 0.13) + 3;
+                const domainConfig = DOMAINS.find(d => d.id === selectedOpp.domainId) || DOMAINS[0];
+                return (
+                  <>
+                    <View style={styles.drawerHeaderRow}>
+                      <Image source={{ uri: selectedOpp.imageUri }} style={styles.drawerImage as ImageStyle} />
+                      <View style={styles.drawerHeaderDetails}>
+                        <Text style={[styles.drawerTitle, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
+                          {selectedOpp.title}
+                        </Text>
+                        <Text style={[Typography.body, { color: themeColors.neutralForeground3, fontSize: 13, marginTop: 2 }]}>
+                          {membersCount} members • {onlineCount} online
+                        </Text>
+                        <Text style={[Typography.captionStrong, { color: themeColors.brandForeground1, marginTop: 4, fontSize: 12 }]}>
+                          {(selectedOpp.distance ?? 0).toFixed(1)} km away
+                        </Text>
+                      </View>
+                    </View>
 
-              {/* Tags */}
-              <View style={styles.drawerTagsRow}>
-                <View style={[styles.drawerTagChip, { backgroundColor: isDarkMode ? '#243454' : '#e0ecfa' }]}>
-                  <Text style={[styles.drawerTagText, { color: themeColors.brandForeground1 }]}>
-                    {selectedOpp.durationAbbreviation.toUpperCase()}
-                  </Text>
-                </View>
-                <View style={[styles.drawerTagChip, { backgroundColor: themeColors.neutralBackground3 }]}>
-                  <Text style={[styles.drawerTagText, { color: themeColors.neutralForeground2 }]}>
-                    {selectedOpp.displayDate}
-                  </Text>
-                </View>
-              </View>
+                    {/* Tags */}
+                    <View style={styles.drawerTagsRow}>
+                      <View style={[styles.drawerTagChip, { backgroundColor: isDarkMode ? '#243454' : '#e0ecfa' }]}>
+                        <Text style={[styles.drawerTagText, { color: themeColors.brandForeground1 }]}>
+                          {domainConfig.name}
+                        </Text>
+                      </View>
+                      <View style={[styles.drawerTagChip, { backgroundColor: themeColors.neutralBackground3 }]}>
+                        <Text style={[styles.drawerTagText, { color: themeColors.neutralForeground2 }]}>
+                          {selectedOpp.durationAbbreviation.toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={[styles.drawerTagChip, { backgroundColor: themeColors.neutralBackground3 }]}>
+                        <Text style={[styles.drawerTagText, { color: themeColors.neutralForeground2 }]}>
+                          {selectedOpp.displayDate}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                );
+              })()}
 
               {/* Description Block */}
               {drawerState === 'collapsed' ? (
@@ -595,212 +598,256 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
   const renderWebRadarMap = () => {
     const radiusPx = radius * radarScale;
     return (
-      <View style={[styles.mapContainer, { backgroundColor: isDarkMode ? '#0d1117' : '#f0f4f8' }]}>
-        
-        {/* Floating Distance Tooltip */}
-        <View style={[styles.floatingBox, { backgroundColor: themeColors.brandBackground, opacity: isDragging ? 0.95 : 0.85 }]}>
-          <Text style={styles.floatingBoxText}>
-            {radius.toFixed(1)} km Radius • {filteredOpps.length} opportunities in range
-          </Text>
+      <View style={[styles.screenContainer, { backgroundColor: themeColors.neutralBackground2 }]}>
+        {/* Top Header Navigation Bar */}
+        <View style={[styles.screenHeader, { backgroundColor: themeColors.neutralBackground1, borderBottomColor: themeColors.neutralStroke2 }]}>
+          <Pressable onPress={onBack} style={styles.headerBackBtn}>
+            <Ionicons name="chevron-back" size={20} color={themeColors.brandForeground1} />
+            <Text style={[styles.headerBackText, { color: themeColors.brandForeground1 }]}>Back</Text>
+          </Pressable>
+          <Text style={[styles.screenHeaderTitle, { color: themeColors.neutralForeground1 }]}>Nearby opportunities</Text>
+          <View style={{ width: 60 }} />
         </View>
 
-        {/* Change Location Button */}
-        <Pressable
-          onPress={() => setShowZipBanner(!showZipBanner)}
-          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1 }]}
-        >
-          <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
-          <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
-            {resolvedLocationName}
-          </Text>
-        </Pressable>
-
-        {/* Zip Code search banner */}
-        {showZipBanner && (
-          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
-            <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
-              Enter ZIP Code:
-            </Text>
-            <TextInput
-              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
-              value={zipCode}
-              onChangeText={(val) => {
-                setZipCode(val);
-                if (val.length === 5 || val.length === 6) {
-                  handleZipSearch(val);
-                }
+        <View style={styles.mapContainer}>
+          {/* Combined Floating Status Pill Overlay */}
+          <View style={styles.floatingPillContainer}>
+            <View style={[styles.leftPillSegment, { backgroundColor: themeColors.brandBackground }]}>
+              <Text style={styles.leftPillText}>
+                {radius.toFixed(1)} km Radius • {filteredOpps.length} communities
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                setUserLocation(GWALIOR_COORDS);
+                setResolvedLocationName('Gwalior, MP');
               }}
-              placeholder="e.g. 474001"
-              placeholderTextColor={themeColors.neutralForegroundDisabled}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
-            <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
-              <Text style={styles.zipButtonText}>Search</Text>
+              style={[styles.rightPillSegment, { backgroundColor: '#ffffff', borderColor: themeColors.neutralStroke1 }]}
+            >
+              <Ionicons name="locate" size={12} color="#000000" style={{ marginRight: 4 }} />
+              <Text style={styles.rightPillText}>Current Location</Text>
             </Pressable>
           </View>
-        )}
 
-        {/* Back Button */}
-        <Pressable
-          onPress={onBack}
-          style={[styles.backButtonContainer, { backgroundColor: themeColors.neutralBackground1 }]}
-        >
-          <Ionicons name="arrow-back" size={22} color={themeColors.neutralForeground1} />
-        </Pressable>
+          {/* Zip Code search banner */}
+          {showZipBanner && (
+            <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2, zIndex: 101 }]}>
+              <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
+                Enter ZIP Code:
+              </Text>
+              <TextInput
+                style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
+                value={zipCode}
+                onChangeText={(val) => {
+                  setZipCode(val);
+                  if (val.length === 5 || val.length === 6) {
+                    handleZipSearch(val);
+                  }
+                }}
+                placeholder="e.g. 474001"
+                placeholderTextColor={themeColors.neutralForegroundDisabled}
+                keyboardType="number-pad"
+                maxLength={6}
+              />
+              <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
+                <Text style={styles.zipButtonText}>Search</Text>
+              </Pressable>
+            </View>
+          )}
 
-        {/* Interactive Radar Screen */}
-        <Pressable
-          style={styles.radarLayout}
-          onPress={() => {
-            if (selectedOpp) {
-              setSelectedOpp(null);
-            }
-          }}
-        >
-          <Text style={[styles.radarTitle, Typography.captionStrong, { color: themeColors.neutralForeground1 }]}>
-            DISCOVER RADAR SCANNER
-          </Text>
-          <Text style={[Typography.caption, { color: themeColors.neutralForeground3, textAlign: 'center', marginBottom: Spacing.s }]}>
-            Drag the handle to adjust search range. Rings filter items.
-          </Text>
-
-          <View
-            style={[
-              styles.radarScreen,
-              {
-                borderColor: isDarkMode ? '#1f2937' : '#d2d6dc',
-                backgroundColor: isDarkMode ? '#161b22' : '#ffffff',
-              },
-            ]}
+          {/* Interactive Radar Screen */}
+          <Pressable
+            style={styles.radarLayout}
+            onPress={() => {
+              if (selectedOpp) {
+                setSelectedOpp(null);
+              }
+            }}
           >
-            {/* Concentric grid lines background */}
-            <View style={[styles.radarGridRing, { width: 50, height: 50, borderRadius: 25, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
-            <View style={[styles.radarGridRing, { width: 100, height: 100, borderRadius: 50, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
-            <View style={[styles.radarGridRing, { width: 200, height: 200, borderRadius: 100, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
-            <View style={[styles.radarGridRing, { width: 300, height: 300, borderRadius: 150, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
-
-            {/* Sweep radar animation line simulation */}
-            <View style={[styles.radarSweepLine, { borderColor: isDarkMode ? 'rgba(71, 158, 245, 0.08)' : 'rgba(15, 108, 189, 0.04)' }]} />
-
-            {/* Active Range Circle Overlay */}
             <View
               style={[
-                styles.radarRangeCircle,
+                styles.radarScreen,
                 {
-                  width: radiusPx * 2,
-                  height: radiusPx * 2,
-                  borderRadius: radiusPx,
-                  borderColor: themeColors.brandForeground1,
-                  backgroundColor: isDarkMode ? 'rgba(71, 158, 245, 0.05)' : 'rgba(15, 108, 189, 0.03)',
-                },
-              ]}
-            />
-
-            {/* Concentric rings drawn when released */}
-            {!isDragging && (
-              <>
-                <View
-                  style={[
-                    styles.radarRangeCircle,
-                    {
-                      width: radiusPx * 2 * 0.75,
-                      height: radiusPx * 2 * 0.75,
-                      borderRadius: radiusPx * 0.75,
-                      borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
-                      borderStyle: 'dashed',
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.radarRangeCircle,
-                    {
-                      width: radiusPx * 2 * 0.5,
-                      height: radiusPx * 2 * 0.5,
-                      borderRadius: radiusPx * 0.5,
-                      borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
-                      borderStyle: 'dashed',
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.radarRangeCircle,
-                    {
-                      width: radiusPx * 2 * 0.25,
-                      height: radiusPx * 2 * 0.25,
-                      borderRadius: radiusPx * 0.25,
-                      borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
-                      borderStyle: 'dashed',
-                    },
-                  ]}
-                />
-              </>
-            )}
-
-            {/* Draggable Circle Edge Handle */}
-            <View
-              {...webPanResponder.panHandlers}
-              style={[
-                styles.radarDragHandle,
-                {
-                  left: webCenter + radiusPx - 14,
-                  top: webCenter - 14,
-                  backgroundColor: themeColors.brandForeground1,
-                  shadowColor: '#000',
+                  borderColor: isDarkMode ? '#1f2937' : '#d2d6dc',
+                  backgroundColor: isDarkMode ? '#1E2522' : '#F0F4F1',
                 },
               ]}
             >
-              <Ionicons name="resize-outline" size={14} color="#ffffff" />
-            </View>
+              {/* SVG Gwalior Vector Map */}
+              <Svg width={350} height={350} style={StyleSheet.absoluteFillObject}>
+                {/* Background land */}
+                <Rect width={350} height={350} fill={isDarkMode ? '#1E2522' : '#F0F4F1'} />
+                
+                {/* River winding across */}
+                <Path d="M -10,120 Q 80,100 150,130 T 400,100" stroke={isDarkMode ? '#1B2F42' : '#cbdff7'} strokeWidth={12} fill="none" />
+                
+                {/* Streets Grid */}
+                <Line x1={150} y1={0} x2={150} y2={350} stroke={isDarkMode ? '#2D3532' : '#ffffff'} strokeWidth={5} />
+                <Line x1={280} y1={0} x2={280} y2={350} stroke={isDarkMode ? '#2D3532' : '#ffffff'} strokeWidth={4} />
+                <Line x1={0} y1={100} x2={350} y2={100} stroke={isDarkMode ? '#2D3532' : '#ffffff'} strokeWidth={5} />
+                <Line x1={0} y1={220} x2={350} y2={220} stroke={isDarkMode ? '#2D3532' : '#ffffff'} strokeWidth={3} />
+                <Line x1={0} y1={300} x2={350} y2={300} stroke={isDarkMode ? '#2D3532' : '#ffffff'} strokeWidth={2} />
 
-            {/* User Center Pulsing Dot */}
-            <View style={[styles.radarUserDot, { backgroundColor: themeColors.brandForeground1 }]}>
-              <Animated.View
+                {/* Neighborhood Labels */}
+                <TextSvg x={160} y={115} fill={isDarkMode ? '#888' : '#777'} fontSize={9} fontWeight="bold">CHHAWANI</TextSvg>
+                <TextSvg x={160} y={125} fill={isDarkMode ? '#555' : '#999'} fontSize={8}>पुरानी छावनी</TextSvg>
+                
+                <TextSvg x={120} y={285} fill={isDarkMode ? '#888' : '#777'} fontSize={9} fontWeight="bold">KAMPOO</TextSvg>
+                <TextSvg x={120} y={295} fill={isDarkMode ? '#555' : '#999'} fontSize={8}>कम्पू</TextSvg>
+
+                <TextSvg x={205} y={245} fill={isDarkMode ? '#fff' : '#111'} fontSize={12} fontWeight="bold">Gwalior</TextSvg>
+                <TextSvg x={205} y={258} fill={isDarkMode ? '#aaa' : '#444'} fontSize={9}>ग्वालियर</TextSvg>
+
+                <TextSvg x={285} y={240} fill={isDarkMode ? '#888' : '#777'} fontSize={9} fontWeight="bold">BADA GAON</TextSvg>
+                <TextSvg x={285} y={250} fill={isDarkMode ? '#555' : '#999'} fontSize={8}>बड़ा गांव</TextSvg>
+
+                {/* AH47 Route Badge */}
+                <G x={115} y={160}>
+                  <Rect width={28} height={14} rx={3} fill="#4caf50" />
+                  <TextSvg x={4} y={10} fill="#ffffff" fontSize={8} fontWeight="bold">AH47</TextSvg>
+                </G>
+              </Svg>
+
+              {/* Concentric grid lines background */}
+              <View style={[styles.radarGridRing, { width: 50, height: 50, borderRadius: 25, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
+              <View style={[styles.radarGridRing, { width: 100, height: 100, borderRadius: 50, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
+              <View style={[styles.radarGridRing, { width: 200, height: 200, borderRadius: 100, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
+              <View style={[styles.radarGridRing, { width: 300, height: 300, borderRadius: 150, borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} />
+
+              {/* Sweep radar animation line simulation */}
+              <View style={[styles.radarSweepLine, { borderColor: isDarkMode ? 'rgba(71, 158, 245, 0.08)' : 'rgba(15, 108, 189, 0.04)' }]} />
+
+              {/* Active Range Circle Overlay */}
+              <View
                 style={[
-                  styles.radarUserPulse,
+                  styles.radarRangeCircle,
                   {
-                    backgroundColor: themeColors.brandForeground1,
-                    transform: [{ scale: pulseScale }],
-                    opacity: pulseOpacity,
+                    width: radiusPx * 2,
+                    height: radiusPx * 2,
+                    borderRadius: radiusPx,
+                    borderColor: themeColors.brandForeground1,
+                    backgroundColor: isDarkMode ? 'rgba(71, 158, 245, 0.05)' : 'rgba(15, 108, 189, 0.03)',
                   },
                 ]}
               />
+
+              {/* Concentric rings drawn when released */}
+              {!isDragging && (
+                <>
+                  <View
+                    style={[
+                      styles.radarRangeCircle,
+                      {
+                        width: radiusPx * 2 * 0.75,
+                        height: radiusPx * 2 * 0.75,
+                        borderRadius: radiusPx * 0.75,
+                        borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
+                        borderStyle: 'dashed',
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.radarRangeCircle,
+                      {
+                        width: radiusPx * 2 * 0.5,
+                        height: radiusPx * 2 * 0.5,
+                        borderRadius: radiusPx * 0.5,
+                        borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
+                        borderStyle: 'dashed',
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.radarRangeCircle,
+                      {
+                        width: radiusPx * 2 * 0.25,
+                        height: radiusPx * 2 * 0.25,
+                        borderRadius: radiusPx * 0.25,
+                        borderColor: isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)',
+                        borderStyle: 'dashed',
+                      },
+                    ]}
+                  />
+                </>
+              )}
+
+              {/* Draggable Circle Edge Handle */}
+              <View
+                {...webPanResponder.panHandlers}
+                style={[
+                  styles.radarDragHandle,
+                  {
+                    left: webCenter + radiusPx - 14,
+                    top: webCenter - 14,
+                    backgroundColor: themeColors.brandForeground1,
+                    shadowColor: '#000',
+                  },
+                ]}
+              >
+                <Ionicons name="resize-outline" size={14} color="#ffffff" />
+              </View>
+
+              {/* User Center Pulsing Dot */}
+              <View style={[styles.radarUserDot, { backgroundColor: themeColors.brandForeground1 }]}>
+                <Animated.View
+                  style={[
+                    styles.radarUserPulse,
+                    {
+                      backgroundColor: themeColors.brandForeground1,
+                      transform: [{ scale: pulseScale }],
+                      opacity: pulseOpacity,
+                    },
+                  ]}
+                />
+              </View>
+
+              {/* Spatially Anchored Pins */}
+              {mappedOpps.map((opp) => {
+                const scaleDegree = 820; 
+                const markerX = webCenter + opp.lngOffset * scaleDegree;
+                const markerY = webCenter - opp.latOffset * scaleDegree;
+                const domainConfig = DOMAINS.find((d) => d.id === opp.domainId) || DOMAINS[0];
+                const isInRange = opp.distance <= radius;
+
+                return (
+                  <Pressable
+                    key={opp.id}
+                    onPress={(e) => {
+                      if (!isInRange) return;
+                      e.stopPropagation();
+                      openDrawer(opp);
+                    }}
+                    style={[
+                      styles.radarMarker,
+                      {
+                        left: markerX - 16,
+                        top: markerY - 24,
+                        opacity: isInRange ? 1 : 0.0, // Dynamic filter visibility
+                        pointerEvents: isInRange ? 'auto' : 'none',
+                      }
+                    ]}
+                  >
+                    <View style={styles.webMarkerWrapper}>
+                      <View style={[styles.markerBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: domainConfig.lightBg }]}>
+                        <Image source={{ uri: opp.imageUri }} style={styles.markerImage as ImageStyle} />
+                      </View>
+                      <View style={styles.horizontalTagLabel}>
+                        <Text style={styles.horizontalTagText} numberOfLines={1}>
+                          {opp.title.split(' ')[0]} - {opp.distance.toFixed(1)} km
+                        </Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
+          </Pressable>
 
-            {/* Filtered Opportunities Markers */}
-            {filteredOpps.map((opp) => {
-              const scaleDegree = 820; 
-              const markerX = webCenter + opp.lngOffset * scaleDegree;
-              const markerY = webCenter - opp.latOffset * scaleDegree;
-              const domainConfig = DOMAINS.find((d) => d.id === opp.domainId) || DOMAINS[0];
-
-              return (
-                <Pressable
-                  key={opp.id}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    openDrawer(opp);
-                  }}
-                  style={[styles.radarMarker, { left: markerX - 16, top: markerY - 24 }]}
-                >
-                  <View style={[styles.markerBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: domainConfig.lightBg }]}>
-                    <Image source={{ uri: opp.imageUri }} style={styles.markerImage as ImageStyle} />
-                  </View>
-                  <View style={[styles.markerLabelContainer, { backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff' }]}>
-                    <Text style={[styles.markerLabel, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
-                      {opp.title.split(' ')[0]}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Pressable>
-
-        {/* Expandable Bottom Drawer */}
-        {renderExpandableDrawer()}
+          {/* Expandable Bottom Drawer */}
+          {renderExpandableDrawer()}
+        </View>
       </View>
     );
   };
@@ -810,208 +857,204 @@ export const OpportunityMapScreen: React.FC<OpportunityMapScreenProps> = ({
     const handleCoordinate = getEdgeCoordinate(userLocation, radius);
 
     return (
-      <View style={styles.mapContainer}>
-        {/* Floating Distance Tooltip */}
-        <View style={[styles.floatingBox, { backgroundColor: themeColors.brandBackground, opacity: isDragging ? 0.95 : 0.85, zIndex: 10 }]}>
-          <Text style={styles.floatingBoxText}>
-            {radius.toFixed(1)} km Radius • {filteredOpps.length} opportunities in range
-          </Text>
+      <View style={[styles.screenContainer, { backgroundColor: themeColors.neutralBackground2 }]}>
+        {/* Top Header Navigation Bar */}
+        <View style={[styles.screenHeader, { backgroundColor: themeColors.neutralBackground1, borderBottomColor: themeColors.neutralStroke2 }]}>
+          <Pressable onPress={onBack} style={styles.headerBackBtn}>
+            <Ionicons name="chevron-back" size={20} color={themeColors.brandForeground1} />
+            <Text style={[styles.headerBackText, { color: themeColors.brandForeground1 }]}>Back</Text>
+          </Pressable>
+          <Text style={[styles.screenHeaderTitle, { color: themeColors.neutralForeground1 }]}>Nearby opportunities</Text>
+          <View style={{ width: 60 }} />
         </View>
 
-        {/* Change Location Button */}
-        <Pressable
-          onPress={() => setShowZipBanner(!showZipBanner)}
-          style={[styles.changeLocationBtn, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke1, zIndex: 10 }]}
-        >
-          <Ionicons name="location-outline" size={14} color={themeColors.neutralForeground1} />
-          <Text style={[styles.changeLocationText, { color: themeColors.neutralForeground1 }]}>
-            {resolvedLocationName}
-          </Text>
-        </Pressable>
-
-        {/* Zip Code search banner */}
-        {showZipBanner && (
-          <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2 }]}>
-            <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
-              Enter ZIP Code:
-            </Text>
-            <TextInput
-              style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
-              value={zipCode}
-              onChangeText={(val) => {
-                setZipCode(val);
-                if (val.length === 5 || val.length === 6) {
-                  handleZipSearch(val);
-                }
+        <View style={styles.mapContainer}>
+          {/* Combined Floating Status Pill Overlay */}
+          <View style={styles.floatingPillContainer}>
+            <View style={[styles.leftPillSegment, { backgroundColor: themeColors.brandBackground }]}>
+              <Text style={styles.leftPillText}>
+                {radius.toFixed(1)} km Radius • {filteredOpps.length} communities
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                setUserLocation(GWALIOR_COORDS);
+                setResolvedLocationName('Gwalior, MP');
               }}
-              placeholder="e.g. 474001"
-              placeholderTextColor={themeColors.neutralForegroundDisabled}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
-            <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
-              <Text style={styles.zipButtonText}>Search</Text>
+              style={[styles.rightPillSegment, { backgroundColor: '#ffffff', borderColor: themeColors.neutralStroke1 }]}
+            >
+              <Ionicons name="locate" size={12} color="#000000" style={{ marginRight: 4 }} />
+              <Text style={styles.rightPillText}>Current Location</Text>
             </Pressable>
           </View>
-        )}
 
-        {/* Back Button */}
-        <Pressable
-          onPress={onBack}
-          style={[styles.backButtonContainer, { backgroundColor: themeColors.neutralBackground1, zIndex: 10 }]}
-        >
-          <Ionicons name="arrow-back" size={22} color={themeColors.neutralForeground1} />
-        </Pressable>
-
-        <MapView
-          ref={mapRef}
-          style={styles.nativeMap}
-          initialRegion={getRegionForRadius(userLocation, 5.0)}
-          customMapStyle={isDarkMode ? darkMapStyle : lightMapStyle}
-          showsUserLocation={false}
-          onPress={(e: any) => {
-            // Check if user clicked empty map background (not a marker)
-            if (e.nativeEvent.action !== 'marker-press') {
-              if (selectedOpp) {
-                setSelectedOpp(null);
-              }
-            }
-          }}
-        >
-          {/* User Location Pulsing Marker */}
-          <Marker coordinate={userLocation} key="user-location-marker">
-            <View style={[styles.radarUserDot, { backgroundColor: themeColors.brandForeground1 }]}>
-              <Animated.View
-                style={[
-                  styles.radarUserPulse,
-                  {
-                    backgroundColor: themeColors.brandForeground1,
-                    transform: [{ scale: pulseScale }],
-                    opacity: pulseOpacity,
-                  },
-                ]}
+          {/* Zip Code search banner */}
+          {showZipBanner && (
+            <View style={[styles.zipBanner, { backgroundColor: themeColors.neutralBackground1, borderColor: themeColors.neutralStroke2, zIndex: 101 }]}>
+              <Text style={[styles.zipBannerText, { color: themeColors.neutralForeground2 }]}>
+                Enter ZIP Code:
+              </Text>
+              <TextInput
+                style={[styles.zipInput, { color: themeColors.neutralForeground1, borderColor: themeColors.neutralStroke1 }]}
+                value={zipCode}
+                onChangeText={(val) => {
+                  setZipCode(val);
+                  if (val.length === 5 || val.length === 6) {
+                    handleZipSearch(val);
+                  }
+                }}
+                placeholder="e.g. 474001"
+                placeholderTextColor={themeColors.neutralForegroundDisabled}
+                keyboardType="number-pad"
+                maxLength={6}
               />
+              <Pressable onPress={() => handleZipSearch(zipCode)} style={[styles.zipButton, { backgroundColor: themeColors.brandBackground }]}>
+                <Text style={styles.zipButtonText}>Search</Text>
+              </Pressable>
             </View>
-          </Marker>
-
-          {/* Active search radius Circle */}
-          <Circle
-            center={userLocation}
-            radius={radius * 1000} // radius in meters
-            strokeWidth={1.5}
-            strokeColor={themeColors.brandForeground1}
-            fillColor={isDarkMode ? 'rgba(71, 158, 245, 0.05)' : 'rgba(15, 108, 189, 0.03)'}
-          />
-
-          {/* Concentric rings drawn when not dragging */}
-          {!isDragging && (
-            <>
-              <Circle
-                center={userLocation}
-                radius={radius * 1000 * 0.75}
-                strokeWidth={1}
-                strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
-                lineDashPattern={[4, 4]}
-              />
-              <Circle
-                center={userLocation}
-                radius={radius * 1000 * 0.50}
-                strokeWidth={1}
-                strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
-                lineDashPattern={[4, 4]}
-              />
-              <Circle
-                center={userLocation}
-                radius={radius * 1000 * 0.25}
-                strokeWidth={1}
-                strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
-                lineDashPattern={[4, 4]}
-              />
-            </>
           )}
 
-          {/* Draggable Circle Edge Handle Marker */}
-          <Marker
-            coordinate={handleCoordinate}
-            draggable
-            onDragStart={() => setIsDragging(true)}
-            onDrag={(e: any) => {
-              const dragCoords = e.nativeEvent.coordinate;
-              const newRadius = getDistanceInKm(
-                userLocation.latitude,
-                userLocation.longitude,
-                dragCoords.latitude,
-                dragCoords.longitude
-              );
-              const boundedRadius = Math.min(maxRadiusKm, Math.max(1.0, newRadius));
-              setRadius(boundedRadius);
-              
-              if (mapRef.current) {
-                const nextRegion = getRegionForRadius(userLocation, boundedRadius);
-                mapRef.current.animateToRegion(nextRegion, 120);
+          <MapView
+            ref={mapRef}
+            style={styles.nativeMap}
+            initialRegion={getRegionForRadius(userLocation, 5.0)}
+            customMapStyle={isDarkMode ? darkMapStyle : lightMapStyle}
+            showsUserLocation={false}
+            onPress={(e: any) => {
+              if (e.nativeEvent.action !== 'marker-press') {
+                if (selectedOpp) {
+                  setSelectedOpp(null);
+                }
               }
             }}
-            onDragEnd={(e: any) => {
-              setIsDragging(false);
-              const dragCoords = e.nativeEvent.coordinate;
-              const newRadius = getDistanceInKm(
-                userLocation.latitude,
-                userLocation.longitude,
-                dragCoords.latitude,
-                dragCoords.longitude
-              );
-              const boundedRadius = Math.min(maxRadiusKm, Math.max(1.0, newRadius));
-              setRadius(boundedRadius);
-              
-              if (mapRef.current) {
-                const nextRegion = getRegionForRadius(userLocation, boundedRadius);
-                mapRef.current.animateToRegion(nextRegion, 120);
-              }
-            }}
-            key="circle-drag-handle"
           >
-            <View
-              style={[
-                styles.nativeDragHandle,
-                {
-                  backgroundColor: themeColors.brandForeground1,
-                  borderColor: '#ffffff',
-                },
-              ]}
+            {/* User Location Pulsing Marker */}
+            <Marker coordinate={userLocation} key="user-location-marker">
+              <View style={[styles.radarUserDot, { backgroundColor: themeColors.brandForeground1 }]}>
+                <Animated.View
+                  style={[
+                    styles.radarUserPulse,
+                    {
+                      backgroundColor: themeColors.brandForeground1,
+                      transform: [{ scale: pulseScale }],
+                      opacity: pulseOpacity,
+                    },
+                  ]}
+                />
+              </View>
+            </Marker>
+
+            {/* Active search radius Circle */}
+            <Circle
+              center={userLocation}
+              radius={radius * 1000}
+              strokeWidth={1.5}
+              strokeColor={themeColors.brandForeground1}
+              fillColor={isDarkMode ? 'rgba(71, 158, 245, 0.05)' : 'rgba(15, 108, 189, 0.03)'}
+            />
+
+            {/* Concentric rings */}
+            {!isDragging && (
+              <>
+                <Circle
+                  center={userLocation}
+                  radius={radius * 1000 * 0.75}
+                  strokeWidth={1}
+                  strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
+                  lineDashPattern={[4, 4]}
+                />
+                <Circle
+                  center={userLocation}
+                  radius={radius * 1000 * 0.50}
+                  strokeWidth={1}
+                  strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
+                  lineDashPattern={[4, 4]}
+                />
+                <Circle
+                  center={userLocation}
+                  radius={radius * 1000 * 0.25}
+                  strokeWidth={1}
+                  strokeColor={isDarkMode ? 'rgba(71,158,245,0.18)' : 'rgba(15,108,189,0.18)'}
+                  lineDashPattern={[4, 4]}
+                />
+              </>
+            )}
+
+            {/* Draggable Circle Edge Handle Marker */}
+            <Marker
+              coordinate={handleCoordinate}
+              draggable
+              onDragStart={() => setIsDragging(true)}
+              onDrag={(e: any) => {
+                const dragCoords = e.nativeEvent.coordinate;
+                const newRadius = getDistanceInKm(
+                  userLocation.latitude,
+                  userLocation.longitude,
+                  dragCoords.latitude,
+                  dragCoords.longitude
+                );
+                const boundedRadius = Math.min(maxRadiusKm, Math.max(1.0, newRadius));
+                setRadius(boundedRadius);
+              }}
+              onDragEnd={(e: any) => {
+                setIsDragging(false);
+                const dragCoords = e.nativeEvent.coordinate;
+                const newRadius = getDistanceInKm(
+                  userLocation.latitude,
+                  userLocation.longitude,
+                  dragCoords.latitude,
+                  dragCoords.longitude
+                );
+                const boundedRadius = Math.min(maxRadiusKm, Math.max(1.0, newRadius));
+                setRadius(boundedRadius);
+                if (mapRef.current) {
+                  const nextRegion = getRegionForRadius(userLocation, boundedRadius);
+                  mapRef.current.animateToRegion(nextRegion, 300);
+                }
+              }}
+              key="circle-drag-handle"
             >
-              <Ionicons name="resize-outline" size={14} color="#ffffff" />
-            </View>
-          </Marker>
+              <View style={[styles.nativeDragHandle, { backgroundColor: themeColors.brandForeground1, borderColor: '#ffffff' }]}>
+                <Ionicons name="resize-outline" size={14} color="#ffffff" />
+              </View>
+            </Marker>
 
-          {/* Filtered Opportunities Markers */}
-          {filteredOpps.map((opp) => {
-            const domainConfig = DOMAINS.find((d) => d.id === opp.domainId) || DOMAINS[0];
-            return (
-              <Marker
-                key={opp.id}
-                coordinate={{ latitude: opp.latitude, longitude: opp.longitude }}
-                onPress={(e: any) => {
-                  e.stopPropagation();
-                  openDrawer(opp);
-                }}
-              >
-                <View style={styles.nativeMarkerContainer}>
-                  <View style={[styles.markerBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: domainConfig.lightBg }]}>
-                    <Image source={{ uri: opp.imageUri }} style={styles.markerImage as ImageStyle} />
-                  </View>
-                  <View style={[styles.markerLabelContainer, { backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff' }]}>
-                    <Text style={[styles.markerLabel, { color: themeColors.neutralForeground1 }]} numberOfLines={1}>
-                      {opp.title.split(' ')[0]}
-                    </Text>
-                  </View>
-                </View>
-              </Marker>
-            );
-          })}
-        </MapView>
+            {/* Spatially Anchored Pins */}
+            {mappedOpps.map((opp) => {
+              const domainConfig = DOMAINS.find((d) => d.id === opp.domainId) || DOMAINS[0];
+              const isInRange = opp.distance <= radius;
 
-        {/* Expandable Bottom Drawer */}
-        {renderExpandableDrawer()}
+              return (
+                <Marker
+                  key={opp.id}
+                  coordinate={{ latitude: opp.latitude, longitude: opp.longitude }}
+                  onPress={(e: any) => {
+                    if (!isInRange) return;
+                    e.stopPropagation();
+                    openDrawer(opp);
+                  }}
+                  opacity={isInRange ? 1 : 0.0} // Dynamic filter visibility
+                >
+                  <View style={styles.nativeMarkerContainer}>
+                    <View style={styles.horizontalPinWrapper}>
+                      <View style={[styles.markerBubble, { backgroundColor: themeColors.neutralBackground1, borderColor: domainConfig.lightBg }]}>
+                        <Image source={{ uri: opp.imageUri }} style={styles.markerImage as ImageStyle} />
+                      </View>
+                      <View style={styles.horizontalTagLabel}>
+                        <Text style={styles.horizontalTagText} numberOfLines={1}>
+                          {opp.title.split(' ')[0]} - {opp.distance.toFixed(1)} km
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </Marker>
+              );
+            })}
+          </MapView>
+
+          {/* Expandable Bottom Drawer */}
+          {renderExpandableDrawer()}
+        </View>
       </View>
     );
   };
@@ -1426,6 +1469,111 @@ const styles = StyleSheet.create({
   },
   macroListTagText: {
     fontSize: 8.5,
+    fontWeight: 'bold',
+  },
+  screenContainer: {
+    flex: 1,
+  },
+  screenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    paddingHorizontal: Spacing.m,
+    borderBottomWidth: 1,
+  },
+  screenHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  headerBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  headerBackText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 2,
+  },
+  floatingPillContainer: {
+    position: 'absolute',
+    top: Spacing.s,
+    left: Spacing.m,
+    right: Spacing.m,
+    flexDirection: 'row',
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 100,
+  },
+  leftPillSegment: {
+    flex: 1.2,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leftPillText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  rightPillSegment: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(0,0,0,0.05)',
+  },
+  rightPillText: {
+    color: '#242424',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  horizontalPinWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#479ef5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  webMarkerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#479ef5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  horizontalTagLabel: {
+    paddingHorizontal: 6,
+    justifyContent: 'center',
+  },
+  horizontalTagText: {
+    color: '#242424',
+    fontSize: 9,
     fontWeight: 'bold',
   },
 });

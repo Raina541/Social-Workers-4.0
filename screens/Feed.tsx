@@ -14,6 +14,8 @@ import {
   TextInput,
   ScrollView,
   Dimensions,
+  Keyboard,
+  PanResponder,
 } from 'react-native';
 import { Colors, Spacing, Typography, Shapes } from '../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,8 +29,10 @@ import Svg, {
   Line,
   G,
 } from 'react-native-svg';
+import { BlurView } from 'expo-blur';
 import { OpportunityDetail } from './OpportunityDetail';
 import { Button } from '../components/Button';
+import { OpportunityMapScreen } from './OpportunityMapScreen';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -890,6 +894,727 @@ export const generateWindingPath = (w: number, h: number) => {
          `C ${w * 0.62} ${startY + pathH * 0.95}, ${mid} ${startY + pathH * 0.98}, ${mid} ${safeH - 50}`;
 };
 
+interface WizardOpportunity extends Opportunity {
+  hours: number;
+  isHighPriority?: boolean;
+  badgeLabel?: 'Recommended for you' | 'Similar Opportunity' | null;
+}
+
+const WIZARD_MOCK_OPPORTUNITIES: WizardOpportunity[] = [
+  {
+    id: 'wiz-opp-1',
+    title: 'Hospital Support Specialist',
+    shortDescription: 'Support clinical staff in outpatient checkups and comfort patients.',
+    description: 'Help coordinate patient flows and provide compassionate support to family members in outpatient waiting areas.',
+    domainId: 'health',
+    timeCommitment: '3 hrs per week',
+    durationAbbreviation: '3h',
+    hours: 3,
+    date: '2026-06-29', // Monday
+    displayDate: 'Jun 29, 2026',
+    location: 'Community Health Clinic, Gwalior',
+    impact: 'Helps 12 Patients/day',
+    imageUri: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: true,
+  },
+  {
+    id: 'wiz-opp-2',
+    title: 'Youth Reading Tutor',
+    shortDescription: 'Mentor elementary kids in reading and writing after school.',
+    description: 'Work one-on-one with local kids to build reading fluency, literacy confidence, and positive school habits.',
+    domainId: 'education',
+    timeCommitment: '2 hrs per week',
+    durationAbbreviation: '2h',
+    hours: 2,
+    date: '2026-06-30', // Tuesday
+    displayDate: 'Jun 30, 2026',
+    location: 'Gwalior Public Library',
+    impact: 'Empowers 3 Students',
+    imageUri: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: true,
+  },
+  {
+    id: 'wiz-opp-3',
+    title: 'Community Garden Planting',
+    shortDescription: 'Help plant community vegetable beds and organize compost.',
+    description: 'Support local neighborhood planting, water vegetables, sift compost, and maintain urban green zones.',
+    domainId: 'nature',
+    timeCommitment: '4 hrs per week',
+    durationAbbreviation: '4h',
+    hours: 4,
+    date: '2026-07-01', // Wednesday
+    displayDate: 'Jul 1, 2026',
+    location: 'Kampoo Botanical Park',
+    impact: 'Greens 1 Neighborhood',
+    imageUri: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-4',
+    title: 'Art Gallery Docent',
+    shortDescription: 'Guide guests through galleries during local arts exhibitions.',
+    description: 'Introduce visitors to historical details, monitor collections, and assist art facilitators during public openings.',
+    domainId: 'arts',
+    timeCommitment: '6 hrs per week',
+    durationAbbreviation: '6h',
+    hours: 6,
+    date: '2026-07-02', // Thursday
+    displayDate: 'Jul 2, 2026',
+    location: 'Bada Gallery of Fine Arts',
+    impact: 'Inspires 50+ Visitors',
+    imageUri: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-5',
+    title: 'Clinic Administration Assistant',
+    shortDescription: 'Organize files and help patients complete check-in forms.',
+    description: 'Ensure smooth operations by logging patient entries, updating digital files, and verifying scheduling records.',
+    domainId: 'health',
+    timeCommitment: '1 hr per week',
+    durationAbbreviation: '1h',
+    hours: 1,
+    date: '2026-07-03', // Friday
+    displayDate: 'Jul 3, 2026',
+    location: 'Kampoo Outpatient Center',
+    impact: 'Saves 3 hrs paperwork',
+    imageUri: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-6',
+    title: 'Saturday Math Club Mentor',
+    shortDescription: 'Assist children with math homework and interactive games.',
+    description: 'Volunteer at our weekly math circle. Guide elementary students through algebra and geometry exercises in groups.',
+    domainId: 'education',
+    timeCommitment: '5 hrs per week',
+    durationAbbreviation: '5h',
+    hours: 5,
+    date: '2026-07-04', // Saturday
+    displayDate: 'Jul 4, 2026',
+    location: 'Bada Youth Center',
+    impact: 'Inspires Math Confidence',
+    imageUri: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: true,
+  },
+  {
+    id: 'wiz-opp-7',
+    title: 'River Cleanup Volunteer',
+    shortDescription: 'Collect waste and restore banks along historical riverbanks.',
+    description: 'Help remove plastic debris and clean up shorelines to protect regional ecology and support water systems.',
+    domainId: 'nature',
+    timeCommitment: '8 hrs per week',
+    durationAbbreviation: '8h',
+    hours: 8,
+    date: '2026-07-05', // Sunday
+    displayDate: 'Jul 5, 2026',
+    location: 'Chhawani River Bank',
+    impact: 'Removes 100kg Waste',
+    imageUri: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-8',
+    title: 'Youth Mural Art Facilitator',
+    shortDescription: 'Lead kids in painting a colorful neighborhood mural.',
+    description: 'Teach kids simple color blocking and help them paint a positive community message on outdoor fences.',
+    domainId: 'arts',
+    timeCommitment: '4 hrs per week',
+    durationAbbreviation: '4h',
+    hours: 4,
+    date: '2026-06-29', // Monday
+    displayDate: 'Jun 29, 2026',
+    location: 'Bada Gaon Community Center',
+    impact: 'Greens 1 Concrete Wall',
+    imageUri: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-9',
+    title: 'Nutrition Class Assistant',
+    shortDescription: 'Assist cooking instructors and organize recipe handouts.',
+    description: 'Help setup prep ingredients and deliver dietary health worksheets to low-income senior citizens.',
+    domainId: 'health',
+    timeCommitment: '3 hrs per week',
+    durationAbbreviation: '3h',
+    hours: 3,
+    date: '2026-06-30', // Tuesday
+    displayDate: 'Jun 30, 2026',
+    location: 'Chhawani Senior Care Clinic',
+    impact: 'Nourishes 20 Elders',
+    imageUri: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  },
+  {
+    id: 'wiz-opp-10',
+    title: 'Digital Literacy Assistant',
+    shortDescription: 'Support adults in learning basic computer skills.',
+    description: 'Help adult learners navigate typing software, create email addresses, and use online search engines safely.',
+    domainId: 'education',
+    timeCommitment: '2 hrs per week',
+    durationAbbreviation: '2h',
+    hours: 2,
+    date: '2026-07-01', // Wednesday
+    displayDate: 'Jul 1, 2026',
+    location: 'Gwalior Literacy Center',
+    impact: 'Links 15 Adults Online',
+    imageUri: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80',
+    isHighPriority: false,
+  }
+];
+
+const SmartDialerWizard: React.FC<{
+  isDarkMode: boolean;
+  onBack: () => void;
+  onSelectOpportunity: (opp: Opportunity | null) => void;
+}> = ({ isDarkMode, onBack, onSelectOpportunity }) => {
+  const themeColors = isDarkMode ? Colors.dark : Colors.light;
+
+  // Wizard flow stage: 1, 2, 3, or 4 (Curated Feed)
+  const [currentStage, setCurrentStage] = useState(1);
+  const [activeTab, setActiveTab] = useState<'week' | 'month'>('week');
+
+  // Stage 1 selections: date strings "YYYY-MM-DD"
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+
+  // Month navigation offset: 0 = June 2026
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  // Stage 2: Radial slider hours (1 to 12)
+  const [selectedHours, setSelectedHours] = useState(4);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Stage 3: Selected causes (domain IDs)
+  const [selectedCauses, setSelectedCauses] = useState<Set<string>>(new Set());
+
+  // Layout center coordinates tracking for the dialer radial touch math
+  const [dialCenter, setDialCenter] = useState({ x: 0, y: 0 });
+
+  const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+  // Horizontal slide animation for stages
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: -(currentStage - 1) * SCREEN_WIDTH,
+      tension: 30,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, [currentStage]);
+
+  // Helper: Month name calculator
+  const getMonthData = (offset: number) => {
+    const baseYear = 2026;
+    const baseMonth = 5; // June (0-indexed)
+    const targetDate = new Date(baseYear, baseMonth + offset, 1);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
+    const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][month];
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    return { year, month, monthName, daysInMonth, firstDayIndex };
+  };
+
+  const { year, month, monthName, daysInMonth, firstDayIndex } = getMonthData(monthOffset);
+
+  // Dynamic date creation function
+  const generateUpcomingWeek = () => {
+    return Array.from({ length: 7 }).map((_, index) => {
+      const d = new Date();
+      d.setDate(d.getDate() + index);
+      const daysMap = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return {
+        dayLabel: daysMap[d.getDay()],
+        dateNum: d.getDate(),
+        fullDate: d
+      };
+    });
+  };
+
+  // Multi-select toggle helper
+  const toggleDate = (dateStr: string) => {
+    const newDates = new Set(selectedDates);
+    if (newDates.has(dateStr)) {
+      newDates.delete(dateStr);
+    } else {
+      newDates.add(dateStr);
+    }
+    setSelectedDates(newDates);
+  };
+
+  const toggleCause = (domainId: string) => {
+    const newCauses = new Set(selectedCauses);
+    if (newCauses.has(domainId)) {
+      newCauses.delete(domainId);
+    } else {
+      newCauses.add(domainId);
+    }
+    setSelectedCauses(newCauses);
+  };
+
+  // Radial touch responders
+  const handleRadialTouch = (gestureState: any) => {
+    const angle = Math.atan2(gestureState.moveY - dialCenter.y, gestureState.moveX - dialCenter.x) + Math.PI / 2;
+    let adjustedAngle = angle;
+    if (adjustedAngle < 0) {
+      adjustedAngle += 2 * Math.PI;
+    }
+    const hours = Math.round((adjustedAngle / (2 * Math.PI)) * 12);
+    const clampedHours = Math.max(1, Math.min(12, hours));
+    setSelectedHours(clampedHours);
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt, gestureState) => {
+        setIsDragging(true);
+        handleRadialTouch(gestureState);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        handleRadialTouch(gestureState);
+      },
+      onPanResponderRelease: () => {
+        setIsDragging(false);
+      },
+    })
+  ).current;
+
+  // Filter logic for Curated Feed (Primary, Secondary, Tertiary matches)
+  let matchedOpps = WIZARD_MOCK_OPPORTUNITIES.filter(opp => {
+    // 1. Filter by Cause selected
+    if (selectedCauses.size > 0 && !selectedCauses.has(opp.domainId)) {
+      return false;
+    }
+    // 2. Filter by Date selected
+    if (selectedDates.size > 0 && !selectedDates.has(opp.date)) {
+      return false;
+    }
+    // 3. Filter by Allocated Hours
+    if (opp.hours > selectedHours) {
+      return false;
+    }
+    return true;
+  }).map(opp => ({ ...opp, badgeLabel: null as (null | 'Recommended for you' | 'Similar Opportunity') }));
+
+  let isFallback = false;
+
+  // Secondary Fallback: If exact matches are fewer than 2, lift days/hours constraints and filter by Causes
+  if (matchedOpps.length < 2) {
+    const secondaryMatches = WIZARD_MOCK_OPPORTUNITIES.filter(opp => {
+      if (selectedCauses.size > 0 && !selectedCauses.has(opp.domainId)) {
+        return false;
+      }
+      return true;
+    }).map(opp => ({ ...opp, badgeLabel: 'Similar Opportunity' as const }));
+
+    if (secondaryMatches.length > 0) {
+      matchedOpps = secondaryMatches;
+      isFallback = true;
+    }
+  }
+
+  // Tertiary Fallback: If zero matches exist, bypass filters and display 3 High Priority featured cards
+  if (matchedOpps.length === 0) {
+    matchedOpps = WIZARD_MOCK_OPPORTUNITIES.filter(opp => opp.isHighPriority)
+      .slice(0, 3)
+      .map(opp => ({ ...opp, badgeLabel: 'Recommended for you' as const }));
+  }
+
+  const filteredOpps = matchedOpps;
+
+  // Render sub-stages
+  const renderStage1 = () => {
+    return (
+      <View style={[styles.stageCard, { width: SCREEN_WIDTH }]}>
+        <Text style={[styles.stageHeaderTitle, { color: '#ffffff' }]}>For what dates are you available?</Text>
+        
+        {/* Toggle selector switcher */}
+        <View style={styles.tabSelectorRow}>
+          <Pressable
+            onPress={() => setActiveTab('week')}
+            style={[styles.tabSelectorBtn, activeTab === 'week' && styles.tabSelectorActive]}
+          >
+            <Text style={[styles.tabSelectorText, activeTab === 'week' ? { color: '#ffffff', fontWeight: 'bold' } : { color: '#888' }]}>
+              Upcoming week
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('month')}
+            style={[styles.tabSelectorBtn, activeTab === 'month' && styles.tabSelectorActive]}
+          >
+            <Text style={[styles.tabSelectorText, activeTab === 'month' ? { color: '#ffffff', fontWeight: 'bold' } : { color: '#888' }]}>
+              Upcoming month
+            </Text>
+          </Pressable>
+        </View>
+
+        {activeTab === 'week' ? (
+          /* Tab A: Upcoming week horizontal strip */
+          <View style={styles.daysStripContainer}>
+            {generateUpcomingWeek().map((day) => {
+              const dateStr = day.fullDate.toISOString().split('T')[0];
+              const isSelected = selectedDates.has(dateStr);
+              return (
+                <Pressable
+                  key={dateStr}
+                  onPress={() => toggleDate(dateStr)}
+                  style={[
+                    styles.weekDayColumn,
+                    isSelected ? { backgroundColor: '#0f6cbd' } : { backgroundColor: '#202230' }
+                  ]}
+                >
+                  <Text style={[styles.weekDayLabel, isSelected ? { color: '#ffffff' } : { color: '#888' }]}>
+                    {day.dayLabel}
+                  </Text>
+                  <Text style={[styles.weekDayNumber, isSelected ? { color: '#ffffff', fontWeight: 'bold' } : { color: '#ffffff' }]}>
+                    {day.dateNum}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : (
+          /* Tab B: Upcoming month monthly grid view */
+          <View style={styles.calendarCard}>
+            <View style={styles.calendarMonthHeader}>
+              <Pressable onPress={() => setMonthOffset(monthOffset - 1)} style={styles.calendarNavBtn}>
+                <Ionicons name="chevron-back" size={16} color="#ffffff" />
+              </Pressable>
+              <Text style={styles.calendarMonthName}>{monthName} {year}</Text>
+              <Pressable onPress={() => setMonthOffset(monthOffset + 1)} style={styles.calendarNavBtn}>
+                <Ionicons name="chevron-forward" size={16} color="#ffffff" />
+              </Pressable>
+            </View>
+
+            {/* Calendar header row */}
+            <View style={styles.calendarDaysHeader}>
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                <Text key={i} style={styles.calendarDaysHeaderText}>{d}</Text>
+              ))}
+            </View>
+
+            {/* Monthly grid */}
+            <View style={styles.calendarGrid}>
+              {(() => {
+                const cells = [];
+                // Pad first days
+                for (let i = 0; i < firstDayIndex; i++) {
+                  cells.push(<View key={`empty-${i}`} style={styles.calendarCellEmpty} />);
+                }
+                // Days list
+                for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+                  const dayDate = new Date(year, month, dayNum);
+                  const dateStr = dayDate.toISOString().split('T')[0];
+                  const isSelected = selectedDates.has(dateStr);
+                  cells.push(
+                    <Pressable
+                      key={dateStr}
+                      onPress={() => toggleDate(dateStr)}
+                      style={[
+                        styles.calendarCell,
+                        isSelected && { backgroundColor: 'rgba(255, 170, 68, 0.25)', borderColor: '#ffaa44', borderWidth: 1 }
+                      ]}
+                    >
+                      <Text style={[styles.calendarCellText, isSelected ? { color: '#ffaa44', fontWeight: 'bold' } : { color: '#ffffff' }]}>
+                        {dayNum}
+                      </Text>
+                    </Pressable>
+                  );
+                }
+                return cells;
+              })()}
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderStage2 = () => {
+    // Coordinate maps for handle
+    const radius = 80;
+    const center = 110;
+    const angle = (selectedHours / 12) * 2 * Math.PI;
+    // Radial offset from top center going clockwise
+    const handAngle = angle - Math.PI / 2;
+    const handleX = center + radius * Math.cos(handAngle);
+    const handleY = center + radius * Math.sin(handAngle);
+    
+    // Large arc flag
+    const largeArc = selectedHours > 6 ? 1 : 0;
+    
+    // SVG path string for arc
+    // End collision fallback: if 12, push slightly back
+    const endX = selectedHours === 12 ? center + radius * Math.cos(-Math.PI/2 - 0.01) : handleX;
+    const endY = selectedHours === 12 ? center + radius * Math.sin(-Math.PI/2 - 0.01) : handleY;
+    const arcPath = `M 110,30 A 80,80 0 ${largeArc} 1 ${endX},${endY}`;
+
+    return (
+      <View style={[styles.stageCard, { width: SCREEN_WIDTH }]}>
+        <Text style={[styles.stageHeaderTitle, { color: '#ffffff' }]}>Hours I am willing to contribute</Text>
+        
+        {/* Responsive Custom Circular Dial */}
+        <View style={styles.dialerSliderWrapper}>
+          <View
+            style={styles.dialerBackgroundCircle}
+            onLayout={(e) => {
+              const { x, y, width, height } = e.nativeEvent.layout;
+              setDialCenter({ x: x + width / 2, y: y + height / 2 });
+            }}
+          >
+            <Svg width={220} height={220} {...panResponder.panHandlers}>
+              {/* Thin Outer Gray Path */}
+              <Circle cx={110} cy={110} r={80} stroke="#333547" strokeWidth={6} fill="none" />
+              {/* Vibrant Accent Progress Arc */}
+              <Path d={arcPath} stroke="#479ef5" strokeWidth={8} fill="none" strokeLinecap="round" />
+              {/* Glowing circular handle knob node */}
+              <Circle cx={handleX} cy={handleY} r={12} fill="#479ef5" stroke="#ffffff" strokeWidth={2} />
+            </Svg>
+            
+            {/* Core numerical display readout inside center ring */}
+            <View style={styles.dialerCenterValueBox}>
+              <Text style={styles.dialerCenterValueText}>{selectedHours}</Text>
+              <Text style={styles.dialerCenterUnitText}>{selectedHours === 1 ? 'HOUR' : 'HOURS'}</Text>
+              <Text style={styles.dialerCenterSubtext}>per session</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderStage3 = () => {
+    return (
+      <View style={[styles.stageCard, { width: SCREEN_WIDTH }]}>
+        <Text style={[styles.stageHeaderTitle, { color: '#ffffff' }]}>Choose your causes</Text>
+        
+        {/* Multi-Select Icon Grid */}
+        <View style={styles.causeGridContainer}>
+          {DOMAINS.map((dom) => {
+            const isSelected = selectedCauses.has(dom.id);
+            return (
+              <Pressable
+                key={dom.id}
+                onPress={() => toggleCause(dom.id)}
+                style={[
+                  styles.causeGridItem,
+                  isSelected ? { borderColor: '#479ef5', backgroundColor: '#202336' } : { borderColor: 'rgba(255,255,255,0.06)', backgroundColor: '#171821' }
+                ]}
+              >
+                <View style={[styles.causeIconWrapper, isSelected ? { backgroundColor: '#0f6cbd' } : { backgroundColor: '#333547' }]}>
+                  <Ionicons name={dom.icon} size={24} color="#ffffff" />
+                </View>
+                <Text style={styles.causeItemLabel}>{dom.name}</Text>
+                
+                {/* Active checkmark glow */}
+                {isSelected && (
+                  <View style={styles.causeCheckmarkGlow}>
+                    <Ionicons name="checkmark-circle" size={16} color="#479ef5" />
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
+  // Render Curated Feed view (Stage 4)
+  const renderCuratedFeed = () => {
+    // Generate dates summary chip label
+    const formatDatesChip = () => {
+      if (selectedDates.size === 0) return 'Any Dates';
+      const arr = Array.from(selectedDates).map(dateStr => {
+        const d = new Date(dateStr);
+        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+      });
+      const unique = Array.from(new Set(arr));
+      return unique.join(' • ');
+    };
+
+    // Cause names labels mapping
+    const formatCausesChip = () => {
+      if (selectedCauses.size === 0) return 'Any Causes';
+      return Array.from(selectedCauses).map(id => {
+        return (DOMAINS.find(d => d.id === id) || { name: '' }).name;
+      }).join(' • ');
+    };
+
+    return (
+      <SafeAreaView style={[styles.wizardContainer, { backgroundColor: '#171821' }]}>
+        {/* Top Header */}
+        <View style={styles.curatedHeader}>
+          <Pressable onPress={() => setCurrentStage(3)} style={styles.curatedBackBtn}>
+            <Ionicons name="arrow-back" size={22} color="#ffffff" style={{ marginRight: 4 }} />
+            <Text style={styles.curatedBackBtnText}>Back</Text>
+          </Pressable>
+          <Text style={styles.curatedHeaderTitle}>Curated for you</Text>
+          <View style={{ width: 60 }} />
+        </View>
+
+        {/* Dynamic dismissible chip filter row */}
+        <View style={styles.filterChipRowWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipRow}>
+            {selectedDates.size > 0 && (
+              <View style={styles.filterChip}>
+                <Text style={styles.filterChipText}>[{formatDatesChip()}]</Text>
+                <Pressable onPress={() => setSelectedDates(new Set())} style={styles.chipCloseBtn}>
+                  <Ionicons name="close-circle" size={14} color="#a0a5c0" />
+                </Pressable>
+              </View>
+            )}
+
+            <View style={styles.filterChip}>
+              <Text style={styles.filterChipText}>[{selectedHours} hrs]</Text>
+              <Pressable onPress={() => setSelectedHours(12)} style={styles.chipCloseBtn}>
+                <Ionicons name="close-circle" size={14} color="#a0a5c0" />
+              </Pressable>
+            </View>
+
+            {selectedCauses.size > 0 && (
+              <View style={styles.filterChip}>
+                <Text style={styles.filterChipText}>[{formatCausesChip()}]</Text>
+                <Pressable onPress={() => setSelectedCauses(new Set())} style={styles.chipCloseBtn}>
+                  <Ionicons name="close-circle" size={14} color="#a0a5c0" />
+                </Pressable>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Dynamic listing of matched opportunity cards */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.m }}>
+          {filteredOpps.length === 0 ? (
+            <View style={styles.emptyFeedBox}>
+              <Ionicons name="sad-outline" size={48} color="#a0a5c0" />
+              <Text style={styles.emptyFeedText}>No curated opportunities match your dialer filters.</Text>
+            </View>
+          ) : (
+            filteredOpps.map(opp => {
+              const domainConfig = DOMAINS.find(d => d.id === opp.domainId) || DOMAINS[0];
+              return (
+                <Pressable
+                  key={opp.id}
+                  onPress={() => onSelectOpportunity(opp)}
+                  style={({ pressed }) => [
+                    styles.curatedOppCard,
+                    { transform: [{ scale: pressed ? 0.98 : 1 }] }
+                  ]}
+                >
+                  <Image source={{ uri: opp.imageUri }} style={styles.curatedCardImg} />
+                  <View style={styles.curatedCardDetails}>
+                    {opp.badgeLabel && (
+                      <View style={styles.fallbackBadge}>
+                        <Ionicons name="sparkles" size={10} color="#479ef5" style={{ marginRight: 3 }} />
+                        <Text style={styles.fallbackBadgeText}>{opp.badgeLabel}</Text>
+                      </View>
+                    )}
+                    <Text style={styles.curatedCardTitle} numberOfLines={1}>{opp.title}</Text>
+                    <Text style={styles.curatedCardDesc} numberOfLines={2}>{opp.shortDescription}</Text>
+                    <View style={styles.curatedCardMeta}>
+                      <View style={[styles.curatedCategoryBadge, { backgroundColor: domainConfig.lightBg }]}>
+                        <Text style={styles.curatedBadgeText}>{domainConfig.name}</Text>
+                      </View>
+                      <Text style={styles.curatedCardDuration}>{opp.durationAbbreviation}</Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  };
+
+  // If curated feed is triggered, load it
+  if (currentStage === 4) {
+    return renderCuratedFeed();
+  }
+
+  return (
+    <SafeAreaView style={[styles.wizardContainer, { backgroundColor: '#171821' }]}>
+      {/* Persistent Header */}
+      <View style={styles.wizardHeader}>
+        <Pressable
+          onPress={() => {
+            if (currentStage > 1) {
+              setCurrentStage(currentStage - 1);
+            } else {
+              onBack();
+            }
+          }}
+          style={styles.headerBackBtn}
+        >
+          <Ionicons name="chevron-back" size={20} color="#479ef5" />
+          <Text style={[styles.headerBackText, { color: '#479ef5' }]}>Back</Text>
+        </Pressable>
+        <Text style={styles.wizardHeaderTitle}>Smart Dialer Search</Text>
+        <View style={{ width: 60 }} />
+      </View>
+
+      {/* Pages Container Row */}
+      <View style={styles.stagesViewport}>
+        <Animated.View style={[{ flexDirection: 'row', width: SCREEN_WIDTH * 3 }, { transform: [{ translateX: slideAnim }] }]}>
+          {renderStage1()}
+          {renderStage2()}
+          {renderStage3()}
+        </Animated.View>
+      </View>
+
+      {/* Persistent Footer Controls */}
+      <View style={styles.wizardFooter}>
+        <Pressable
+          onPress={() => {
+            if (currentStage > 1) {
+              setCurrentStage(currentStage - 1);
+            } else {
+              onBack();
+            }
+          }}
+          style={styles.footerSecondaryBtn}
+        >
+          <Text style={styles.footerSecondaryBtnText}>← Back</Text>
+        </Pressable>
+
+        {/* Progress dots indicator */}
+        <View style={styles.progressDotsRow}>
+          {[1, 2, 3].map(stg => (
+            <View
+              key={stg}
+              style={[
+                styles.progressDot,
+                currentStage === stg ? { backgroundColor: '#479ef5' } : { backgroundColor: '#333547' }
+              ]}
+            />
+          ))}
+        </View>
+
+        <Pressable
+          onPress={() => {
+            if (currentStage < 3) {
+              setCurrentStage(currentStage + 1);
+            } else {
+              // Trigger Stage 4 Curated Feed
+              setCurrentStage(4);
+            }
+          }}
+          style={styles.footerPrimaryBtn}
+        >
+          <Text style={styles.footerPrimaryBtnText}>
+            {currentStage === 3 ? 'Show Curated Feed' : 'Next >'}
+          </Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+};
+
 export const Feed: React.FC<FeedProps> = ({
   isDarkMode = false,
   activeMode: propActiveMode,
@@ -928,6 +1653,43 @@ export const Feed: React.FC<FeedProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeView, setActiveView] = useState<'feed' | 'map' | 'dialer_wizard'>('feed');
+
+  // Animation values for Search interaction
+  const searchBlurAnim = useRef(new Animated.Value(0)).current;
+  const searchPanelAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isSearchFocused) {
+      Animated.parallel([
+        Animated.timing(searchBlurAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(searchPanelAnim, {
+          toValue: 1,
+          tension: 40,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(searchBlurAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(searchPanelAnim, {
+          toValue: 0,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isSearchFocused]);
 
   // Date Filter States
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -1228,10 +1990,36 @@ export const Feed: React.FC<FeedProps> = ({
     : DOMAINS[0];
   const modalAccentColor = isDarkMode ? modalDomain.darkAccent : modalDomain.lightAccent;
 
+  if (activeView === 'map') {
+    return (
+      <OpportunityMapScreen
+        isDarkMode={isDarkMode}
+        onBack={() => setActiveView('feed')}
+        onSelectOpportunity={setSelectedOpportunity}
+      />
+    );
+  }
+
+  if (activeView === 'dialer_wizard') {
+    return (
+      <SmartDialerWizard
+        isDarkMode={isDarkMode}
+        onBack={() => setActiveView('feed')}
+        onSelectOpportunity={setSelectedOpportunity}
+      />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.neutralBackground2 }]}>
       {/* 1. Local Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: themeColors.neutralBackground1 }]}>
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: themeColors.neutralBackground1 },
+          isSearchFocused && { zIndex: 50, elevation: 6 }
+        ]}
+      >
         <View
           style={[
             styles.searchBar,
@@ -1241,12 +2029,24 @@ export const Feed: React.FC<FeedProps> = ({
             },
           ]}
         >
-          <Ionicons
-            name="search-outline"
-            size={18}
-            color={themeColors.neutralForeground3}
-            style={{ marginRight: Spacing.xs }}
-          />
+          {isSearchFocused ? (
+            <Pressable
+              onPress={() => {
+                setIsSearchFocused(false);
+                Keyboard.dismiss();
+              }}
+              style={{ marginRight: Spacing.xs }}
+            >
+              <Ionicons name="arrow-back" size={20} color={themeColors.brandForeground1} />
+            </Pressable>
+          ) : (
+            <Ionicons
+              name="search-outline"
+              size={18}
+              color={themeColors.neutralForeground3}
+              style={{ marginRight: Spacing.xs }}
+            />
+          )}
           <TextInput
             placeholder="Search opportunities..."
             placeholderTextColor={themeColors.neutralForeground3}
@@ -1254,12 +2054,26 @@ export const Feed: React.FC<FeedProps> = ({
             onChangeText={setSearchQuery}
             style={[styles.searchInput, { color: themeColors.neutralForeground1 }]}
             onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
           />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} style={{ padding: Spacing.xxs }}>
+          {searchQuery.length > 0 ? (
+            <Pressable
+              onPress={() => setSearchQuery('')}
+              style={{ padding: Spacing.xxs }}
+            >
               <Ionicons name="close-circle" size={18} color={themeColors.neutralForeground3} />
             </Pressable>
+          ) : (
+            isSearchFocused && (
+              <Pressable
+                onPress={() => {
+                  setIsSearchFocused(false);
+                  Keyboard.dismiss();
+                }}
+                style={{ padding: Spacing.xxs }}
+              >
+                <Ionicons name="close" size={18} color={themeColors.neutralForeground3} />
+              </Pressable>
+            )
           )}
         </View>
       </View>
@@ -1559,6 +2373,110 @@ export const Feed: React.FC<FeedProps> = ({
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Search Overlay & Options Panel */}
+      {isSearchFocused && (
+        <Pressable
+          style={[StyleSheet.absoluteFill, { zIndex: 40 }]}
+          onPress={() => {
+            setIsSearchFocused(false);
+            Keyboard.dismiss();
+          }}
+        >
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                opacity: searchBlurAnim,
+                backgroundColor: 'rgba(10, 15, 30, 0.65)',
+              },
+            ]}
+          >
+            {Platform.OS !== 'web' ? (
+              <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backdropFilter: 'blur(10px)' } as any]} />
+            )}
+          </Animated.View>
+
+          <View style={styles.overlayContentContainer} pointerEvents="box-none">
+            <Animated.View
+              style={[
+                styles.optionsPanel,
+                {
+                  opacity: searchPanelAnim,
+                  transform: [
+                    {
+                      translateY: searchPanelAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-30, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+              pointerEvents="box-none"
+            >
+              <Pressable
+                style={styles.optionsCard}
+                onPress={(e) => {
+                  e.stopPropagation(); // Prevent dismissing when card is tapped
+                }}
+              >
+                <Text style={styles.optionsHeaderTitle}>Where would you like to search?</Text>
+                
+                {/* Tab Option 1: Find What is Nearby */}
+                <Pressable
+                  onPress={() => {
+                    setActiveView('map');
+                    setIsSearchFocused(false);
+                    Keyboard.dismiss();
+                  }}
+                  style={({ pressed }) => [
+                    styles.tabOptionButton,
+                    {
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    },
+                  ]}
+                >
+                  <View style={[styles.tabOptionIconWrapper, { backgroundColor: '#112b4d' }]}>
+                    <Ionicons name="location" size={22} color="#479ef5" />
+                  </View>
+                  <View style={styles.tabOptionTextGroup}>
+                    <Text style={styles.tabOptionTitle}>Find What is Nearby</Text>
+                    <Text style={styles.tabOptionSubtext}>See localized opportunities on a live map</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#616161" style={styles.tabOptionArrow} />
+                </Pressable>
+
+                {/* Tab Option 2: Use Smart Dialer Search */}
+                <Pressable
+                  onPress={() => {
+                    setActiveView('dialer_wizard');
+                    setIsSearchFocused(false);
+                    Keyboard.dismiss();
+                  }}
+                  style={({ pressed }) => [
+                    styles.tabOptionButton,
+                    {
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    },
+                  ]}
+                >
+                  <View style={[styles.tabOptionIconWrapper, { backgroundColor: '#432918' }]}>
+                    <Ionicons name="options" size={22} color="#ffaa44" />
+                  </View>
+                  <View style={styles.tabOptionTextGroup}>
+                    <Text style={styles.tabOptionTitle}>Use Smart Dialer Search</Text>
+                    <Text style={styles.tabOptionSubtext}>Dial in day, time & domain with a rotary tool</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#616161" style={styles.tabOptionArrow} />
+                </Pressable>
+              </Pressable>
+            </Animated.View>
+          </View>
+        </Pressable>
+      )}
 
       {/* 5. Overhauled Opportunity Detail View Modal */}
       {selectedOpportunity && (
@@ -2029,5 +2947,460 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Search overlay & Options Panel styles
+  overlayContentContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 65,
+    alignItems: 'center',
+  },
+  optionsPanel: {
+    width: '100%',
+    paddingHorizontal: Spacing.m,
+  },
+  optionsCard: {
+    backgroundColor: '#171821',
+    borderRadius: 16,
+    padding: Spacing.m,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  optionsHeaderTitle: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  tabOptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#202230',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  tabOptionIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabOptionTextGroup: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  tabOptionTitle: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  tabOptionSubtext: {
+    color: '#a0a5c0',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  tabOptionArrow: {
+    marginLeft: 8,
+  },
+  // Smart Dialer Wizard styles
+  wizardContainer: {
+    flex: 1,
+  },
+  wizardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    paddingHorizontal: Spacing.m,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  wizardHeaderTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  headerBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  headerBackText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 2,
+  },
+  stagesViewport: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  stagesRow: {
+    flexDirection: 'row',
+    height: '100%',
+  },
+  stageCard: {
+    height: '100%',
+    padding: Spacing.m,
+  },
+  stageHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: Spacing.l,
+  },
+  tabSelectorRow: {
+    flexDirection: 'row',
+    backgroundColor: '#202230',
+    borderRadius: 8,
+    padding: 3,
+    marginBottom: Spacing.xl,
+  },
+  tabSelectorBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  tabSelectorActive: {
+    backgroundColor: '#333547',
+  },
+  tabSelectorText: {
+    fontSize: 13,
+  },
+  daysStripContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing.s,
+  },
+  weekDayColumn: {
+    flex: 1,
+    marginHorizontal: 3,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekDayLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  weekDayNumber: {
+    fontSize: 14,
+  },
+  calendarCard: {
+    backgroundColor: '#202230',
+    borderRadius: 12,
+    padding: Spacing.m,
+  },
+  calendarMonthHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.m,
+  },
+  calendarMonthName: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  calendarNavBtn: {
+    padding: 6,
+  },
+  calendarDaysHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.s,
+  },
+  calendarDaysHeaderText: {
+    color: '#888',
+    width: '14.2%',
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  calendarCell: {
+    width: '14.2%',
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
+    marginVertical: 2,
+  },
+  calendarCellText: {
+    fontSize: 12,
+  },
+  calendarCellEmpty: {
+    width: '14.2%',
+    height: 36,
+  },
+  dialerSliderWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  dialerBackgroundCircle: {
+    width: 220,
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  dialerCenterValueBox: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#202230',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dialerCenterValueText: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#479ef5',
+    lineHeight: 36,
+  },
+  dialerCenterUnitText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ffffff',
+    letterSpacing: 1.0,
+    marginTop: 2,
+  },
+  dialerCenterSubtext: {
+    fontSize: 9,
+    color: '#888',
+    marginTop: 1,
+  },
+  causeGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: Spacing.s,
+  },
+  causeGridItem: {
+    width: '48%',
+    borderRadius: 12,
+    padding: Spacing.m,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: Spacing.s,
+    position: 'relative',
+    height: 110,
+  },
+  causeIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  causeItemLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  causeCheckmarkGlow: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+  },
+  wizardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.m,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#171821',
+  },
+  footerSecondaryBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  footerSecondaryBtnText: {
+    color: '#888',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  footerPrimaryBtn: {
+    backgroundColor: '#0f6cbd',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  footerPrimaryBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  progressDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  progressDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 4,
+  },
+  curatedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    paddingHorizontal: Spacing.m,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  curatedHeaderTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  curatedBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  curatedBackBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  filterChipRowWrapper: {
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  filterChipRow: {
+    paddingVertical: Spacing.s,
+    paddingHorizontal: Spacing.m,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#202230',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  filterChipText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  chipCloseBtn: {
+    padding: 1,
+  },
+  curatedOppCard: {
+    flexDirection: 'row',
+    backgroundColor: '#202230',
+    borderRadius: 12,
+    padding: Spacing.s,
+    marginBottom: Spacing.m,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  curatedCardImg: {
+    width: 65,
+    height: 65,
+    borderRadius: 8,
+  },
+  curatedCardDetails: {
+    flex: 1,
+    marginLeft: Spacing.s,
+    justifyContent: 'center',
+  },
+  curatedCardTitle: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  curatedCardDesc: {
+    color: '#a0a5c0',
+    fontSize: 11,
+    marginTop: 2,
+    lineHeight: 14,
+  },
+  curatedCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  curatedCategoryBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  curatedBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  curatedCardDuration: {
+    color: '#888',
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  emptyFeedBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+  },
+  emptyFeedText: {
+    color: '#a0a5c0',
+    fontSize: 12,
+    marginTop: Spacing.m,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.l,
+  },
+  fallbackBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(71, 158, 245, 0.12)',
+    borderColor: 'rgba(71, 158, 245, 0.25)',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  fallbackBadgeText: {
+    color: '#479ef5',
+    fontSize: 9,
+    fontWeight: 'bold',
   },
 });
